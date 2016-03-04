@@ -1,0 +1,70 @@
+{
+  "name": "filehound",
+  "version": "1.0.0",
+  "description": "Fluent interface for finding files",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "lint": "jshint .",
+    "coverage": "istanbul cover _mocha -- -R dot"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nspragg/filehound.git"
+  },
+  "author": "ibl-team@lists.forge.bbc.co.uk",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nspragg/filehound/issues"
+  },
+  "homepage": "https://github.com/nspragg/filehound",
+  "devDependencies": {
+    "eslint": "^2.2.0",
+    "istanbul": "^0.4.1",
+    "jshint": "^2.5.11",
+    "mocha": "^2.1.0"
+  },
+  "eslintConfig": {
+    "extends": "eslint:recommended",
+    "parserOptions": {
+      "ecmaVersion": 6,
+      "sourceType": "module",
+      "ecmaFeatures": {
+        "jsx": true
+      }
+    },
+    "env": {
+      "node": true,
+      "mocha": true,
+      "es6": true
+    },
+    "ecmaFeatures": {
+      "modules": false
+    },
+    "rules": {
+      "quotes": [
+        2,
+        "single"
+      ],
+      "eqeqeq": 2,
+      "no-var": 2,
+      "one-var": [
+        2,
+        "never"
+      ],
+      "prefer-const": 2,
+      "semi": 2,
+      "strict": [
+        2,
+        "global"
+      ],
+      "arrow-parens": 2,
+      "prefer-arrow-callback": 2
+    }
+  },
+  "dependencies": {
+    "bluebird": "^3.3.3",
+    "fs-promise": "^0.4.1",
+    "minimatch": "^3.0.0"
+  }
+}
