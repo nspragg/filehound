@@ -1,8 +1,15 @@
-# filehound
+# Filehound
 
 Fluent interface for finding files
 
 ## Installation
+
+## Features
+
+* Flexible search filters
+* Simple fluent interface
+* Ability to combine search results from multiple queries
+* Supports promises and callbacks
 
 ```
 npm install --save filehound
@@ -46,39 +53,83 @@ const notJsonFiles = FileHound
 
 ## API
 
-#### `.create  -> FileHound`
+### Static methods
 
-Creates a FileHound instance.
+#### `.create()  -> FileHound`
 
-## path
+##### Parameters
+* `opts` - _optional_ - Object contains configuration options
+  * debug - display search information.
+  * root - override default root
+
+##### Returns
+Returns a FileHound instance.
+
+#### `.any(FileHound...)  -> Promise`
+
+##### Parameters
+* Accepts one or more instance of FileHound. Will unpack an array.
+
+##### Returns
+Returns a Promise of all matches. If the Promise fulfills, the fulfullment value is an array of all matching files.
+
+#### `.match(path, glob) -> Promise`
+
+##### Parameters
+* `path` - Root path to search recursively
+* `glob` - Optional file glob. By default, will match all files
+
+##### Returns
+* If the Promise fulfills, the fulfullment value is an array of matching files.
+
+#### `.not(FileHound...) -> Promise`
+
+##### Parameters
+* Accepts one or more instances of FileHound to negate. Will unpack an array.
+
+##### Returns
+* If the Promise fulfills, the fulfullment value is an array of negated matches
+
+### Filters
+
+#### `.path(path) -> FileHound`
 
 Sets the root directory to search
 
-#### `fh.path('/etc/pki') -> FileHound`
+##### Parameters
+* path - path to search
 
-## ext
+##### Returns
+* Returns a FileHound instance
 
-Filter by file extension. The file ext does not have to be prefixed with a '.'
+#### `.ext(extension) -> FileHound`
 
-#### `fh.ext('txt') -> FileHound`
+##### Parameters
+* extension - file extension to filter by
 
-## match
+##### Returns
+* Returns a FileHound instance
 
-Filter by file glob.
+#### `.match(glob) -> FileHound`
 
-#### `fh.match('csh*') -> FileHound`
+##### Parameters
+* glob - file glob (as string) to filter by
 
-## size
+##### Returns
+* Returns a FileHound instance
 
-Filter by matching file size. Accepts an positive integer representing the file size in bytes. Optionally, can be prefixed by a comparison operator, including <, >, =, <=, >=  
+#### `.size(sizeExpression) -> FileHound`
 
-#### `fh.size('>10') -> FileHound`
+##### Parameters
+* sizeExpression - accepts a positive integer representing the file size in bytes. Optionally, can be prefixed with a comparison operator, including <, >, =, <=, >=  
 
-## find
+##### Returns
+* Returns a FileHound instance
 
-Starts the file search, returning a Promise. If the Promise fulfills, the fulfullment value is a list of matching file.  
-
-#### `fh.find() -> Promise`
+#### `.find(sizeExpression) -> Promise`
+##### Parameters - None
+##### Returns
+* Returns a Promise of all matches. If the Promise fulfills, the fulfullment value is an array of all matching files.
 
 ## Test
 
