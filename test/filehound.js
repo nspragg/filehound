@@ -118,7 +118,26 @@ describe('FileHound', () => {
             assert.deepEqual(files, qualifyNames(['/justFiles/b.json']));
           });
       });
-      it('returns zero length files');
+
+      it('returns files less than a given size');
+      it('returns files greater than a given size');
+      it('returns files greater than or equal to a given size');
+      it('returns files less then or equal to a given size');
+      it('returns files within a given size range');
+    });
+
+    describe('.isEmpty()', () => {
+      it('returns zero length files', () => {
+        const allEmpty = FileHound.create()
+          .isEmpty(20)
+          .path(fixtureDir + '/justFiles')
+          .find();
+
+        return allEmpty
+          .then((files) => {
+            assert.deepEqual(files, qualifyNames(['/justFiles/a.json', '/justFiles/dummy.txt']));
+          });
+      });
     });
 
     describe('.depth', () => {

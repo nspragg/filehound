@@ -1,6 +1,6 @@
 # Filehound
 
-Fluent interface for finding files
+Flexible and fluent interface for searching the file system
 
 ## Installation
 
@@ -55,7 +55,7 @@ const notJsonFiles = FileHound
 
 ### Static methods
 
-#### `.create()  -> FileHound`
+### `.create()  -> FileHound`
 
 ##### Parameters
 * `opts` - _optional_ - Object contains configuration options
@@ -65,7 +65,7 @@ const notJsonFiles = FileHound
 ##### Returns
 Returns a FileHound instance.
 
-#### `.any(FileHound...)  -> Promise`
+### `.any(FileHound...)  -> Promise`
 
 ##### Parameters
 * Accepts one or more instance of FileHound. Will unpack an array.
@@ -73,16 +73,16 @@ Returns a FileHound instance.
 ##### Returns
 Returns a Promise of all matches. If the Promise fulfills, the fulfullment value is an array of all matching files.
 
-#### `.match(path, glob) -> Promise`
+### `.find(path, globPattern) -> Promise`
 
 ##### Parameters
 * `path` - Root path to search recursively
-* `glob` - Optional file glob. By default, will match all files
+* `globPattern` - Optional file glob. By default, will match all files
 
 ##### Returns
 * If the Promise fulfills, the fulfullment value is an array of matching files.
 
-#### `.not(FileHound...) -> Promise`
+### `.not(FileHound...) -> Promise`
 
 ##### Parameters
 * Accepts one or more instances of FileHound to negate. Will unpack an array.
@@ -90,9 +90,9 @@ Returns a Promise of all matches. If the Promise fulfills, the fulfullment value
 ##### Returns
 * If the Promise fulfills, the fulfullment value is an array of negated matches
 
-### Filters
+## Filters
 
-#### `.path(path) -> FileHound`
+### `.path(path) -> FileHound`
 
 Sets the root directory to search
 
@@ -102,7 +102,7 @@ Sets the root directory to search
 ##### Returns
 * Returns a FileHound instance
 
-#### `.ext(extension) -> FileHound`
+### `.ext(extension) -> FileHound`
 
 ##### Parameters
 * extension - file extension to filter by
@@ -110,7 +110,7 @@ Sets the root directory to search
 ##### Returns
 * Returns a FileHound instance
 
-#### `.match(glob) -> FileHound`
+### `.match(glob) -> FileHound`
 
 ##### Parameters
 * glob - file glob (as string) to filter by
@@ -118,7 +118,7 @@ Sets the root directory to search
 ##### Returns
 * Returns a FileHound instance
 
-#### `.size(sizeExpression) -> FileHound`
+### `.size(sizeExpression) -> FileHound`
 
 ##### Parameters
 * sizeExpression - accepts a positive integer representing the file size in bytes. Optionally, can be prefixed with a comparison operator, including <, >, =, <=, >=  
@@ -126,7 +126,14 @@ Sets the root directory to search
 ##### Returns
 * Returns a FileHound instance
 
-#### `.find(sizeExpression) -> Promise`
+### `.isEmpty() -> FileHound`
+
+##### Parameters - None
+
+##### Returns
+* Returns a FileHound instance
+
+### `.find() -> Promise`
 ##### Parameters - None
 ##### Returns
 * Returns a Promise of all matches. If the Promise fulfills, the fulfullment value is an array of all matching files.
