@@ -176,4 +176,8 @@ describe('FileHound', () => {
   describe('.contains', () => {
     it('returns files containing');
   });
+
+  describe('.addFilter', () => {
+    it('returns files containing');
+  });
 });
