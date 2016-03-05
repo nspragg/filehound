@@ -17,9 +17,21 @@ function qualifyNames(names) {
 }
 
 describe('FileHound', () => {
-  describe('.find', () => {
-    const fixtureDir = __dirname + '/fixtures';
+  const fixtureDir = __dirname + '/fixtures';
 
+  describe('.findFiles', () => {
+    it('returns matching files', () => {
+      const path = fixtureDir + '/justFiles';
+      const results = FileHound.findFiles(path, '*.json');
+
+      return results
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/justFiles/a.json', '/justFiles/b.json']));
+        });
+    });
+  });
+
+  describe('.find', () => {
     it('returns all files in a given directory', () => {
       const query = FileHound.create()
         .path(fixtureDir + '/justFiles')
@@ -41,111 +53,111 @@ describe('FileHound', () => {
           assert.deepEqual(files, nestedFiles);
         });
     });
+  });
 
-    describe('.ext', () => {
-      it('returns files for a given ext', () => {
-        const query = FileHound.create()
-          .ext('txt')
-          .path(fixtureDir + '/justFiles')
-          .find();
+  describe('.ext', () => {
+    it('returns files for a given ext', () => {
+      const query = FileHound.create()
+        .ext('txt')
+        .path(fixtureDir + '/justFiles')
+        .find();
 
-        return query
-          .then((files) => {
-            assert.deepEqual(files, textFiles);
-          });
-      });
+      return query
+        .then((files) => {
+          assert.deepEqual(files, textFiles);
+        });
+    });
+  });
+
+  describe('.match', () => {
+    it('returns files for given match name', () => {
+      const query = FileHound.create()
+        .match('*ab*.json')
+        .path(fixtureDir + '/mixed')
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files.sort(), matchFiles);
+        });
+    });
+  });
+
+  describe('.not', () => {
+    it('returns files not matching the given query', () => {
+      const notJsonStartingWithZ = FileHound.create()
+        .match('*.json')
+        .path(fixtureDir + '/justFiles')
+        .not()
+        .find();
+
+      return notJsonStartingWithZ
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/justFiles/dummy.txt']));
+        });
+    });
+  });
+
+  describe('.any', () => {
+    it('returns matching files for any query', () => {
+      const jsonStartingWithZ = FileHound.create()
+        .match('*.json')
+        .path(fixtureDir + '/justFiles')
+        .find();
+
+      const onlyTextFles = FileHound.create()
+        .ext('txt')
+        .path(fixtureDir + '/justFiles')
+        .find();
+
+      const results = FileHound.any(jsonStartingWithZ, onlyTextFles);
+
+      return results
+        .then((files) => {
+          assert.deepEqual(files, justFiles);
+        });
+    });
+  });
+
+  describe('.size', () => {
+    it('return files that match a given number of bytes', () => {
+      const sizeFile10Bytes = FileHound.create()
+        .size(20)
+        .path(fixtureDir + '/justFiles')
+        .find();
+
+      return sizeFile10Bytes
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/justFiles/b.json']));
+        });
     });
 
-    describe('.match', () => {
-      it('returns files for given match name', () => {
-        const query = FileHound.create()
-          .match('*ab*.json')
-          .path(fixtureDir + '/mixed')
-          .find();
+    it('returns files less than a given size');
+    it('returns files greater than a given size');
+    it('returns files greater than or equal to a given size');
+    it('returns files less then or equal to a given size');
+    it('returns files within a given size range');
+  });
 
-        return query
-          .then((files) => {
-            assert.deepEqual(files.sort(), matchFiles);
-          });
-      });
+  describe('.isEmpty()', () => {
+    it('returns zero length files', () => {
+      const allEmpty = FileHound.create()
+        .isEmpty(20)
+        .path(fixtureDir + '/justFiles')
+        .find();
+
+      return allEmpty
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/justFiles/a.json', '/justFiles/dummy.txt']));
+        });
     });
+  });
 
-    describe('.not', () => {
-      it('returns files not matching the given query', () => {
-        const notJsonStartingWithZ = FileHound.create()
-          .match('*.json')
-          .path(fixtureDir + '/justFiles')
-          .not()
-          .find();
+  describe('.depth', () => {
+    it('returns max depth');
+  });
 
-        return notJsonStartingWithZ
-          .then((files) => {
-            assert.deepEqual(files, qualifyNames(['/justFiles/dummy.txt']));
-          });
-      });
-    });
-
-    describe('.any', () => {
-      it('returns matching files for any query', () => {
-        const jsonStartingWithZ = FileHound.create()
-          .match('*.json')
-          .path(fixtureDir + '/justFiles')
-          .find();
-
-        const onlyTextFles = FileHound.create()
-          .ext('txt')
-          .path(fixtureDir + '/justFiles')
-          .find();
-
-        const results = FileHound.any(jsonStartingWithZ, onlyTextFles);
-
-        return results
-          .then((files) => {
-            assert.deepEqual(files, justFiles);
-          });
-      });
-    });
-
-    describe('.size', () => {
-      it('return files that match a given number of bytes', () => {
-        const sizeFile10Bytes = FileHound.create()
-          .size(20)
-          .path(fixtureDir + '/justFiles')
-          .find();
-
-        return sizeFile10Bytes
-          .then((files) => {
-            assert.deepEqual(files, qualifyNames(['/justFiles/b.json']));
-          });
-      });
-
-      it('returns files less than a given size');
-      it('returns files greater than a given size');
-      it('returns files greater than or equal to a given size');
-      it('returns files less then or equal to a given size');
-      it('returns files within a given size range');
-    });
-
-    describe('.isEmpty()', () => {
-      it('returns zero length files', () => {
-        const allEmpty = FileHound.create()
-          .isEmpty(20)
-          .path(fixtureDir + '/justFiles')
-          .find();
-
-        return allEmpty
-          .then((files) => {
-            assert.deepEqual(files, qualifyNames(['/justFiles/a.json', '/justFiles/dummy.txt']));
-          });
-      });
-    });
-
-    describe('.depth', () => {
-      it('returns max depth');
-    });
-
-    describe('.contains', () => {
-      it('returns contains');
-    });
+  describe('.contains', () => {
+    it('returns files containing');
   });
 });

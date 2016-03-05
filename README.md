@@ -73,7 +73,7 @@ Returns a FileHound instance.
 ##### Returns
 Returns a Promise of all matches. If the Promise fulfills, the fulfullment value is an array of all matching files.
 
-### `.find(path, globPattern) -> Promise`
+### `.findFiles(path, globPattern) -> Promise`
 
 ##### Parameters
 * `path` - Root path to search recursively
@@ -90,7 +90,7 @@ Returns a Promise of all matches. If the Promise fulfills, the fulfullment value
 ##### Returns
 * If the Promise fulfills, the fulfullment value is an array of negated matches
 
-## Filters
+## Methods
 
 ### `.path(path) -> FileHound`
 
