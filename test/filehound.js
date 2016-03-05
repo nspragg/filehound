@@ -31,10 +31,10 @@ describe('FileHound', () => {
     });
   });
 
-  describe('.find', () => {
+  describe('.paths', () => {
     it('returns all files in a given directory', () => {
       const query = FileHound.create()
-        .path(fixtureDir + '/justFiles')
+        .paths(fixtureDir + '/justFiles')
         .find();
 
       return query
@@ -45,7 +45,7 @@ describe('FileHound', () => {
 
     it('returns files performing a recursive search', () => {
       const query = FileHound.create()
-        .path(fixtureDir + '/nested')
+        .paths(fixtureDir + '/nested')
         .find();
 
       return query
@@ -53,13 +53,29 @@ describe('FileHound', () => {
           assert.deepEqual(files, nestedFiles);
         });
     });
+
+    it('returns matching files from multiple search paths', () => {
+      const location1 = fixtureDir + '/nested';
+      const location2 = fixtureDir + '/justFiles';
+
+      const query = FileHound.create()
+        .paths(location1, location2)
+        .find();
+
+      return query.then((files) => {
+        assert.deepEqual(files, nestedFiles.concat(justFiles));
+      });
+    });
+
+    it('removes duplicate paths');
+    it('normalises paths');
   });
 
   describe('.ext', () => {
     it('returns files for a given ext', () => {
       const query = FileHound.create()
         .ext('txt')
-        .path(fixtureDir + '/justFiles')
+        .paths(fixtureDir + '/justFiles')
         .find();
 
       return query
@@ -73,7 +89,7 @@ describe('FileHound', () => {
     it('returns files for given match name', () => {
       const query = FileHound.create()
         .match('*ab*.json')
-        .path(fixtureDir + '/mixed')
+        .paths(fixtureDir + '/mixed')
         .find();
 
       return query
@@ -87,7 +103,7 @@ describe('FileHound', () => {
     it('returns files not matching the given query', () => {
       const notJsonStartingWithZ = FileHound.create()
         .match('*.json')
-        .path(fixtureDir + '/justFiles')
+        .paths(fixtureDir + '/justFiles')
         .not()
         .find();
 
@@ -102,12 +118,12 @@ describe('FileHound', () => {
     it('returns matching files for any query', () => {
       const jsonStartingWithZ = FileHound.create()
         .match('*.json')
-        .path(fixtureDir + '/justFiles')
+        .paths(fixtureDir + '/justFiles')
         .find();
 
       const onlyTextFles = FileHound.create()
         .ext('txt')
-        .path(fixtureDir + '/justFiles')
+        .paths(fixtureDir + '/justFiles')
         .find();
 
       const results = FileHound.any(jsonStartingWithZ, onlyTextFles);
@@ -123,7 +139,7 @@ describe('FileHound', () => {
     it('return files that match a given number of bytes', () => {
       const sizeFile10Bytes = FileHound.create()
         .size(20)
-        .path(fixtureDir + '/justFiles')
+        .paths(fixtureDir + '/justFiles')
         .find();
 
       return sizeFile10Bytes
@@ -143,7 +159,7 @@ describe('FileHound', () => {
     it('returns zero length files', () => {
       const allEmpty = FileHound.create()
         .isEmpty(20)
-        .path(fixtureDir + '/justFiles')
+        .paths(fixtureDir + '/justFiles')
         .find();
 
       return allEmpty
