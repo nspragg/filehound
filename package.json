@@ -65,6 +65,7 @@
   "dependencies": {
     "bluebird": "^3.3.3",
     "fs-promise": "^0.4.1",
+    "lodash": "^4.6.1",
     "minimatch": "^3.0.0"
   }
 }

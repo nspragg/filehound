@@ -92,12 +92,12 @@ Returns a Promise of all matches. If the Promise fulfills, the fulfullment value
 
 ## Methods
 
-### `.path(path) -> FileHound`
+### `.paths(paths...) -> FileHound`
 
-Sets the root directory to search
+Directories to search. Accepts one or more directories or a reference to an array of directories
 
 ##### Parameters
-* path - path to search
+* path - array of directories
 
 ##### Returns
 * Returns a FileHound instance

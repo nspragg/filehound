@@ -1,3 +1,5 @@
+'use strict';
+
 const assert = require('assert');
 const path = require('path');
 
@@ -67,7 +69,24 @@ describe('FileHound', () => {
       });
     });
 
-    it('removes duplicate paths');
+    it('removes duplicate paths', () => {
+      const location1 = fixtureDir + '/nested';
+
+      const fh = FileHound.create();
+      fh.paths(location1, location1);
+
+      assert.deepEqual(fh.getSearchDirectories(), [location1]);
+    });
+
+    it('returns a defensive copy of the search directories', () => {
+      const fh = FileHound.create();
+      fh.paths('a', 'b', 'c');
+      const directories = fh.getSearchDirectories();
+      directories.push('d');
+
+      assert.equal(fh.getSearchDirectories().length, 3);
+    });
+
     it('normalises paths');
   });
 
