@@ -43,8 +43,7 @@ const files = FileHound.create()
 
   files.then(console.log); // prints list of pem files starting with 'dev'
 
-const notJsonFiles = FileHound
-  .create()
+const notJsonFiles = FileHound.create()
   .ext('json')
   .not()
   .find();
@@ -56,7 +55,7 @@ const notJsonFiles = FileHound
 
 ### Static methods
 
-### `.create()  -> FileHound`
+### `FileHound.create() -> FileHound`
 
 ##### Parameters
 * `opts` - _optional_ - Object contains configuration options
@@ -66,32 +65,32 @@ const notJsonFiles = FileHound
 ##### Returns
 Returns a FileHound instance.
 
-### `.any(FileHound...)  -> Promise`
+### `FileHound.any(FileHound...) -> Promise`
 
 ##### Parameters
-* Accepts one or more instance of FileHound. Will unpack an array.
+* Accepts one or more instances of FileHound. Will unpack an array.
 
 ##### Returns
-Returns a Promise of all matches. If the Promise fulfills, the fulfullment value is an array of all matching files.
+Returns a Promise of all matches. If the Promise fulfills, the fulfillment value is an array of all matching files.
 
-### `.findFiles(path, globPattern) -> Promise`
+### `FileHound.findFiles(path, globPattern) -> Promise`
 
 ##### Parameters
 * `path` - Root path to search recursively
 * `globPattern` - Optional file glob. By default, will match all files
 
 ##### Returns
-* If the Promise fulfills, the fulfullment value is an array of matching files.
+* If the Promise fulfills, the fulfillment value is an array of matching files.
 
-### `.not(FileHound...) -> Promise`
+### `FileHound.not(FileHound...) -> Promise`
 
 ##### Parameters
 * Accepts one or more instances of FileHound to negate. Will unpack an array.
 
 ##### Returns
-* If the Promise fulfills, the fulfullment value is an array of negated matches
+* If the Promise fulfills, the fulfillment value is an array of negated matches
 
-## Methods
+## Instance methods
 
 ### `.paths(paths...) -> FileHound`
 
@@ -137,7 +136,7 @@ Directories to search. Accepts one or more directories or a reference to an arra
 ### `.find() -> Promise`
 ##### Parameters - None
 ##### Returns
-* Returns a Promise of all matches. If the Promise fulfills, the fulfullment value is an array of all matching files.
+* Returns a Promise of all matches. If the Promise fulfills, the fulfillment value is an array of all matching files.
 
 ## Test
 
