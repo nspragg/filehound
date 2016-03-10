@@ -21,18 +21,6 @@ function qualifyNames(names) {
 describe('FileHound', () => {
   const fixtureDir = __dirname + '/fixtures';
 
-  describe('.findFiles', () => {
-    it('returns matching files', () => {
-      const path = fixtureDir + '/justFiles';
-      const results = FileHound.findFiles(path, '*.json');
-
-      return results
-        .then((files) => {
-          assert.deepEqual(files, qualifyNames(['/justFiles/a.json', '/justFiles/b.json']));
-        });
-    });
-  });
-
   describe('.paths', () => {
     it('returns all files in a given directory', () => {
       const query = FileHound.create()

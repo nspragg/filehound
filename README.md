@@ -1,8 +1,14 @@
 # Filehound
 
-Flexible and fluent interface for searching the file system
+[![Build Status](https://travis-ci.org/nspragg/filehound.svg)](https://travis-ci.org/nspragg/filehound)
+
+> Flexible and fluent interface for searching the file system
 
 ## Installation
+
+```
+npm install --save filehound
+```
 
 ## Features
 
@@ -11,51 +17,94 @@ Flexible and fluent interface for searching the file system
 * Ability to combine search results from multiple queries
 * Supports promises and callbacks
 
-```
-npm install --save filehound
-```
+## Demo
+
+<img src="https://cloud.githubusercontent.com/assets/917111/13683231/7e915c2c-e6fd-11e5-9d58-e7228cf76ccf.gif" width="600"/>
+
 ## Usage
 
+The example below prints all of the files in a directory that have the `.json` file extension:
+
 ```js
-var FileHound = require('nspragg/filehound').create()
+const FileHound = require('filehound');
 
 const files = FileHound.create()
   .path('/some/dir')
   .ext('json')
   .find();
 
-  files.then(console.log); // prints list of json files found
+files.then(console.log);
+```
 
-const files = FileHound.create()
-  .path('/some/dir')
-  .ext('txt')
-  .size('>1024')
-  .find();
+#### Matching the filename
 
-  files.then(console.log); // prints list of text files larger than 1024 bytes
+Find all the files that start with `dev`:
 
+```js
 const files = FileHound.create()
   .path('/etc/pki/')
   .match('dev*')
-  .ext('pem')
   .find();
+```
 
-  files.then(console.log); // prints list of pem files starting with 'dev'
+#### Filtering by file size
 
-const notJsonFiles = FileHound
-  .create()
+Find all of the files in a directory that are larger than 1024 bytes:
+
+```js
+const files = FileHound.create()
+  .path('/some/dir')
+  .size('>1024')
+  .find();
+```
+
+#### Combining filters
+
+Find all the `.txt` files that are larger than 1024 bytes _and_ start with `note`:
+
+```js
+const files = FileHound.create()
+  .path('/etc/pki/')
+  .match('note*')
+  .ext('txt')
+  .size('>1024')
+  .find();
+```
+
+#### Inverse filtering
+
+Find all of the files that _don't_ have the `.json` extension:
+
+```js
+const files = FileHound.create()
   .ext('json')
   .not()
   .find();
+```
 
-  notJsonFiles.then(console.log) // prints all files except json
+#### Combing multiple searches
+
+Find all the files that are _either_ over 1MB _or_ have the `.json` file extension:
+
+```js
+const filesOverOneMB = FileHound.create()
+  .path('/some/dir')
+  .size('>1024')
+  .find();
+
+const jsonFiles = FileHound.create()
+  .path('/some/dir')
+  .ext('json')
+  .find();
+
+const files = FileHound.any(filesOverOneMB, jsonFiles);
 ```
 
 ## API
 
 ### Static methods
 
-### `.create()  -> FileHound`
+### `FileHound.create() -> FileHound`
 
 ##### Parameters
 * `opts` - _optional_ - Object contains configuration options
@@ -65,32 +114,23 @@ const notJsonFiles = FileHound
 ##### Returns
 Returns a FileHound instance.
 
-### `.any(FileHound...)  -> Promise`
+### `FileHound.any(FileHound...) -> Promise`
 
 ##### Parameters
-* Accepts one or more instance of FileHound. Will unpack an array.
+* Accepts one or more instances of FileHound. Will unpack an array.
 
 ##### Returns
-Returns a Promise of all matches. If the Promise fulfills, the fulfullment value is an array of all matching files.
+Returns a Promise of all matches. If the Promise fulfills, the fulfillment value is an array of all matching files.
 
-### `.findFiles(path, globPattern) -> Promise`
-
-##### Parameters
-* `path` - Root path to search recursively
-* `globPattern` - Optional file glob. By default, will match all files
-
-##### Returns
-* If the Promise fulfills, the fulfullment value is an array of matching files.
-
-### `.not(FileHound...) -> Promise`
+### `FileHound.not(FileHound...) -> Promise`
 
 ##### Parameters
 * Accepts one or more instances of FileHound to negate. Will unpack an array.
 
 ##### Returns
-* If the Promise fulfills, the fulfullment value is an array of negated matches
+* If the Promise fulfills, the fulfillment value is an array of negated matches
 
-## Methods
+## Instance methods
 
 ### `.paths(paths...) -> FileHound`
 
@@ -136,7 +176,7 @@ Directories to search. Accepts one or more directories or a reference to an arra
 ### `.find() -> Promise`
 ##### Parameters - None
 ##### Returns
-* Returns a Promise of all matches. If the Promise fulfills, the fulfullment value is an array of all matching files.
+* Returns a Promise of all matches. If the Promise fulfills, the fulfillment value is an array of all matching files.
 
 ## Test
 
