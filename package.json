@@ -6,7 +6,8 @@
   "scripts": {
     "test": "mocha",
     "lint": "eslint .",
-    "coverage": "istanbul cover _mocha -- -R dot"
+    "coverage": "istanbul cover _mocha -- -R dot",
+    "posttest": "npm run lint"
   },
   "repository": {
     "type": "git",
