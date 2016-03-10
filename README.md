@@ -118,15 +118,6 @@ Returns a FileHound instance.
 ##### Returns
 Returns a Promise of all matches. If the Promise fulfills, the fulfillment value is an array of all matching files.
 
-### `FileHound.findFiles(path, globPattern) -> Promise`
-
-##### Parameters
-* `path` - Root path to search recursively
-* `globPattern` - Optional file glob. By default, will match all files
-
-##### Returns
-* If the Promise fulfills, the fulfillment value is an array of matching files.
-
 ### `FileHound.not(FileHound...) -> Promise`
 
 ##### Parameters
