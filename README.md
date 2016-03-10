@@ -1,5 +1,7 @@
 # Filehound
 
+[![Build Status](https://travis-ci.org/nspragg/filehound.svg)](https://travis-ci.org/nspragg/filehound)
+
 > Flexible and fluent interface for searching the file system
 
 ## Installation
