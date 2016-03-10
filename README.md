@@ -1,8 +1,12 @@
 # Filehound
 
-Flexible and fluent interface for searching the file system
+> Flexible and fluent interface for searching the file system
 
 ## Installation
+
+```
+npm install --save filehound
+```
 
 ## Features
 
@@ -11,13 +15,10 @@ Flexible and fluent interface for searching the file system
 * Ability to combine search results from multiple queries
 * Supports promises and callbacks
 
-```
-npm install --save filehound
-```
 ## Usage
 
 ```js
-var FileHound = require('nspragg/filehound').create()
+var FileHound = require('filehound').create()
 
 const files = FileHound.create()
   .path('/some/dir')
