@@ -19,52 +19,81 @@ npm install --save filehound
 
 ## Usage
 
+The example below prints all of the files in a directory that have the `.json` file extension:
+
 ```js
-var FileHound = require('filehound').create()
+const FileHound = require('filehound');
 
 const files = FileHound.create()
   .path('/some/dir')
   .ext('json')
   .find();
 
-files.then(console.log); // prints list of json files found
+files.then(console.log);
+```
 
-const files = FileHound.create()
-  .path('/some/dir')
-  .ext('txt')
-  .size('>1024')
-  .find();
+#### Matching the filename
 
-files.then(console.log); // prints list of text files larger than 1024 bytes
+Find all the files that start with `dev`:
 
+```js
 const files = FileHound.create()
   .path('/etc/pki/')
   .match('dev*')
-  .ext('pem')
   .find();
+```
 
-files.then(console.log); // prints list of pem files starting with 'dev'
+#### Filtering by file size
 
-const notJsonFiles = FileHound.create()
+Find all of the files in a directory that are larger than 1024 bytes:
+
+```js
+const files = FileHound.create()
+  .path('/some/dir')
+  .size('>1024')
+  .find();
+```
+
+#### Combining filters
+
+Find all the `.txt` files that are larger than 1024 bytes _and_ start with `note`:
+
+```js
+const files = FileHound.create()
+  .path('/etc/pki/')
+  .match('note*')
+  .ext('txt')
+  .size('>1024')
+  .find();
+```
+
+#### Inverse filtering
+
+Find all of the files that _don't_ have the `.json` extension:
+
+```js
+const files = FileHound.create()
   .ext('json')
   .not()
   .find();
+```
 
-notJsonFiles.then(console.log) // prints all files except json
+#### Combing multiple searches
 
-const overOneMB = FileHound.create()
+Find all the files that are _either_ over 1MB _or_ have the `.json` file extension:
+
+```js
+const filesOverOneMB = FileHound.create()
   .path('/some/dir')
   .size('>1024')
   .find();
 
-const json = FileHound.create()
+const jsonFiles = FileHound.create()
   .path('/some/dir')
   .ext('json')
   .find();
 
-const files = FileHound.any(overOneMB, json);
-
-files.then(console.log); // prints files that are either over 1MB or have a .json extension
+const files = FileHound.any(filesOverOneMB, jsonFiles);
 ```
 
 ## API
