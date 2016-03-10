@@ -17,6 +17,10 @@ npm install --save filehound
 * Ability to combine search results from multiple queries
 * Supports promises and callbacks
 
+## Demo
+
+<img src="https://cloud.githubusercontent.com/assets/917111/13683231/7e915c2c-e6fd-11e5-9d58-e7228cf76ccf.gif" width="600"/>
+
 ## Usage
 
 The example below prints all of the files in a directory that have the `.json` file extension:
