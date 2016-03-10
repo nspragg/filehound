@@ -25,7 +25,7 @@ const files = FileHound.create()
   .ext('json')
   .find();
 
-  files.then(console.log); // prints list of json files found
+files.then(console.log); // prints list of json files found
 
 const files = FileHound.create()
   .path('/some/dir')
@@ -33,7 +33,7 @@ const files = FileHound.create()
   .size('>1024')
   .find();
 
-  files.then(console.log); // prints list of text files larger than 1024 bytes
+files.then(console.log); // prints list of text files larger than 1024 bytes
 
 const files = FileHound.create()
   .path('/etc/pki/')
@@ -41,14 +41,28 @@ const files = FileHound.create()
   .ext('pem')
   .find();
 
-  files.then(console.log); // prints list of pem files starting with 'dev'
+files.then(console.log); // prints list of pem files starting with 'dev'
 
 const notJsonFiles = FileHound.create()
   .ext('json')
   .not()
   .find();
 
-  notJsonFiles.then(console.log) // prints all files except json
+notJsonFiles.then(console.log) // prints all files except json
+
+const overOneMB = FileHound.create()
+  .path('/some/dir')
+  .size('>1024')
+  .find();
+
+const json = FileHound.create()
+  .path('/some/dir')
+  .ext('json')
+  .find();
+
+const files = FileHound.any(overOneMB, json);
+
+files.then(console.log); // prints files that are either over 1MB or have a .json extension
 ```
 
 ## API
