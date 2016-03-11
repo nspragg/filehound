@@ -85,7 +85,20 @@ describe('FileHound', () => {
 
       const fh = FileHound.create();
       fh.paths(location2, location1, location4, location3);
+
       assert.deepEqual(fh.getSearchPaths(), [location4, location1]);
+    });
+  });
+
+  describe('description', () => {
+    it('supports callbacks', (done) => {
+      FileHound.create()
+        .paths(fixtureDir + '/justFiles')
+        .find((err, files) => {
+          assert.ifError(err);
+          assert.deepEqual(files, justFiles);
+          done();
+        });
     });
   });
 
@@ -241,6 +254,9 @@ describe('FileHound', () => {
             ['/sizes/10b.txt', '/sizes/1b.txt', '/sizes/1k.txt']));
         });
     });
+
+    // it('returns files within for a specific size in megabytes');
+    // it('returns files within for a specific size in gigabytes');
   });
 
   describe('.isEmpty()', () => {
