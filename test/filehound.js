@@ -8,6 +8,7 @@ const nestedFiles = qualifyNames(['/nested/c.json', 'nested/d.json', '/nested/my
 const textFiles = qualifyNames(['/justFiles/dummy.txt']);
 const matchFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json']);
 
+const files = require('../lib/files');
 const FileHound = require('../lib/filehound');
 
 function getAbsolutePath(file) {
@@ -207,6 +208,20 @@ describe('FileHound', () => {
   });
 
   describe('.addFilter', () => {
-    it('returns files containing');
+    it('returns files based on a custom filter', () => {
+      const customFilter = FileHound.create()
+        .addFilter((file) => {
+          const stats = files.getStats(file);
+          const perms = '0' + stats.mode & parseInt('777', 8).toString(8);
+          return perms === 264; // owner = rwx, group = rx, other = nothing
+        })
+        .paths(fixtureDir + '/custom')
+        .find();
+
+      return customFilter
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/custom/passed.txt']));
+        });
+    });
   });
 });

@@ -173,6 +173,14 @@ Directories to search. Accepts one or more directories or a reference to an arra
 ##### Returns
 * Returns a FileHound instance
 
+### `.addFilter(fn) -> FileHound`
+
+##### Parameters
+* fn - accepts a custom file matching predicate    
+
+##### Returns
+* Returns a FileHound instance
+
 ### `.find() -> Promise`
 ##### Parameters - None
 ##### Returns
