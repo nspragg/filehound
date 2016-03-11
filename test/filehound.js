@@ -207,13 +207,12 @@ describe('FileHound', () => {
     it('returns files containing');
   });
 
-  describe.skip('.addFilter', () => {
+  describe('.addFilter', () => {
     it('returns files based on a custom filter', () => {
       const customFilter = FileHound.create()
         .addFilter((file) => {
           const stats = files.getStats(file);
-          const perms = '0' + stats.mode & parseInt('777', 8).toString(8);
-          return perms === 264; // owner = rwx, group = rx, other = nothing
+          return stats.size === 1024;
         })
         .paths(fixtureDir + '/custom')
         .find();
