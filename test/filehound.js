@@ -90,7 +90,7 @@ describe('FileHound', () => {
     });
   });
 
-  describe('description', () => {
+  describe('callbacks', () => {
     it('supports callbacks', (done) => {
       FileHound.create()
         .paths(fixtureDir + '/justFiles')
