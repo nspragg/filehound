@@ -84,7 +84,7 @@ const files = FileHound.create()
 
 #### Combing multiple searches
 
-Find all the files that are _either_ over 1MB _or_ have the `.json` file extension:
+Find all the files that are _either_ over 1k _or_ have the `.json` file extension:
 
 ```js
 const filesOverOneMB = FileHound.create()

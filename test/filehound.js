@@ -178,11 +178,69 @@ describe('FileHound', () => {
         });
     });
 
-    it('returns files less than a given size');
-    it('returns files greater than a given size');
-    it('returns files greater than or equal to a given size');
-    it('returns files less then or equal to a given size');
-    it('returns files within a given size range');
+    it('returns files greater than a given size', () => {
+      const sizeGreaterThan1k = FileHound.create()
+        .size('>1024')
+        .paths(fixtureDir + '/sizes')
+        .find();
+
+      return sizeGreaterThan1k
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/sizes/2k.txt']));
+        });
+    });
+
+    it('returns files less than a given size', () => {
+      const sizeLessThan1k = FileHound.create()
+        .size('<1024')
+        .paths(fixtureDir + '/sizes')
+        .find();
+
+      return sizeLessThan1k
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/sizes/10b.txt', '/sizes/1b.txt']));
+        });
+    });
+
+    it('returns files less than or equal to a given size', () => {
+      const lessThanOrEqualTo1k = FileHound.create()
+        .size('<=1024')
+        .paths(fixtureDir + '/sizes')
+        .find();
+
+      return lessThanOrEqualTo1k
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(
+            ['/sizes/10b.txt', '/sizes/1b.txt', '/sizes/1k.txt']));
+        });
+    });
+
+    it('returns files greater than or equal to a given size', () => {
+      const greaterThanOrEqualTo1k = FileHound.create()
+        .size('>=1024')
+        .paths(fixtureDir + '/sizes')
+        .find();
+
+      return greaterThanOrEqualTo1k
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(
+            ['/sizes/1k.txt', '/sizes/2k.txt']));
+        });
+    });
+
+    it('returns files within a given size range', () => {
+      const range = FileHound.create()
+        .size('>0')
+        .size('<=1024')
+        .paths(fixtureDir + '/sizes')
+        .find();
+
+      return range
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(
+            ['/sizes/10b.txt', '/sizes/1b.txt', '/sizes/1k.txt']));
+        });
+    });
   });
 
   describe('.isEmpty()', () => {
@@ -199,13 +257,13 @@ describe('FileHound', () => {
     });
   });
 
-  describe('.depth', () => {
-    it('returns max depth');
-  });
-
-  describe('.contains', () => {
-    it('returns files containing');
-  });
+  // describe('.depth', () => {
+  //   it('returns max depth');
+  // });
+  //
+  // describe('.contains', () => {
+  //   it('returns files containing');
+  // });
 
   describe('.addFilter', () => {
     it('returns files based on a custom filter', () => {
