@@ -53,7 +53,8 @@ describe('FileHound', () => {
         .find();
 
       return query.then((files) => {
-        assert.deepEqual(files, nestedFiles.concat(justFiles));
+        const expected = nestedFiles.concat(justFiles).sort();
+        assert.deepEqual(files, expected);
       });
     });
 
@@ -63,19 +64,28 @@ describe('FileHound', () => {
       const fh = FileHound.create();
       fh.paths(location1, location1);
 
-      assert.deepEqual(fh.getSearchDirectories(), [location1]);
+      assert.deepEqual(fh.getSearchPaths(), [location1]);
     });
 
     it('returns a defensive copy of the search directories', () => {
       const fh = FileHound.create();
       fh.paths('a', 'b', 'c');
-      const directories = fh.getSearchDirectories();
+      const directories = fh.getSearchPaths();
       directories.push('d');
 
-      assert.equal(fh.getSearchDirectories().length, 3);
+      assert.equal(fh.getSearchPaths().length, 3);
     });
 
-    it('normalises paths');
+    it('normalises paths', () => {
+      const location1 = fixtureDir + '/nested';
+      const location2 = fixtureDir + '/nested/mydir';
+      const location3 = fixtureDir + '/justFiles/moreFiles';
+      const location4 = fixtureDir + '/justFiles';
+
+      const fh = FileHound.create();
+      fh.paths(location2, location1, location4, location3);
+      assert.deepEqual(fh.getSearchPaths(), [location4, location1]);
+    });
   });
 
   describe('.ext', () => {
