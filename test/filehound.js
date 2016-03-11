@@ -114,6 +114,18 @@ describe('FileHound', () => {
           assert.deepEqual(files.sort(), matchFiles);
         });
     });
+
+    it('performs recursive search using matching on a given pattern', () => {
+      const query = FileHound.create()
+        .match('*.json')
+        .paths(fixtureDir + '/nested')
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files.sort(), nestedFiles);
+        });
+    });
   });
 
   describe('.not', () => {
