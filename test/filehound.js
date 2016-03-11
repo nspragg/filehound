@@ -207,7 +207,7 @@ describe('FileHound', () => {
     it('returns files containing');
   });
 
-  describe('.addFilter', () => {
+  describe.skip('.addFilter', () => {
     it('returns files based on a custom filter', () => {
       const customFilter = FileHound.create()
         .addFilter((file) => {
