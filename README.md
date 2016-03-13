@@ -100,16 +100,27 @@ const jsonFiles = FileHound.create()
 const files = FileHound.any(filesOverOneK, jsonFiles);
 ```
 
+#### Using callbacks
+
+Find all empty text files in /tmp:
+
+```js
+FileHound.create()
+  .path('/tmp')
+  .ext('txt')
+  .isEmpty()
+  .find((err, emptyTextFiles) => {
+    console.log(emptyTextFiles);
+  });
+```
+
 ## API
 
 ### Static methods
 
 ### `FileHound.create() -> FileHound`
 
-##### Parameters
-* `opts` - _optional_ - Object contains configuration options
-  * debug - display search information.
-  * root - override default root
+##### Parameters - None
 
 ##### Returns
 Returns a FileHound instance.
@@ -161,7 +172,7 @@ Directories to search. Accepts one or more directories or a reference to an arra
 ### `.size(sizeExpression) -> FileHound`
 
 ##### Parameters
-* sizeExpression - accepts a positive integer representing the file size in bytes. Optionally, can be prefixed with a comparison operator, including <, >, =, <=, >=  
+* sizeExpression - accepts a positive integer representing the file size in bytes. Optionally, can be prefixed with a comparison operator, including <, >, ==, <=, >=  
 
 ##### Returns
 * Returns a FileHound instance

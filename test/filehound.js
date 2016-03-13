@@ -179,9 +179,21 @@ describe('FileHound', () => {
   });
 
   describe('.size', () => {
-    it('return files that match a given number of bytes', () => {
+    it('returns files matched using the equality operator by default', () => {
       const sizeFile10Bytes = FileHound.create()
         .size(20)
+        .paths(fixtureDir + '/justFiles')
+        .find();
+
+      return sizeFile10Bytes
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/justFiles/b.json']));
+        });
+    });
+
+    it('returns files that equal a given number of bytes', () => {
+      const sizeFile10Bytes = FileHound.create()
+        .size('==20')
         .paths(fixtureDir + '/justFiles')
         .find();
 
