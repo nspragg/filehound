@@ -29,7 +29,7 @@ The example below prints all of the files in a directory that have the `.json` f
 const FileHound = require('filehound');
 
 const files = FileHound.create()
-  .path('/some/dir')
+  .paths('/some/dir')
   .ext('json')
   .find();
 
@@ -42,7 +42,7 @@ Find all the files that start with `dev`:
 
 ```js
 const files = FileHound.create()
-  .path('/etc/pki/')
+  .paths('/etc/pki/')
   .match('dev*')
   .find();
 ```
@@ -53,7 +53,7 @@ Find all of the files in a directory that are larger than 1024 bytes:
 
 ```js
 const files = FileHound.create()
-  .path('/some/dir')
+  .paths('/some/dir')
   .size('>1024')
   .find();
 ```
@@ -64,7 +64,7 @@ Find all the `.txt` files that are larger than 1024 bytes _and_ start with `note
 
 ```js
 const files = FileHound.create()
-  .path('/etc/pki/')
+  .paths('/etc/pki/')
   .match('note*')
   .ext('txt')
   .size('>1024')
@@ -82,18 +82,18 @@ const files = FileHound.create()
   .find();
 ```
 
-#### Combing multiple searches
+#### Combining multiple searches
 
 Find all the files that are _either_ over 1K _or_ have the `.json` file extension:
 
 ```js
 const filesOverOneK = FileHound.create()
-  .path('/some/dir')
+  .paths('/some/dir')
   .size('>1024')
   .find();
 
 const jsonFiles = FileHound.create()
-  .path('/some/dir')
+  .paths('/some/dir')
   .ext('json')
   .find();
 
@@ -106,7 +106,7 @@ Find all empty text files in /tmp:
 
 ```js
 FileHound.create()
-  .path('/tmp')
+  .paths('/tmp')
   .ext('txt')
   .isEmpty()
   .find((err, emptyTextFiles) => {
@@ -187,7 +187,7 @@ Directories to search. Accepts one or more directories or a reference to an arra
 ### `.addFilter(fn) -> FileHound`
 
 ##### Parameters
-* fn - accepts a custom file matching predicate    
+* fn(file) - accepts a custom file matching predicate
 
 ##### Returns
 * Returns a FileHound instance
