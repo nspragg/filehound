@@ -5,6 +5,7 @@ const path = require('path');
 
 const justFiles = qualifyNames(['/justFiles/a.json', '/justFiles/b.json', '/justFiles/dummy.txt']);
 const nestedFiles = qualifyNames(['/nested/c.json', 'nested/d.json', '/nested/mydir/e.json']);
+const nestedFilesNonRecursive = qualifyNames(['/nested/c.json', 'nested/d.json']);
 const textFiles = qualifyNames(['/justFiles/dummy.txt']);
 const matchFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json']);
 
@@ -112,6 +113,59 @@ describe('FileHound', () => {
       return query
         .then((files) => {
           assert.deepEqual(files, textFiles);
+        });
+    });
+  });
+
+  describe('.recursive', () => {
+    it('returns files recursively by default when not used', () => {
+      const query = FileHound.create()
+        .ext('json')
+        .paths(fixtureDir + '/nested')
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, nestedFiles);
+        });
+    });
+
+    it('returns files recursively when no argument is passed', () => {
+      const query = FileHound.create()
+        .ext('json')
+        .paths(fixtureDir + '/nested')
+        .recursive()
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, nestedFiles);
+        });
+    });
+
+    it('returns files recursively when set to true', () => {
+      const query = FileHound.create()
+        .ext('json')
+        .paths(fixtureDir + '/nested')
+        .recursive(true)
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, nestedFiles);
+        });
+    });
+
+    it('only returns files within the specified path when set to false', () => {
+      const query = FileHound.create()
+        .ext('json')
+        .paths(fixtureDir + '/nested')
+        .recursive(false)
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, nestedFilesNonRecursive);
         });
     });
   });

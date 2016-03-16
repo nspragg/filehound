@@ -133,14 +133,6 @@ Returns a FileHound instance.
 ##### Returns
 Returns a Promise of all matches. If the Promise fulfills, the fulfillment value is an array of all matching files.
 
-### `FileHound.not(FileHound...) -> Promise`
-
-##### Parameters
-* Accepts one or more instances of FileHound to negate. Will unpack an array.
-
-##### Returns
-* If the Promise fulfills, the fulfillment value is an array of negated matches
-
 ## Instance methods
 
 ### `.paths(paths...) -> FileHound`
@@ -157,6 +149,14 @@ Directories to search. Accepts one or more directories or a reference to an arra
 
 ##### Parameters
 * extension - file extension to filter by
+
+##### Returns
+* Returns a FileHound instance
+
+### `.recursive(bool) -> FileHound`
+
+##### Parameters
+* bool _default true_ - a boolean indicating whether to search recursively
 
 ##### Returns
 * Returns a FileHound instance
