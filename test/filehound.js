@@ -49,7 +49,7 @@ describe('FileHound', () => {
         });
     });
 
-    it('returns files n level deeps', () => {
+    it('returns files n level deep', () => {
       const query = FileHound.create()
         .paths(fixtureDir + '/deeplyNested')
         .depth(3)
@@ -57,7 +57,7 @@ describe('FileHound', () => {
 
       return query
         .then((files) => {
-          files.sort()
+          files.sort();
           assert.deepEqual(files,
             qualifyNames([
               'deeplyNested/c.json',
