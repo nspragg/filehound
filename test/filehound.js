@@ -22,6 +22,55 @@ function qualifyNames(names) {
 describe('FileHound', () => {
   const fixtureDir = __dirname + '/fixtures';
 
+  describe('depth', () => {
+    it('only returns files in the current directory', () => {
+      const query = FileHound.create()
+        .paths(fixtureDir + '/deeplyNested')
+        .depth(0)
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/deeplyNested/c.json', 'deeplyNested/d.json']));
+        });
+    });
+
+    it('only returns files one level deep', () => {
+      const query = FileHound.create()
+        .paths(fixtureDir + '/deeplyNested')
+        .depth(1)
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files,
+            qualifyNames([
+              '/deeplyNested/c.json', 'deeplyNested/d.json', 'deeplyNested/mydir/e.json']));
+        });
+    });
+
+    it('returns files n level deeps', () => {
+      const query = FileHound.create()
+        .paths(fixtureDir + '/deeplyNested')
+        .depth(3)
+        .find();
+
+      return query
+        .then((files) => {
+          files.sort()
+          assert.deepEqual(files,
+            qualifyNames([
+              'deeplyNested/c.json',
+              'deeplyNested/d.json',
+              'deeplyNested/mydir/e.json',
+              'deeplyNested/mydir/mydir2/f.json',
+              'deeplyNested/mydir/mydir2/mydir3/z.json',
+              'deeplyNested/mydir/mydir2/y.json'
+            ]));
+        });
+    });
+  });
+
   describe('.paths', () => {
     it('returns all files in a given directory', () => {
       const query = FileHound.create()
