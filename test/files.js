@@ -15,4 +15,20 @@ describe('Files', () => {
       assert.strictEqual(isSubDirectory('./fixtures/nested'), false);
     });
   });
+
+  describe('.isVisibleFile(path)', () => {
+    it('returns false when the file is hidden', () => {
+      assert.strictEqual(files.isVisibleFile('/test/path/.hidden.json'), false);
+      assert.strictEqual(files.isVisibleFile('.hidden.json'), false);
+      assert.strictEqual(files.isVisibleFile('.hidden'), false);
+    });
+
+    it('returns true when the file is visible', () => {
+      assert.strictEqual(files.isVisibleFile('/test/path/visible.json'), true);
+      assert.strictEqual(files.isVisibleFile('./test/path/visible.json'), true);
+      assert.strictEqual(files.isVisibleFile('../test/path/visible.json'), true);
+      assert.strictEqual(files.isVisibleFile('visible'), true);
+      assert.strictEqual(files.isVisibleFile('/.hidden/visible'), true);
+    });
+  });
 });

@@ -285,13 +285,19 @@ describe('FileHound', () => {
     });
   });
 
-  // describe('.depth', () => {
-  //   it('returns max depth');
-  // });
-  //
-  // describe('.contains', () => {
-  //   it('returns files containing');
-  // });
+  describe('.ignoreHiddenFiles()', () => {
+    it('strips hidden files', () => {
+      const noHiddenFiles = FileHound.create()
+        .ignoreHiddenFiles()
+        .paths(fixtureDir + '/visibility')
+        .find();
+
+      noHiddenFiles.then((files) => {
+        assert.equal(files.length, 2);
+        assert.deepEqual(files, qualifyNames(['/visibility/.hidden/visible.json', '/visibility/visible.json']));
+      });
+    });
+  });
 
   describe('.addFilter', () => {
     it('returns files based on a custom filter', () => {
