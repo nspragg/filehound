@@ -14,6 +14,11 @@ describe('Files', () => {
       const isSubDirectory = files.notSubDirectory(['./fixtures', './fixtures/nested']);
       assert.strictEqual(isSubDirectory('./fixtures/nested'), false);
     });
+
+    it('returns the depth of a given path', () => {
+      const path = '/a/b/c';
+      assert.equal(files.pathDepth(path), 4);
+    });
   });
 
   describe('.isVisibleFile(path)', () => {

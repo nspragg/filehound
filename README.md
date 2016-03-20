@@ -91,6 +91,16 @@ const files = FileHound.create()
   .find();
 ```
 
+#### Limiting the depth of a recursive search
+
+Find all files but _only_ in the current directory (recursion off):
+
+```js
+const files = FileHound.create()
+  .depth(0)
+  .find();
+```
+
 #### Combining multiple searches
 
 Find all the files that are _either_ over 1K _or_ have the `.json` file extension:
