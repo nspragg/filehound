@@ -21,7 +21,11 @@
     "lister",
     "find",
     "directory",
-    "walk"
+    "walk",
+    "walker"
+    "promise",
+    "finder",
+    "fs"
   ],
   "engines": {
     "node": ">=4.0.0"
