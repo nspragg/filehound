@@ -22,7 +22,7 @@
     "find",
     "directory",
     "walk",
-    "walker"
+    "walker",
     "promise",
     "finder",
     "fs"
