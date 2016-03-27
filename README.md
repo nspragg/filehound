@@ -160,13 +160,6 @@ Returns a Promise of all matches. If the Promise fulfills, the fulfillment value
 ##### Returns
 * If the Promise fulfills, the fulfillment value is an array of negated matches
 
-### `FileHound.ignoreHiddenFiles() -> Promise`
-
-##### Parameters - None
-
-##### Returns
-* If the Promise fulfills, the fulfillment value is an array of non hidden files
-
 ## Instance methods
 
 ### `.paths(paths...) -> FileHound`
@@ -214,6 +207,13 @@ Directories to search. Accepts one or more directories or a reference to an arra
 
 ##### Parameters
 * fn(file) - accepts a custom file matching predicate
+
+##### Returns
+* Returns a FileHound instance
+
+### `.ignoreHiddenFiles() -> FileHound`
+
+##### Parameters - None
 
 ##### Returns
 * Returns a FileHound instance
