@@ -139,6 +139,57 @@ describe('FileHound', () => {
     });
   });
 
+  describe('.discard', () => {
+    it('ignores matching sub-directories', () => {
+      const query = FileHound.create()
+        .paths(fixtureDir + '/nested')
+        .discard('my*')
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/nested/c.json', '/nested/d.json']));
+        });
+    });
+
+    it('ignores files', () => {
+      const query = FileHound.create()
+        .paths(fixtureDir + '/nested')
+        .discard('c\.json')
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/nested/d.json', '/nested/mydir/e.json']));
+        });
+    });
+
+    it('ignores everything using a greedy match', () => {
+      const query = FileHound.create()
+        .paths(fixtureDir + '/nested')
+        .discard('.*')
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, []);
+        });
+    });
+
+    it('matches all files after being negated', () => {
+      const query = FileHound.create()
+        .paths(fixtureDir + '/nested')
+        .discard('.*')
+        .not()
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, nestedFiles);
+        });
+    });
+  });
+
   describe('callbacks', () => {
     it('supports callbacks', (done) => {
       FileHound.create()
