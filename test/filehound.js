@@ -140,10 +140,10 @@ describe('FileHound', () => {
   });
 
   describe('.discard', () => {
-    it.skip('ignores matching sub-directories', () => {
+    it('ignores matching sub-directories', () => {
       const query = FileHound.create()
         .paths(fixtureDir + '/nested')
-        .discard('my*')
+        .discard('mydir')
         .find();
 
       return query
