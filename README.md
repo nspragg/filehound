@@ -180,13 +180,17 @@ Directories to search. Accepts one or more directories or a reference to an arra
 ##### Returns
 * Returns a FileHound instance
 
-### `.match(glob) -> FileHound`
+### `.glob(globPattern) -> FileHound`
 
 ##### Parameters
 * glob - file glob (as string) to filter by
 
 ##### Returns
 * Returns a FileHound instance
+
+### `.match(glob) -> FileHound`
+
+synonym for .glob
 
 ### `.size(sizeExpression) -> FileHound`
 
@@ -218,8 +222,17 @@ Directories to search. Accepts one or more directories or a reference to an arra
 ##### Returns
 * Returns a FileHound instance
 
+### `.discard(regularExpression) -> FileHound`
+
+##### Parameters - accepts a regular expression (as string) matching sub-directories or files to ignore
+
+##### Returns
+* Returns a FileHound instance
+
 ### `.find() -> Promise`
+
 ##### Parameters - None
+
 ##### Returns
 * Returns a Promise of all matches. If the Promise fulfills, the fulfillment value is an array of all matching files.
 
