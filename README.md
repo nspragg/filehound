@@ -188,7 +188,7 @@ Directories to search. Accepts one or more directories or a reference to an arra
 ##### Returns
 * Returns a FileHound instance
 
-### `.match(glob) -> FileHound`
+### `.match(globPattern) -> FileHound`
 
 synonym for .glob
 
@@ -224,7 +224,8 @@ synonym for .glob
 
 ### `.discard(regularExpression) -> FileHound`
 
-##### Parameters - accepts a regular expression (as string) matching sub-directories or files to ignore
+##### Parameters
+* RegularExpression - accepts a regular expression (as string) matching sub-directories or files to ignore
 
 ##### Returns
 * Returns a FileHound instance
