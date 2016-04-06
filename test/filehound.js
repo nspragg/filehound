@@ -339,6 +339,18 @@ describe('FileHound', () => {
         });
     });
 
+    it('returns files using file size units', () => {
+      const sizeLessThan15bytes = FileHound.create()
+        .size('<15b')
+        .paths(fixtureDir + '/sizes')
+        .find();
+
+      return sizeLessThan15bytes
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/sizes/10b.txt', '/sizes/1b.txt']));
+        });
+    });
+
     it('returns files less than or equal to a given size', () => {
       const lessThanOrEqualTo1k = FileHound.create()
         .size('<=1024')

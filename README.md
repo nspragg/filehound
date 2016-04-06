@@ -195,7 +195,27 @@ synonym for .glob
 ### `.size(sizeExpression) -> FileHound`
 
 ##### Parameters
-* sizeExpression - accepts a positive integer representing the file size in bytes. Optionally, can be prefixed with a comparison operator, including <, >, ==, <=, >=  
+* sizeExpression - accepts a positive integer representing the file size. File size units are:
+  * bytes, specified using __b__.
+  * kilobytes, specified using __k__ or __kb__,
+  * megabytes, specified using __m__ or __mb__
+  * terabytes, specified using __t__ or __tb__
+  * gigabytes, specified using __g__ or __gb__
+
+  If no unit is specified, __bytes__ is used by default.
+
+  Optionally, expressions can be prefixed with a comparison operator, including:
+   * less than using __<__
+   * greater than using __>__
+   * equality using __==__ or __=__
+   * less than or equal to using __<=__
+   * greater than or equal to __\>=__  
+
+  Examples:
+  * equal to 10 bytes: __10__
+  * equal to 10 bytes: __==10b__
+  * less than 10 bytes: __<10__
+  * greater than 50 megabytes: __>10mg__  
 
 ##### Returns
 * Returns a FileHound instance
