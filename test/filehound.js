@@ -398,7 +398,7 @@ describe('FileHound', () => {
   });
 
   describe('.ignoreHiddenFiles()', () => {
-    it('strips hidden files', () => {
+    it('ignores hidden files', () => {
       const noHiddenFiles = FileHound.create()
         .ignoreHiddenFiles()
         .paths(fixtureDir + '/visibility')
@@ -410,7 +410,7 @@ describe('FileHound', () => {
       });
     });
 
-    it('strips files within hidden directories when included', () => {
+    it('ignores files within hidden directories', () => {
       const noHiddenFiles = FileHound.create()
         .ignoreHiddenDirectories()
         .ignoreHiddenFiles()
