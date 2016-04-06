@@ -409,6 +409,18 @@ describe('FileHound', () => {
         assert.deepEqual(files, qualifyNames(['/visibility/.hidden/visible.json', '/visibility/visible.json']));
       });
     });
+
+    it('strips files within hidden directories when included', () => {
+      const noHiddenFiles = FileHound.create()
+        .ignoreHiddenFiles(true)
+        .paths(fixtureDir + '/visibility')
+        .find();
+
+      noHiddenFiles.then((files) => {
+        assert.equal(files.length, 1);
+        assert.deepEqual(files, qualifyNames(['/visibility/visible.json']));
+      });
+    });
   });
 
   describe('.addFilter', () => {
