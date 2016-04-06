@@ -108,7 +108,7 @@ Find all the files that are _either_ over 1K _or_ have the `.json` file extensio
 ```js
 const filesOverOneK = FileHound.create()
   .paths('/some/dir')
-  .size('>1024')
+  .size('>1k')
   .find();
 
 const jsonFiles = FileHound.create()
