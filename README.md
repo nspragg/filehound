@@ -215,10 +215,16 @@ synonym for .glob
 ##### Returns
 * Returns a FileHound instance
 
-### `.ignoreHiddenFiles(boolean) -> FileHound`
+### `.ignoreHiddenFiles() -> FileHound`
 
-##### Parameters
-* boolean - Indicates whether hidden directories should be filtered - _default false_
+##### Parameters - none
+
+##### Returns
+* Returns a FileHound instance
+
+### `.ignoreHiddenDirectory() -> FileHound`
+
+##### Parameters - none
 
 ##### Returns
 * Returns a FileHound instance
