@@ -35,8 +35,13 @@ describe('ValueCompare', () => {
     assert.strictEqual(cmp.match(11), true);
   });
 
+  it('ignores whitespace', () => {
+    const cmp = new ValueCompare('>=   10 ');
+    assert.strictEqual(cmp.match(11), true);
+  });
+
   it('magnifies kilobytes', () => {
-    const cmp = new ValueCompare('10k');
+    const cmp = new ValueCompare('10kb');
     assert.strictEqual(cmp.match(10240), true);
   });
 
