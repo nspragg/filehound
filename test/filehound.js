@@ -8,8 +8,8 @@ const nestedFiles = qualifyNames(['/nested/c.json', 'nested/d.json', '/nested/my
 const textFiles = qualifyNames(['/justFiles/dummy.txt']);
 const matchFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json']);
 
-const files = require('../lib/files');
-const FileHound = require('../lib/filehound');
+const files = require('../src/files');
+const FileHound = require('../src/filehound');
 
 function getAbsolutePath(file) {
   return path.join(__dirname + '/fixtures/', file);

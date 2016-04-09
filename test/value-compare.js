@@ -2,7 +2,7 @@
 
 const assert = require('assert');
 
-const ValueCompare = require('../lib/value-compare');
+const ValueCompare = require('../src/value-compare');
 
 describe('ValueCompare', () => {
   it('returns true for matching a expression', () => {

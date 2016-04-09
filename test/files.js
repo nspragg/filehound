@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('assert');
-const files = require('../lib/files');
+const files = require('../src/files');
 
 describe('Files', () => {
   describe('.notSubDirectory(subDirs)', () => {
