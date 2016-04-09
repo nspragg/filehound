@@ -65,6 +65,11 @@ const files = FileHound.create()
   .paths('/some/dir')
   .size('>1024')
   .find();
+
+const files = FileHound.create()
+  .paths('/some/dir')
+  .size('<=1mb')
+  .find();
 ```
 
 #### Combining filters
