@@ -172,4 +172,4 @@ class FileHound {
   }
 }
 
-module.exports = FileHound
+module.exports = FileHound;
