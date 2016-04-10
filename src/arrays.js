@@ -1,7 +1,5 @@
-'use strict';
+import _ from 'lodash';
 
-const _ = require('lodash');
-
-module.exports.copy = (array) => {
+export function copy(array) {
   return _.cloneDeep(array);
 };

@@ -1,8 +1,7 @@
-'use strict';
+import 'babel-polyfill'
 
-const assert = require('assert');
-
-const ValueCompare = require('../src/value-compare');
+import assert from 'assert';
+import ValueCompare from '../lib/value-compare';
 
 describe('ValueCompare', () => {
   it('returns true for matching a expression', () => {

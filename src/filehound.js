@@ -1,22 +1,26 @@
-'use strict';
+import bluebird from 'bluebird';
+import fsp from 'fs-promise';
 
-const bluebird = require('bluebird');
-const fsp = require('fs-promise');
+import {
+  negate,
+  compose
+} from './functions';
 
-const negate = require('./functions').negate;
-const compose = require('./functions').compose;
-const arrays = require('./arrays');
-const iterables = require('./iterables');
-const glob = require('./files').glob;
-const match = require('./files').match;
-const joinWith = require('./files').joinWith;
-const isDirectory = require('./files').isDirectory;
-const sizeMatcher = require('./files').sizeMatcher;
-const extMatcher = require('./files').extMatcher;
-const findSubDirectories = require('./files').findSubDirectories;
-const notSubDirectory = require('./files').notSubDirectory;
-const isVisibleFile = require('./files').isVisibleFile;
-const pathDepth = require('./files').pathDepth;
+import {
+  glob,
+  match,
+  joinWith,
+  isDirectory,
+  sizeMatcher,
+  extMatcher,
+  findSubDirectories,
+  notSubDirectory,
+  isVisibleFile,
+  pathDepth
+} from './files';
+
+import * as arrays from './arrays';
+import * as iterables from './iterables';
 
 function isDefined(value) {
   return value !== undefined;
@@ -168,4 +172,4 @@ class FileHound {
   }
 }
 
-module.exports = FileHound;
+export default FileHound;

@@ -1,15 +1,13 @@
-'use strict';
-
-const assert = require('assert');
-const path = require('path');
+import 'babel-polyfill';
+import assert from 'assert';
+import path from 'path';
+import * as files from '../lib/files';
+import FileHound from '../lib/filehound';
 
 const justFiles = qualifyNames(['/justFiles/a.json', '/justFiles/b.json', '/justFiles/dummy.txt']);
 const nestedFiles = qualifyNames(['/nested/c.json', 'nested/d.json', '/nested/mydir/e.json']);
 const textFiles = qualifyNames(['/justFiles/dummy.txt']);
 const matchFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json']);
-
-const files = require('../src/files');
-const FileHound = require('../src/filehound');
 
 function getAbsolutePath(file) {
   return path.join(__dirname + '/fixtures/', file);

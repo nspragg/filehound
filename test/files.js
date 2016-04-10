@@ -1,7 +1,7 @@
-'use strict';
+import 'babel-polyfill'
 
-const assert = require('assert');
-const files = require('../src/files');
+import assert from 'assert';
+import * as files from '../lib/files';
 
 describe('Files', () => {
   describe('.notSubDirectory(subDirs)', () => {

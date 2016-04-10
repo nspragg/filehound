@@ -1,14 +1,12 @@
-'use strict';
+import _ from 'lodash';
 
-const _ = require('lodash');
-
-module.exports.negate = function (fn) {
+export function negate(fn) {
   return function (args) {
     return !fn(args);
   };
 };
 
-module.exports.compose = (args) => {
+export function compose(args) {
   const functions = _.isFunction(args) ? Array.from(arguments) : args;
 
   return (file) => {

@@ -1,15 +1,8 @@
-'use strict';
-
-const _ = require('lodash');
-const fileGlob = require('minimatch');
-const fs = require('fs');
-const path = require('path');
-
-const ValueCompare = require('./value-compare');
-
-function getStats(file) {
-  return fs.statSync(file);
-}
+import _ from 'lodash';
+import fileGlob from 'minimatch';
+import fs from 'fs';
+import path from 'path';
+import ValueCompare from './value-compare';
 
 function flatten(a, b) {
   return a.concat(b);
@@ -27,17 +20,6 @@ function getExt(file) {
   return path.extname(file).substring(1);
 }
 
-function isSubDirectory(base, candidate) {
-  let parent = candidate;
-  while (hasParent(parent)) {
-    if (base === parent) {
-      return true;
-    }
-    parent = getParent(parent);
-  }
-  return false;
-}
-
 function getSubDirectories(base, allPaths) {
   return allPaths
     .filter((candidate) => {
@@ -49,13 +31,24 @@ function splitPath(dir) {
   return dir.split(path.sep);
 }
 
-module.exports.joinWith = (dir) => {
+export function isSubDirectory(base, candidate) {
+  let parent = candidate;
+  while (hasParent(parent)) {
+    if (base === parent) {
+      return true;
+    }
+    parent = getParent(parent);
+  }
+  return false;
+}
+
+export function joinWith(dir) {
   return (file) => {
     return path.join(dir, file);
   };
 };
 
-module.exports.glob = (pattern) => {
+export function glob(pattern) {
   return (fname) => {
     const glob = new fileGlob.Minimatch(pattern, {
       matchBase: true
@@ -64,17 +57,17 @@ module.exports.glob = (pattern) => {
   };
 };
 
-module.exports.match = (pattern) => {
+export function match (pattern) {
   return (fname) => {
     return new RegExp(pattern).test(fname);
   };
 };
 
-module.exports.getStats = (file) => {
-  return getStats(file);
-};
+export function getStats(file) {
+  return fs.statSync(file);
+}
 
-module.exports.sizeMatcher = (sizeExpression) => {
+export function sizeMatcher(sizeExpression) {
   const cmp = new ValueCompare(sizeExpression);
     return (file) => {
       const stats = getStats(file);
@@ -82,7 +75,7 @@ module.exports.sizeMatcher = (sizeExpression) => {
    };
 };
 
-module.exports.findSubDirectories = (paths) => {
+export function findSubDirectories(paths)  {
   return paths
     .map((path) => {
       return getSubDirectories(path, paths);
@@ -90,29 +83,27 @@ module.exports.findSubDirectories = (paths) => {
     .reduce(flatten, []);
 };
 
-module.exports.notSubDirectory = (subDirs) => {
+export function notSubDirectory (subDirs) {
   return (path) => {
     return !_.includes(subDirs, path);
   };
 };
 
-module.exports.extMatcher = (extension) => {
+export function extMatcher (extension) {
   return (file) => {
     return getExt(file) === extension;
   };
 };
 
-module.exports.isDirectory = (file) => {
+export function isDirectory (file) {
   return getStats(file).isDirectory();
 };
 
-module.exports.isVisibleFile = (path) => {
+export function isVisibleFile (path) {
   const pathParts = splitPath(path);
   return !(/^\./).test(pathParts.pop());
 };
 
-module.exports.isSubDirectory = isSubDirectory;
-
-module.exports.pathDepth = (dir) => {
+export function pathDepth (dir) {
   return splitPath(dir).length;
 };

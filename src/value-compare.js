@@ -1,5 +1,3 @@
-'use strict';
-
 const bytes = 'b';
 const kiloBytes = 'k';
 const megaBytes = 'm';
@@ -48,4 +46,4 @@ class ValueCompare {
   }
 }
 
-module.exports = ValueCompare;
+export default ValueCompare;

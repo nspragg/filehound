@@ -1,6 +1,4 @@
-'use strict';
-
-module.exports.toArray = (iter) => {
+export function toArray(iter) {
   const copy = [];
   for (const path of iter) {
     copy.push(path);
