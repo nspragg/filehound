@@ -4,4 +4,4 @@ export function toArray(iter) {
     copy.push(path);
   }
   return copy;
-};
+}

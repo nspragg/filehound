@@ -4,7 +4,7 @@ export function negate(fn) {
   return function (args) {
     return !fn(args);
   };
-};
+}
 
 export function compose(args) {
   const functions = _.isFunction(args) ? Array.from(arguments) : args;
@@ -16,4 +16,4 @@ export function compose(args) {
     }
     return match;
   };
-};
+}

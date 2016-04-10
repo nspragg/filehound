@@ -46,7 +46,7 @@ export function joinWith(dir) {
   return (file) => {
     return path.join(dir, file);
   };
-};
+}
 
 export function glob(pattern) {
   return (fname) => {
@@ -55,13 +55,13 @@ export function glob(pattern) {
     });
     return glob.match(fname);
   };
-};
+}
 
 export function match (pattern) {
   return (fname) => {
     return new RegExp(pattern).test(fname);
   };
-};
+}
 
 export function getStats(file) {
   return fs.statSync(file);
@@ -73,7 +73,7 @@ export function sizeMatcher(sizeExpression) {
       const stats = getStats(file);
       return cmp.match(stats.size);
    };
-};
+}
 
 export function findSubDirectories(paths)  {
   return paths
@@ -81,29 +81,29 @@ export function findSubDirectories(paths)  {
       return getSubDirectories(path, paths);
     })
     .reduce(flatten, []);
-};
+}
 
 export function notSubDirectory (subDirs) {
   return (path) => {
     return !_.includes(subDirs, path);
   };
-};
+}
 
 export function extMatcher (extension) {
   return (file) => {
     return getExt(file) === extension;
   };
-};
+}
 
 export function isDirectory (file) {
   return getStats(file).isDirectory();
-};
+}
 
 export function isVisibleFile (path) {
   const pathParts = splitPath(path);
   return !(/^\./).test(pathParts.pop());
-};
+}
 
 export function pathDepth (dir) {
   return splitPath(dir).length;
-};
+}
