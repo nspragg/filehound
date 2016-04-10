@@ -172,4 +172,4 @@ class FileHound {
   }
 }
 
-export default FileHound;
+module.exports = FileHound
