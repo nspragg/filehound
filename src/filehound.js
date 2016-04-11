@@ -21,7 +21,6 @@ import {
 } from './files';
 
 import * as arrays from './arrays';
-import * as iterables from './iterables';
 
 function isDefined(value) {
   return value !== undefined;
@@ -41,6 +40,15 @@ function getDepth(root, dir) {
 
 function isHiddenDirectory(dir) {
   return (/(^|\/)\.[^\/\.]/g).test(dir);
+}
+
+function reducePaths(searchPaths) {
+  if (searchPaths.length === 1) {
+    return searchPaths;
+  }
+
+  const subDirs = findSubDirectories(searchPaths.sort());
+  return searchPaths.filter(notSubDirectory(subDirs));
 }
 
 class FileHound {
@@ -158,17 +166,8 @@ class FileHound {
     return bluebird.all(searches).reduce(flatten).asCallback(cb);
   }
 
-  _reducePaths(searchPaths) {
-    if (this.searchPaths.length === 1) {
-      return this.searchPaths;
-    }
-
-    const subDirs = findSubDirectories(this.searchPaths.sort());
-    return this.searchPaths.filter(notSubDirectory(subDirs));
-  }
-
   getSearchPaths() {
-    return arrays.copy(this._reducePaths(this.searchPaths));
+    return arrays.copy(reducePaths(this.searchPaths));
   }
 }
 
