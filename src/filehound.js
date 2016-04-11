@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import bluebird from 'bluebird';
 import fsp from 'fs-promise';
 
@@ -44,8 +45,8 @@ function isHiddenDirectory(dir) {
 
 class FileHound {
   constructor() {
-    this.searchPaths = new Set();
-    this.searchPaths.add(process.cwd());
+    this.searchPaths = [];
+    this.searchPaths.push(process.cwd());
     this.filters = [];
     this._ignoreHiddenDirectories = false;
   }
@@ -84,7 +85,7 @@ class FileHound {
   }
 
   paths() {
-    this.searchPaths = new Set(arguments);
+    this.searchPaths = _.uniq(Array.prototype.slice.call(arguments));
     return this;
   }
 
@@ -158,13 +159,12 @@ class FileHound {
   }
 
   _reducePaths(searchPaths) {
-    const allPaths = iterables.toArray(searchPaths);
-    if (allPaths.length === 1) {
-      return allPaths;
+    if (this.searchPaths.length === 1) {
+      return this.searchPaths;
     }
 
-    const subDirs = findSubDirectories(allPaths.sort());
-    return allPaths.filter(notSubDirectory(subDirs));
+    const subDirs = findSubDirectories(this.searchPaths.sort());
+    return this.searchPaths.filter(notSubDirectory(subDirs));
   }
 
   getSearchPaths() {
