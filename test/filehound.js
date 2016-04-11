@@ -1,8 +1,10 @@
 import 'babel-polyfill';
 import assert from 'assert';
+import fs from 'fs';
 import path from 'path';
 import * as files from '../lib/files';
 import FileHound from '../lib/filehound';
+import moment from 'moment';
 
 const justFiles = qualifyNames(['/justFiles/a.json', '/justFiles/b.json', '/justFiles/dummy.txt']);
 const nestedFiles = qualifyNames(['/nested/c.json', 'nested/d.json', '/nested/mydir/e.json']);
@@ -15,6 +17,16 @@ function getAbsolutePath(file) {
 
 function qualifyNames(names) {
   return names.map(getAbsolutePath);
+}
+
+function createFile(fname, opts) {
+  const time = new Date(moment().subtract(opts.days, 'days'));
+  const fd = fs.openSync(fname, 'w+');
+  fs.futimesSync(fd, time, time);
+}
+
+function deleteFile(fname) {
+  return fs.unlinkSync(fname);
 }
 
 describe('FileHound', () => {
@@ -447,6 +459,99 @@ describe('FileHound', () => {
       return customFilter
         .then((files) => {
           assert.deepEqual(files, qualifyNames(['/custom/passed.txt']));
+        });
+    });
+  });
+
+  describe('.modified', () => {
+    before(() => {
+      fs.mkdirSync(getAbsolutePath('dates'));
+    });
+
+    after(() => {
+      fs.rmdirSync(getAbsolutePath('dates'));
+    });
+
+    const files = [
+      {
+        name : getAbsolutePath('dates/a.txt'),
+        modified: 10
+      },
+      {
+        name : getAbsolutePath('dates/w.txt'),
+        modified: 9
+      },
+      {
+        name : getAbsolutePath('dates/x.txt'),
+        modified: 2
+      },
+      {
+        name : getAbsolutePath('dates/y.txt'),
+        modified: 1
+      },
+      {
+        name : getAbsolutePath('dates/z.txt'),
+        modified: 0
+      }
+    ];
+
+    beforeEach(() => {
+      files.forEach((file) => {
+        createFile(file.name, {
+          days: file.modified
+        });
+      });
+    });
+
+    afterEach(() => {
+      files.forEach((file) => {
+        deleteFile(file.name);
+      });
+    });
+
+    it('returns files modified exactly n days', () => {
+      const modifiedNDaysAgo = FileHound.create()
+        .paths(fixtureDir + '/dates')
+        .modified(10)
+        .find();
+
+      return modifiedNDaysAgo
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/dates/a.txt']));
+        });
+    });
+
+    it('returns files greater than n days', () => {
+      const modifiedNDaysAgo = FileHound.create()
+        .paths(fixtureDir + '/dates')
+        .modified('>2 days')
+        .find();
+
+      return modifiedNDaysAgo
+        .then((files) => {
+          assert.deepEqual(files,
+            qualifyNames([
+              '/dates/a.txt',
+              '/dates/w.txt'
+            ]));
+        });
+    });
+
+    it('returns files less than n days', () => {
+      const modifiedNDaysAgo = FileHound.create()
+        .paths(fixtureDir + '/dates')
+        .modified('<10 days')
+        .find();
+
+      return modifiedNDaysAgo
+        .then((files) => {
+          assert.deepEqual(files,
+            qualifyNames([
+              '/dates/w.txt',
+              '/dates/x.txt',
+              '/dates/y.txt',
+              '/dates/z.txt'
+            ]));
         });
     });
   });

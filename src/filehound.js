@@ -12,12 +12,15 @@ import {
   joinWith,
   isDirectory,
   sizeMatcher,
+  modifiedMatcher,
   extMatcher,
   findSubDirectories,
   notSubDirectory,
   isVisibleFile,
   pathDepth
 } from './files';
+
+import moment from 'moment';
 
 import * as arrays from './arrays';
 import * as iterables from './iterables';
@@ -76,6 +79,11 @@ class FileHound {
 
   _shouldFilterDirectory(root, dir) {
     return this._atMaxDepth(root, dir) || (this._ignoreHiddenDirectories && isHiddenDirectory(dir));
+  }
+
+  modified(pattern) {
+    this.addFilter(modifiedMatcher(pattern));
+    return this;
   }
 
   addFilter(filter) {
