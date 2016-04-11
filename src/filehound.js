@@ -64,7 +64,7 @@ class FileHound {
   }
 
   static any() {
-    return bluebird.all(arguments).reduce(flatten, []);
+    return bluebird.all(Array.prototype.slice.call(arguments)).reduce(flatten, []);
   }
 
   _getFiles(dir) {
