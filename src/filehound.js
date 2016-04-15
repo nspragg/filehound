@@ -51,7 +51,7 @@ class FileHound {
   }
 
   static any() {
-    return bluebird.all(Array.prototype.slice.call(arguments)).reduce(flatten, []);
+    return bluebird.all(arrays.from(arguments)).reduce(flatten, []);
   }
 
   _getFiles(dir) {
@@ -80,7 +80,7 @@ class FileHound {
   }
 
   paths() {
-    this.searchPaths = _.uniq(Array.prototype.slice.call(arguments));
+    this.searchPaths = _.uniq(arrays.from(arguments));
     return this;
   }
 
