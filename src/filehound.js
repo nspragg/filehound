@@ -28,9 +28,9 @@ function getDepth(root, dir) {
 
 class FileHound {
   constructor() {
+    this.filters = [];
     this.searchPaths = [];
     this.searchPaths.push(process.cwd());
-    this.filters = [];
     this._ignoreHiddenDirectories = false;
   }
 
@@ -39,7 +39,8 @@ class FileHound {
   }
 
   static any() {
-    return bluebird.all(arrays.from(arguments)).reduce(flatten, []);
+    const args = arrays.from(arguments);
+    return bluebird.all(args).reduce(flatten, []);
   }
 
   _getFiles(dir) {
