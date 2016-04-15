@@ -7,19 +7,7 @@ import {
   compose
 } from './functions';
 
-import {
-  glob,
-  match,
-  joinWith,
-  isDirectory,
-  sizeMatcher,
-  extMatcher,
-  reducePaths,
-  isVisibleFile,
-  pathDepth,
-  isHiddenDirectory
-} from './files';
-
+import * as files from './files';
 import * as arrays from './arrays';
 
 function isDefined(value) {
@@ -35,7 +23,7 @@ function readFiles(dir) {
 }
 
 function getDepth(root, dir) {
-  return pathDepth(dir) - pathDepth(root);
+  return files.pathDepth(dir) - files.pathDepth(root);
 }
 
 class FileHound {
@@ -55,7 +43,7 @@ class FileHound {
   }
 
   _getFiles(dir) {
-    return readFiles(dir).map(joinWith(dir));
+    return readFiles(dir).map(files.joinWith(dir));
   }
 
   _isMatch(file) {
@@ -71,7 +59,8 @@ class FileHound {
   }
 
   _shouldFilterDirectory(root, dir) {
-    return this._atMaxDepth(root, dir) || (this._ignoreHiddenDirectories && isHiddenDirectory(dir));
+    return this._atMaxDepth(root, dir) ||
+      (this._ignoreHiddenDirectories && files.isHiddenDirectory(dir));
   }
 
   addFilter(filter) {
@@ -85,17 +74,17 @@ class FileHound {
   }
 
   discard(pattern) {
-    this.addFilter(negate(match(pattern)));
+    this.addFilter(negate(files.match(pattern)));
     return this;
   }
 
   ext(extension) {
-    this.addFilter(extMatcher(extension));
+    this.addFilter(files.extMatcher(extension));
     return this;
   }
 
   size(sizeExpression) {
-    this.addFilter(sizeMatcher(sizeExpression));
+    this.addFilter(files.sizeMatcher(sizeExpression));
     return this;
   }
 
@@ -109,7 +98,7 @@ class FileHound {
   }
 
   match(globPattern) {
-    this.addFilter(glob(globPattern));
+    this.addFilter(files.glob(globPattern));
     return this;
   }
 
@@ -119,7 +108,7 @@ class FileHound {
   }
 
   ignoreHiddenFiles() {
-    this.addFilter(isVisibleFile);
+    this.addFilter(files.isVisibleFile);
     return this;
   }
 
@@ -138,7 +127,7 @@ class FileHound {
 
     return this._getFiles(dir)
       .map((file) => {
-        return isDirectory(file) ? this._search(root, file) : file;
+        return files.isDirectory(file) ? this._search(root, file) : file;
       })
       .reduce(flatten, [])
       .filter((file) => {
@@ -159,7 +148,8 @@ class FileHound {
   }
 
   getSearchPaths() {
-    return arrays.copy(reducePaths(this.searchPaths));
+    const excludeSubDirs = files.reducePaths(this.searchPaths);
+    return arrays.copy(excludeSubDirs);
   }
 }
 
