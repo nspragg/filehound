@@ -14,10 +14,10 @@ import {
   isDirectory,
   sizeMatcher,
   extMatcher,
-  findSubDirectories,
-  notSubDirectory,
+  reducePaths,
   isVisibleFile,
-  pathDepth
+  pathDepth,
+  isHiddenDirectory
 } from './files';
 
 import * as arrays from './arrays';
@@ -36,19 +36,6 @@ function readFiles(dir) {
 
 function getDepth(root, dir) {
   return pathDepth(dir) - pathDepth(root);
-}
-
-function isHiddenDirectory(dir) {
-  return (/(^|\/)\.[^\/\.]/g).test(dir);
-}
-
-function reducePaths(searchPaths) {
-  if (searchPaths.length === 1) {
-    return searchPaths;
-  }
-
-  const subDirs = findSubDirectories(searchPaths.sort());
-  return searchPaths.filter(notSubDirectory(subDirs));
 }
 
 class FileHound {
@@ -160,10 +147,15 @@ class FileHound {
   }
 
   find(cb) {
-    const searches = bluebird.map(this.getSearchPaths(), (dir) => {
-      return this._search(dir, dir);
-    });
-    return bluebird.all(searches).reduce(flatten).asCallback(cb);
+    const searches = bluebird
+      .map(this.getSearchPaths(), (dir) => {
+        return this._search(dir, dir);
+      });
+
+    return bluebird
+      .all(searches)
+      .reduce(flatten)
+      .asCallback(cb);
   }
 
   getSearchPaths() {

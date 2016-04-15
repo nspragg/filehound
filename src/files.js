@@ -31,6 +31,20 @@ function splitPath(dir) {
   return dir.split(path.sep);
 }
 
+export function findSubDirectories(paths) {
+  return paths
+    .map((path) => {
+      return getSubDirectories(path, paths);
+    })
+    .reduce(flatten, []);
+}
+
+export function notSubDirectory(subDirs) {
+  return (path) => {
+    return !_.includes(subDirs, path);
+  };
+}
+
 export function isSubDirectory(base, candidate) {
   let parent = candidate;
   while (hasParent(parent)) {
@@ -57,7 +71,7 @@ export function glob(pattern) {
   };
 }
 
-export function match (pattern) {
+export function match(pattern) {
   return (fname) => {
     return new RegExp(pattern).test(fname);
   };
@@ -69,41 +83,40 @@ export function getStats(file) {
 
 export function sizeMatcher(sizeExpression) {
   const cmp = new ValueCompare(sizeExpression);
-    return (file) => {
-      const stats = getStats(file);
-      return cmp.match(stats.size);
-   };
-}
-
-export function findSubDirectories(paths)  {
-  return paths
-    .map((path) => {
-      return getSubDirectories(path, paths);
-    })
-    .reduce(flatten, []);
-}
-
-export function notSubDirectory (subDirs) {
-  return (path) => {
-    return !_.includes(subDirs, path);
+  return (file) => {
+    const stats = getStats(file);
+    return cmp.match(stats.size);
   };
 }
 
-export function extMatcher (extension) {
+export function extMatcher(extension) {
   return (file) => {
     return getExt(file) === extension;
   };
 }
 
-export function isDirectory (file) {
+export function isDirectory(file) {
   return getStats(file).isDirectory();
 }
 
-export function isVisibleFile (path) {
+export function isVisibleFile(path) {
   const pathParts = splitPath(path);
   return !(/^\./).test(pathParts.pop());
 }
 
-export function pathDepth (dir) {
+export function pathDepth(dir) {
   return splitPath(dir).length;
+}
+
+export function isHiddenDirectory(dir) {
+  return (/(^|\/)\.[^\/\.]/g).test(dir);
+}
+
+export function reducePaths(searchPaths) {
+  if (searchPaths.length === 1) {
+    return searchPaths;
+  }
+
+  const subDirs = findSubDirectories(searchPaths.sort());
+  return searchPaths.filter(notSubDirectory(subDirs));
 }
