@@ -225,6 +225,33 @@ synonym for .glob
 ##### Returns
 * Returns a FileHound instance
 
+### `.modified(dateExpression) -> FileHound`
+
+##### Parameters
+* dateExpression - accepts a time unit. Time units are:
+  * minutes, specified using __minutes__, __m__, __mins__, __min__.
+  * hours, specified using __hours__, __h__, __hour__.
+  * days, specified using __days__, __d__, __day__.
+
+  If no unit is specified, __days__ is used by default.
+
+  Optionally, expressions can be prefixed with a comparison operator, including:
+   * less than using __<__
+   * greater than using __>__
+   * equality using __==__ or __=__
+
+ If no comparison operator is specified, equality is used by default.
+
+  Examples:
+  * equal to 10 days: __10__
+  * equal to 10 minutes: __== minutes__
+  * less than 10 hours: __< 10 hours__
+  * greater than 50 minutes: __>50minutes__  
+  * less than 50 minutes: __<50m__  
+
+##### Returns
+* Returns a FileHound instance
+
 ### `.isEmpty() -> FileHound`
 
 ##### Parameters - None

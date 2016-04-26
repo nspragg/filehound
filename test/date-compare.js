@@ -1,5 +1,3 @@
-import 'babel-polyfill';
-
 import _ from 'lodash';
 import assert from 'assert';
 import moment from 'moment';
@@ -14,6 +12,11 @@ describe('DateCompare', () => {
   describe('days', () => {
     it('date equal in days', () => {
       const dc = new DateCompare('== 10 days');
+      assert.strictEqual(dc.match(createDate(10)), true);
+    });
+
+    it('defaults to equal in days', () => {
+      const dc = new DateCompare(10);
       assert.strictEqual(dc.match(createDate(10)), true);
     });
 
@@ -34,6 +37,11 @@ describe('DateCompare', () => {
         const dc = new DateCompare('>10 days');
         assert.strictEqual(dc.match(createDate(n)), true);
       });
+    });
+
+    it('less than 1 day', () => {
+      const dc = new DateCompare('<1 days');
+      assert.strictEqual(dc.match(createDate(1, 'minutes')), true);
     });
   });
 
@@ -61,9 +69,19 @@ describe('DateCompare', () => {
         assert.strictEqual(dc.match(createDate(n, 'hours')), true);
       });
     });
+
+    it('less than 1 hour', () => {
+      const dc = new DateCompare('<10 hours');
+      assert.strictEqual(dc.match(createDate(1, 'hours')), true);
+    });
   });
 
   describe('minutes', () => {
+    it('accepts unit aliases', () => {
+      const dc = new DateCompare('<10mins');
+      assert.strictEqual(dc.match(createDate(1, 'minutes')), true);
+    });
+
     it('date equal in minutes', () => {
       const dc = new DateCompare('== 10 minutes');
       assert.strictEqual(dc.match(createDate(10, 'minutes')), true);

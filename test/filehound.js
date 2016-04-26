@@ -1,4 +1,3 @@
-import 'babel-polyfill';
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
@@ -474,23 +473,23 @@ describe('FileHound', () => {
 
     const files = [
       {
-        name : getAbsolutePath('dates/a.txt'),
+        name: getAbsolutePath('dates/a.txt'),
         modified: 10
       },
       {
-        name : getAbsolutePath('dates/w.txt'),
+        name: getAbsolutePath('dates/w.txt'),
         modified: 9
       },
       {
-        name : getAbsolutePath('dates/x.txt'),
+        name: getAbsolutePath('dates/x.txt'),
         modified: 2
       },
       {
-        name : getAbsolutePath('dates/y.txt'),
+        name: getAbsolutePath('dates/y.txt'),
         modified: 1
       },
       {
-        name : getAbsolutePath('dates/z.txt'),
+        name: getAbsolutePath('dates/z.txt'),
         modified: 0
       }
     ];

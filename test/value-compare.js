@@ -1,5 +1,3 @@
-import 'babel-polyfill';
-
 import assert from 'assert';
 import ValueCompare from '../lib/value-compare';
 
