@@ -1,15 +1,14 @@
 import moment from 'moment';
 
-const pattern = new RegExp('(<|>|==|=)?\s*([0-9]+)\s(hours|days|months|years)?');
+const pattern = new RegExp('(<=|>=|<|>|==?)?\s*(.*?)\s*(hours|days|minutes)?\s*$');
 
 class DateCompare {
   constructor(dateExpression) {
     const matches = pattern.exec(dateExpression);
     this.value = parseInt(matches[2] || 0);
     this.operator = matches[1] || '==';
-    this.unit = matches[3];
+    this.unit = matches[3] || 'days';
 
-    console.log(`unit : ${this.unit}`);
     this.targetDate = moment().subtract(this.value, this.unit);
   }
 
