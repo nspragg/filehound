@@ -1,5 +1,3 @@
-import 'babel-polyfill';
-
 import assert from 'assert';
 import * as files from '../lib/files';
 

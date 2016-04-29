@@ -3,6 +3,7 @@ import fileGlob from 'minimatch';
 import fs from 'fs';
 import path from 'path';
 import ValueCompare from './value-compare';
+import DateCompare from './date-compare';
 
 function flatten(a, b) {
   return a.concat(b);
@@ -86,6 +87,15 @@ export function sizeMatcher(sizeExpression) {
   return (file) => {
     const stats = getStats(file);
     return cmp.match(stats.size);
+  };
+}
+
+export function modifiedMatcher(pattern) {
+  const dateCmp = new DateCompare(pattern);
+
+  return (file) => {
+    const mtime = getStats(file).mtime;
+    return dateCmp.match(mtime);
   };
 }
 

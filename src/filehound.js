@@ -64,6 +64,11 @@ class FileHound {
       (this._ignoreHiddenDirectories && files.isHiddenDirectory(dir));
   }
 
+  modified(pattern) {
+    this.addFilter(files.modifiedMatcher(pattern));
+    return this;
+  }
+
   addFilter(filter) {
     this.filters.push(filter);
     return this;
