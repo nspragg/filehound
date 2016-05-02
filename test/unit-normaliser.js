@@ -2,7 +2,7 @@
 
 import assert from 'assert';
 
-import Normaliser from '../lib/unitNormaliser';
+import Normaliser from '../lib/unit-normaliser';
 
 describe('unit normalisation', () => {
   let normaliser;
