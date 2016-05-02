@@ -79,6 +79,11 @@ class FileHound {
     return this;
   }
 
+  path() {
+    this.searchPaths = arrays.fromFirst(arguments);
+    return this;
+  }
+
   discard(pattern) {
     this.addFilter(negate(files.match(pattern)));
     return this;
