@@ -80,6 +80,33 @@ describe('FileHound', () => {
     });
   });
 
+  describe('.path', () => {
+    it('returns all files in a given directory', () => {
+      const query = FileHound.create()
+        .path(fixtureDir + '/justFiles')
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, justFiles);
+        });
+    });
+
+    it('ignores all paths except the first', () => {
+      const location1 = fixtureDir + '/justFiles';
+      const location2 = fixtureDir + '/nested';
+
+      const query = FileHound.create()
+        .path(location1, location2)
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, justFiles);
+        });
+    });
+  });
+
   describe('.paths', () => {
     it('returns all files in a given directory', () => {
       const query = FileHound.create()

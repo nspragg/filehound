@@ -1,4 +1,4 @@
-import Normaliser from './unitNormaliser';
+import Normaliser from './unit-normaliser';
 
 const normaliser = new Normaliser();
 normaliser.addAlias('hours', 'hour');
