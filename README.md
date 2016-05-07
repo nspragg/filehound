@@ -186,10 +186,10 @@ Returns a Promise of all matches. If the Promise fulfills, the fulfillment value
 
 ### `.paths(paths...) -> FileHound`
 
-Directories to search. Accepts one or more directories (variable arguments) or a reference to an array of directories
+Directories to search.
 
 ##### Parameters
-* path - array of directories
+* path - one or more directories (as variable arguments) or a reference to an array of directories
 
 ##### Returns
 * Returns a FileHound instance
@@ -199,7 +199,7 @@ Directories to search. Accepts one or more directories (variable arguments) or a
 Directory to search.
 
 ##### Parameters
-* path - array of directories
+* path
 
 ##### Returns
 * Returns a FileHound instance
