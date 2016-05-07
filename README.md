@@ -124,6 +124,23 @@ const jsonFiles = FileHound.create()
 const files = FileHound.any(filesOverOneK, jsonFiles);
 ```
 
+#### Defining multiple search locations
+
+Find all JSON files in '/some/dir1' and '/some/dir2'
+
+```js
+const jsonFiles = FileHound.create()
+  .paths('/some/dir1', '/some/dir2')
+  .ext('json')
+  .find();
+
+const myPaths = ['/some/dir1', '/some/dir2'];
+const jsonFiles = FileHound.create()
+  .paths(myPaths)
+  .ext('json')
+  .find();
+```
+
 #### Using callbacks
 
 Find all empty text files in /tmp:
@@ -152,7 +169,7 @@ Returns a FileHound instance.
 ### `FileHound.any(FileHound...) -> Promise`
 
 ##### Parameters
-* Accepts one or more instances of FileHound. Will unpack an array.
+* Accepts one or more instances of FileHound.
 
 ##### Returns
 Returns a Promise of all matches. If the Promise fulfills, the fulfillment value is an array of all matching files.
@@ -169,7 +186,17 @@ Returns a Promise of all matches. If the Promise fulfills, the fulfillment value
 
 ### `.paths(paths...) -> FileHound`
 
-Directories to search. Accepts one or more directories or a reference to an array of directories
+Directories to search. Accepts one or more directories (variable arguments) or a reference to an array of directories
+
+##### Parameters
+* path - array of directories
+
+##### Returns
+* Returns a FileHound instance
+
+### `.path(path) -> FileHound`
+
+Directory to search.
 
 ##### Parameters
 * path - array of directories

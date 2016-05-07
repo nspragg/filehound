@@ -144,6 +144,20 @@ describe('FileHound', () => {
       });
     });
 
+    it('returns matching files given a array of paths', () => {
+      const location1 = fixtureDir + '/nested';
+      const location2 = fixtureDir + '/justFiles';
+
+      const query = FileHound.create()
+        .paths([location1, location2])
+        .find();
+
+      return query.then((files) => {
+        const expected = nestedFiles.concat(justFiles).sort();
+        assert.deepEqual(files, expected);
+      });
+    });
+
     it('removes duplicate paths', () => {
       const location1 = fixtureDir + '/nested';
 
