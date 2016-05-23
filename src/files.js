@@ -1,6 +1,8 @@
 import _ from 'lodash';
+import bluebird from 'bluebird';
 import fileGlob from 'minimatch';
 import fs from 'fs';
+import fsp from 'fs-promise';
 import path from 'path';
 import ValueCompare from './value-compare';
 import DateCompare from './date-compare';
@@ -30,6 +32,10 @@ function getSubDirectories(base, allPaths) {
 
 function splitPath(dir) {
   return dir.split(path.sep);
+}
+
+export function readFiles(dir) {
+  return bluebird.resolve(fsp.readdir(dir));
 }
 
 export function findSubDirectories(paths) {

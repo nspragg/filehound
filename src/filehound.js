@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import bluebird from 'bluebird';
-import fsp from 'fs-promise';
 
 import {
   negate,
@@ -16,10 +15,6 @@ function isDefined(value) {
 
 function flatten(a, b) {
   return a.concat(b);
-}
-
-function readFiles(dir) {
-  return bluebird.resolve(fsp.readdir(dir));
 }
 
 function getDepth(root, dir) {
@@ -44,7 +39,7 @@ class FileHound {
   }
 
   _getFiles(dir) {
-    return readFiles(dir).map(files.joinWith(dir));
+    return files.readFiles(dir).map(files.joinWith(dir));
   }
 
   _isMatch(file) {
