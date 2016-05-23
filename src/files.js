@@ -90,11 +90,11 @@ export function sizeMatcher(sizeExpression) {
   };
 }
 
-export function modifiedMatcher(pattern) {
+export function utimeMatcher(pattern, utime) {
   const dateCmp = new DateCompare(pattern);
 
   return (file) => {
-    const mtime = getStats(file).mtime;
+    const mtime = getStats(file)[utime];
     return dateCmp.match(mtime);
   };
 }

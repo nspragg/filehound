@@ -19,9 +19,10 @@ function qualifyNames(names) {
 }
 
 function createFile(fname, opts) {
-  const time = new Date(moment().subtract(opts.days, 'days'));
+  const time = new Date(moment().subtract(opts.duration, opts.modifier));
   const fd = fs.openSync(fname, 'w+');
   fs.futimesSync(fd, time, time);
+  fs.closeSync(fd);
 }
 
 function deleteFile(fname) {
@@ -538,7 +539,8 @@ describe('FileHound', () => {
     beforeEach(() => {
       files.forEach((file) => {
         createFile(file.name, {
-          days: file.modified
+          duration: file.modified,
+          modifier: 'days'
         });
       });
     });
@@ -592,6 +594,90 @@ describe('FileHound', () => {
               '/dates/y.txt',
               '/dates/z.txt'
             ]));
+        });
+    });
+  });
+
+  describe('.accessed', () => {
+    before(() => {
+      fs.mkdirSync(getAbsolutePath('dates'));
+    });
+
+    after(() => {
+      fs.rmdirSync(getAbsolutePath('dates'));
+    });
+
+    const files = [
+      {
+        name: getAbsolutePath('dates/a.txt'),
+        accessed: 10
+      },
+      {
+        name: getAbsolutePath('dates/w.txt'),
+        accessed: 9
+      },
+      {
+        name: getAbsolutePath('dates/x.txt'),
+        accessed: 2
+      },
+      {
+        name: getAbsolutePath('dates/y.txt'),
+        accessed: 1
+      },
+      {
+        name: getAbsolutePath('dates/z.txt'),
+        accessed: 0
+      }
+    ];
+
+    beforeEach(() => {
+      files.forEach((file) => {
+        createFile(file.name, {
+          duration: file.accessed,
+          modifier: 'hours'
+        });
+      });
+    });
+
+    afterEach(() => {
+      files.forEach((file) => {
+        deleteFile(file.name);
+      });
+    });
+
+    it('returns files accessed > 8 hours ago', () => {
+      const accessedFiles = FileHound.create()
+        .paths(fixtureDir + '/dates')
+        .accessed('>8h')
+        .find();
+
+      return accessedFiles
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/dates/a.txt', '/dates/w.txt']));
+        });
+    });
+
+    it('returns files accessed < 3 hours ago', () => {
+      const accessedFiles = FileHound.create()
+        .paths(fixtureDir + '/dates')
+        .accessed('<3h')
+        .find();
+
+      return accessedFiles
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/dates/x.txt', '/dates/y.txt', '/dates/z.txt']));
+        });
+    });
+
+    it('returns files accessed 1 hour ago', () => {
+      const accessedFiles = FileHound.create()
+        .paths(fixtureDir + '/dates')
+        .accessed('=1h')
+        .find();
+
+      return accessedFiles
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/dates/y.txt']));
         });
     });
   });
