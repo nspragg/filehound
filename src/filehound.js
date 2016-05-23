@@ -65,7 +65,12 @@ class FileHound {
   }
 
   modified(pattern) {
-    this.addFilter(files.modifiedMatcher(pattern));
+    this.addFilter(files.utimeMatcher(pattern, 'mtime'));
+    return this;
+  }
+
+  accessed(pattern) {
+    this.addFilter(files.utimeMatcher(pattern, 'atime'));
     return this;
   }
 
