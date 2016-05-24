@@ -2,10 +2,11 @@ import _ from 'lodash';
 import bluebird from 'bluebird';
 import fileGlob from 'minimatch';
 import fs from 'fs';
-import fsp from 'fs-promise';
 import path from 'path';
 import ValueCompare from './value-compare';
 import DateCompare from './date-compare';
+
+const fsp = bluebird.promisifyAll(fs);
 
 function flatten(a, b) {
   return a.concat(b);
@@ -35,7 +36,7 @@ function splitPath(dir) {
 }
 
 export function readFiles(dir) {
-  return bluebird.resolve(fsp.readdir(dir));
+  return bluebird.resolve(fsp.readdirAsync(dir));
 }
 
 export function findSubDirectories(paths) {

@@ -82,7 +82,6 @@
   "dependencies": {
     "babel-polyfill": "^6.7.4",
     "bluebird": "^3.3.3",
-    "fs-promise": "^0.4.1",
     "lodash": "^4.6.1",
     "minimatch": "^3.0.0",
     "moment": "^2.12.0"
