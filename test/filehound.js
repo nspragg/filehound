@@ -4,6 +4,7 @@ import path from 'path';
 import * as files from '../lib/files';
 import FileHound from '../lib/filehound';
 import moment from 'moment';
+import sinon from 'sinon';
 
 const justFiles = qualifyNames(['/justFiles/a.json', '/justFiles/b.json', '/justFiles/dummy.txt']);
 const nestedFiles = qualifyNames(['/nested/c.json', 'nested/d.json', '/nested/mydir/e.json']);
@@ -676,6 +677,108 @@ describe('FileHound', () => {
         .find();
 
       return accessedFiles
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/dates/y.txt']));
+        });
+    });
+  });
+
+  describe('.changed', () => {
+    const sandbox = sinon.sandbox.create();
+    let statSync;
+
+    before(() => {
+      fs.mkdirSync(getAbsolutePath('dates'));
+
+      statSync = sandbox.stub(fs, 'statSync');
+      statSync.returns({
+        isDirectory: function() {
+          return true;
+        }
+      });
+    });
+
+    after(() => {
+      fs.rmdirSync(getAbsolutePath('dates'));
+      sandbox.restore();
+    });
+
+    const files = [
+      {
+        name: getAbsolutePath('dates/a.txt'),
+        changed: 10
+      },
+      {
+        name: getAbsolutePath('dates/w.txt'),
+        changed: 9
+      },
+      {
+        name: getAbsolutePath('dates/x.txt'),
+        changed: 2
+      },
+      {
+        name: getAbsolutePath('dates/y.txt'),
+        changed: 1
+      },
+      {
+        name: getAbsolutePath('dates/z.txt'),
+        changed: 0
+      }
+    ];
+
+    beforeEach(() => {
+      files.forEach((file) => {
+        createFile(file.name, {
+          duration: file.changed,
+          modifier: 'hours'
+        });
+
+        statSync.withArgs(file.name).returns({
+          ctime: moment().subtract(file.changed, 'hours'),
+          isDirectory: function() {
+            return false;
+          }
+        });
+      });
+    });
+
+    afterEach(() => {
+      files.forEach((file) => {
+        deleteFile(file.name);
+      });
+    });
+
+    it('returns files changed > 8 hours ago', () => {
+      const changedFiles = FileHound.create()
+        .paths(fixtureDir + '/dates')
+        .changed('>8h')
+        .find();
+
+      return changedFiles
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/dates/a.txt', '/dates/w.txt']));
+        });
+    });
+
+    it('returns files changed < 3 hours ago', () => {
+      const changedFiles = FileHound.create()
+        .paths(fixtureDir + '/dates')
+        .changed('<3h')
+        .find();
+
+      return changedFiles
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/dates/x.txt', '/dates/y.txt', '/dates/z.txt']));
+        });
+    });
+
+    it('returns files changed 1 hour ago', () => {
+      const changedFiles = FileHound.create()
+        .paths(fixtureDir + '/dates')
+        .changed('=1h')
+        .find();
+
+      return changedFiles
         .then((files) => {
           assert.deepEqual(files, qualifyNames(['/dates/y.txt']));
         });

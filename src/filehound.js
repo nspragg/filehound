@@ -69,6 +69,11 @@ class FileHound {
     return this;
   }
 
+  changed(pattern) {
+    this.addFilter(files.utimeMatcher(pattern, 'ctime'));
+    return this;
+  }
+
   addFilter(filter) {
     this.filters.push(filter);
     return this;
