@@ -286,6 +286,13 @@ synonym for .glob
 ##### Returns
 * Returns a FileHound instance
 
+### `.changed(dateExpression) -> FileHound`
+##### Parameters
+* dateExpression (see `.modified`)
+
+##### Returns
+* Returns a FileHound instance
+
 ### `.isEmpty() -> FileHound`
 
 ##### Parameters - None
