@@ -9,6 +9,8 @@ import {
 import * as files from './files';
 import * as arrays from './arrays';
 
+import EventEmitter from 'events';
+
 function isDefined(value) {
   return value !== undefined;
 }
@@ -21,8 +23,9 @@ function getDepth(root, dir) {
   return files.pathDepth(dir) - files.pathDepth(root);
 }
 
-class FileHound {
+class FileHound extends EventEmitter {
   constructor() {
+    super();
     this.filters = [];
     this.searchPaths = [];
     this.searchPaths.push(process.cwd());
@@ -148,6 +151,9 @@ class FileHound {
       .reduce(flatten, [])
       .filter((file) => {
         return this._isMatch(file);
+      })
+      .each((file) => {
+        this.emit('match', file)
       });
   }
 
@@ -160,7 +166,10 @@ class FileHound {
     return bluebird
       .all(searches)
       .reduce(flatten)
-      .asCallback(cb);
+      .asCallback(cb)
+      .finally(() => {
+        this.emit('end');
+      });
   }
 
   getSearchPaths() {

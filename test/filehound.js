@@ -33,7 +33,7 @@ function deleteFile(fname) {
 describe('FileHound', () => {
   const fixtureDir = __dirname + '/fixtures';
 
-  describe('depth', () => {
+  describe('.depth', () => {
     it('only returns files in the current directory', () => {
       const query = FileHound.create()
         .paths(fixtureDir + '/deeplyNested')
@@ -692,7 +692,7 @@ describe('FileHound', () => {
 
       statSync = sandbox.stub(fs, 'statSync');
       statSync.returns({
-        isDirectory: function() {
+        isDirectory: function () {
           return true;
         }
       });
@@ -735,7 +735,7 @@ describe('FileHound', () => {
 
         statSync.withArgs(file.name).returns({
           ctime: moment().subtract(file.changed, 'hours'),
-          isDirectory: function() {
+          isDirectory: function () {
             return false;
           }
         });
@@ -783,5 +783,38 @@ describe('FileHound', () => {
           assert.deepEqual(files, qualifyNames(['/dates/y.txt']));
         });
     });
+  });
+
+  it('emits a match event for each file matched', () => {
+    const fh = FileHound.create();
+    fh.path(fixtureDir + '/justFiles');
+
+    const spy = sinon.spy();
+    fh.on('match', spy);
+
+    const query = fh.find();
+
+    return query
+      .then((files) => {
+        sinon.assert.callCount(spy, 3);
+        sinon.assert.calledWithMatch(spy, 'dummy.txt');
+        sinon.assert.calledWithMatch(spy, 'a.json');
+        sinon.assert.calledWithMatch(spy, 'b.json');
+      });
+  });
+
+  it('emits an end event when the search is complete', () => {
+    const fh = FileHound.create();
+    fh.path(fixtureDir + '/justFiles');
+
+    const spy = sinon.spy();
+    fh.on('end', spy);
+
+    const query = fh.find();
+
+    return query
+      .then((files) => {
+        sinon.assert.callCount(spy, 1);
+      });
   });
 });
