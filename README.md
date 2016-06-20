@@ -25,6 +25,7 @@ npm install --save filehound
 * Simple fluent interface
 * Ability to combine search results from multiple queries
 * Supports promises and callbacks
+* Supports events for efficient file processing
 
 ## Demo
 
@@ -154,6 +155,23 @@ FileHound.create()
     console.log(emptyTextFiles);
   });
 ```
+
+#### Binding to match and end events
+
+Bind to a 'match' event to process each file on match:
+```js
+const filehound = FileHound.create();
+  filehound.find();
+
+  filehound.on('match', (file) => {
+    console(`process ${file}`);
+  });
+
+  filehound.on('end', (file) => {
+    console(`search complete`);
+  });
+```
+
 
 ## API
 
