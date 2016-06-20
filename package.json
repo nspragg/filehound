@@ -44,7 +44,7 @@
     "babel-preset-stage-0": "^6.1.18",
     "coveralls": "^2.11.8",
     "eslint": "^2.7.0",
-    "istanbul": "^0.4.1",
+    "istanbul": "^0.4.4",
     "mocha": "^2.3.0",
     "sinon": "^1.17.4"
   },
