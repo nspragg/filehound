@@ -9,7 +9,9 @@ import {
 import * as files from './files';
 import * as arrays from './arrays';
 
-import EventEmitter from 'events';
+import {
+  EventEmitter
+} from 'events';
 
 function isDefined(value) {
   return value !== undefined;
@@ -26,6 +28,7 @@ function getDepth(root, dir) {
 class FileHound extends EventEmitter {
   constructor() {
     super();
+    EventEmitter.call(this);
     this.filters = [];
     this.searchPaths = [];
     this.searchPaths.push(process.cwd());
@@ -153,7 +156,7 @@ class FileHound extends EventEmitter {
         return this._isMatch(file);
       })
       .each((file) => {
-        this.emit('match', file)
+        this.emit('match', file);
       });
   }
 
