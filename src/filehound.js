@@ -28,7 +28,6 @@ function getDepth(root, dir) {
 class FileHound extends EventEmitter {
   constructor() {
     super();
-    EventEmitter.call(this);
     this.filters = [];
     this.searchPaths = [];
     this.searchPaths.push(process.cwd());
