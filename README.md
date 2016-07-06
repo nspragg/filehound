@@ -172,6 +172,8 @@ const filehound = FileHound.create();
   });
 ```
 
+#### Find files by matching content
+See [FileSniffer](https://github.com/nspragg/filesniffer)
 
 ## API
 
