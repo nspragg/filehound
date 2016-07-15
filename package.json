@@ -1,12 +1,13 @@
 {
   "name": "filehound",
-  "version": "1.10.2",
+  "version": "1.10.3",
   "description": "Find files the easy way",
   "main": "index.js",
   "scripts": {
     "lint": "eslint ./src",
     "coverage": "node_modules/.bin/babel-node node_modules/.bin/babel-istanbul cover node_modules/.bin/_mocha -- -R dot",
     "compile": "babel --presets es2015,stage-0 -d lib/ src/",
+    "clean": "rm lib/*",
     "prepublish": "npm run compile",
     "test": "npm run compile && mocha --compilers js:babel-core/register"
   },
@@ -84,6 +85,7 @@
     "bluebird": "^3.4.1",
     "lodash": "^4.13.1",
     "minimatch": "^3.0.2",
-    "moment": "^2.14.1"
+    "moment": "^2.14.1",
+    "unit-compare" : "^1.0.0"
   }
 }

@@ -21,10 +21,6 @@ function flatten(a, b) {
   return a.concat(b);
 }
 
-function getDepth(root, dir) {
-  return files.pathDepth(dir) - files.pathDepth(root);
-}
-
 class FileHound extends EventEmitter {
   constructor() {
     super();
@@ -56,12 +52,34 @@ class FileHound extends EventEmitter {
   }
 
   _atMaxDepth(root, dir) {
-    return isDefined(this.maxDepth) && (getDepth(root, dir) > this.maxDepth);
+    const fn = files.getDepth;
+    return isDefined(this.maxDepth) && (fn(root, dir) > this.maxDepth);
   }
 
   _shouldFilterDirectory(root, dir) {
     return this._atMaxDepth(root, dir) ||
       (this._ignoreHiddenDirectories && files.isHiddenDirectory(dir));
+  }
+
+  _search(root, dir) {
+    if (this._shouldFilterDirectory(root, dir)) return [];
+
+    return this._getFiles(dir)
+      .map((file) => {
+        return files.isDirectory(file) ? this._search(root, file) : file;
+      })
+      .reduce(flatten, [])
+      .filter((file) => {
+        return this._isMatch(file);
+      })
+      .each((file) => {
+        this.emit('match', file);
+      });
+  }
+
+  getSearchPaths() {
+    const excludeSubDirs = files.reducePaths(this.searchPaths);
+    return arrays.copy(excludeSubDirs);
   }
 
   modified(pattern) {
@@ -143,22 +161,6 @@ class FileHound extends EventEmitter {
     return this;
   }
 
-  _search(root, dir) {
-    if (this._shouldFilterDirectory(root, dir)) return [];
-
-    return this._getFiles(dir)
-      .map((file) => {
-        return files.isDirectory(file) ? this._search(root, file) : file;
-      })
-      .reduce(flatten, [])
-      .filter((file) => {
-        return this._isMatch(file);
-      })
-      .each((file) => {
-        this.emit('match', file);
-      });
-  }
-
   find(cb) {
     const searches = bluebird
       .map(this.getSearchPaths(), (dir) => {
@@ -172,11 +174,6 @@ class FileHound extends EventEmitter {
       .finally(() => {
         this.emit('end');
       });
-  }
-
-  getSearchPaths() {
-    const excludeSubDirs = files.reducePaths(this.searchPaths);
-    return arrays.copy(excludeSubDirs);
   }
 }
 

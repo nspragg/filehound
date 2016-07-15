@@ -3,9 +3,10 @@ import bluebird from 'bluebird';
 import fileGlob from 'minimatch';
 import fs from 'fs';
 import path from 'path';
-import ValueCompare from './value-compare';
-import DateCompare from './date-compare';
-
+import {
+  isDate,
+  isNumber
+} from 'unit-compare';
 const fsp = bluebird.promisifyAll(fs);
 
 function flatten(a, b) {
@@ -33,6 +34,10 @@ function getSubDirectories(base, allPaths) {
 
 function splitPath(dir) {
   return dir.split(path.sep);
+}
+
+export function getDepth(root, dir) {
+  return pathDepth(dir) - pathDepth(root);
 }
 
 export function readFiles(dir) {
@@ -90,19 +95,16 @@ export function getStats(file) {
 }
 
 export function sizeMatcher(sizeExpression) {
-  const cmp = new ValueCompare(sizeExpression);
   return (file) => {
     const stats = getStats(file);
-    return cmp.match(stats.size);
+    return isNumber(stats.size).assert(sizeExpression);
   };
 }
 
-export function utimeMatcher(pattern, utime) {
-  const dateCmp = new DateCompare(pattern);
-
+export function utimeMatcher(timeExpression, utime) {
   return (file) => {
     const mtime = getStats(file)[utime];
-    return dateCmp.match(mtime);
+    return isDate(mtime).assert(timeExpression);
   };
 }
 
