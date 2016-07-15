@@ -86,6 +86,6 @@
     "lodash": "^4.13.1",
     "minimatch": "^3.0.2",
     "moment": "^2.14.1",
-    "unit-compare" : "^1.0.0"
+    "unit-compare" : "^1.0.1"
   }
 }
