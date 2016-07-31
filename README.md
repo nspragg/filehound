@@ -192,7 +192,7 @@ Returns a FileHound instance.
 * Accepts one or more instances of FileHound.
 
 ##### Returns
-Returns a Promise of all matches. If the Promise fulfills, the fulfillment value is an array of all matching files.
+Returns a Promise of all matches. If the Promise fulfils, the fulfilment value is an array of all matching files.
 
 ### `FileHound.not(FileHound...) -> Promise`
 
@@ -200,7 +200,7 @@ Returns a Promise of all matches. If the Promise fulfills, the fulfillment value
 * Accepts one or more instances of FileHound to negate. Will unpack an array.
 
 ##### Returns
-* If the Promise fulfills, the fulfillment value is an array of negated matches
+* If the Promise fulfils, the fulfilment value is an array of negated matches
 
 ## Instance methods
 
@@ -247,27 +247,7 @@ synonym for .glob
 ### `.size(sizeExpression) -> FileHound`
 
 ##### Parameters
-* sizeExpression - accepts a positive integer representing the file size. File size units are:
-  * bytes, specified using __b__.
-  * kilobytes, specified using __k__ or __kb__,
-  * megabytes, specified using __m__ or __mb__
-  * terabytes, specified using __t__ or __tb__
-  * gigabytes, specified using __g__ or __gb__
-
-  If no unit is specified, __bytes__ is used by default.
-
-  Optionally, expressions can be prefixed with a comparison operator, including:
-   * less than using __<__
-   * greater than using __>__
-   * equality using __==__ or __=__
-   * less than or equal to using __<=__
-   * greater than or equal to __\>=__  
-
-  Examples:
-  * equal to 10 bytes: __10__
-  * equal to 10 bytes: __==10b__
-  * less than 10 bytes: __<10__
-  * greater than 50 megabytes: __>10mg__  
+* sizeExpression - See [unit-compare](https://github.com/nspragg/unit-compare#parameters-2)
 
 ##### Returns
 * Returns a FileHound instance
@@ -275,26 +255,7 @@ synonym for .glob
 ### `.modified(dateExpression) -> FileHound`
 
 ##### Parameters
-* dateExpression - accepts a time unit. Time units are:
-  * minutes, specified using __minutes__, __m__, __mins__, __min__.
-  * hours, specified using __hours__, __h__, __hour__.
-  * days, specified using __days__, __d__, __day__.
-
-  If no unit is specified, __days__ is used by default.
-
-  Optionally, expressions can be prefixed with a comparison operator, including:
-   * less than using __<__
-   * greater than using __>__
-   * equality using __==__ or __=__
-
- If no comparison operator is specified, equality is used by default.
-
-  Examples:
-  * equal to 10 days: __10__
-  * equal to 10 minutes: __== minutes__
-  * less than 10 hours: __< 10 hours__
-  * greater than 50 minutes: __>50minutes__  
-  * less than 50 minutes: __<50m__  
+* dateExpression - See [unit-compare](https://github.com/nspragg/unit-compare#parameters-8)
 
 ##### Returns
 * Returns a FileHound instance
@@ -355,7 +316,7 @@ synonym for .glob
 ##### Parameters - None
 
 ##### Returns
-* Returns a Promise of all matches. If the Promise fulfills, the fulfillment value is an array of all matching files.
+* Returns a Promise of all matches. If the Promise fulfils, the fulfilment value is an array of all matching files.
 
 ## Test
 
