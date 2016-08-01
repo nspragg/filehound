@@ -46,7 +46,7 @@
     "coveralls": "^2.11.9",
     "eslint": "^3.0.0",
     "istanbul": "^0.4.4",
-    "mocha": "^2.3.0",
+    "mocha": "^3.0.0",
     "sinon": "^1.17.4"
   },
   "eslintConfig": {
