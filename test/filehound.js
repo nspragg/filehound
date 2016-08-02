@@ -5,6 +5,7 @@ import * as files from '../lib/files';
 import FileHound from '../lib/filehound';
 import moment from 'moment';
 import sinon from 'sinon';
+import _ from 'lodash';
 
 const justFiles = qualifyNames(['/justFiles/a.json', '/justFiles/b.json', '/justFiles/dummy.txt']);
 const nestedFiles = qualifyNames(['/nested/c.json', 'nested/d.json', '/nested/mydir/e.json']);
@@ -105,6 +106,20 @@ describe('FileHound', () => {
       return query
         .then((files) => {
           assert.deepEqual(files, justFiles);
+        });
+    });
+
+    it('returns an error when a given path is invalid', () => {
+      const badLocation = fixtureDir + '/justBad';
+
+      const query = FileHound.create()
+        .path(badLocation)
+        .find();
+
+      return query
+        .catch((err) => {
+          assert.ok(err);
+          assert.ok(_.includes(err.message, 'no such file or directory'));
         });
     });
   });
