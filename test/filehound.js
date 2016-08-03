@@ -809,7 +809,7 @@ describe('FileHound', () => {
     const query = fh.find();
 
     return query
-      .then((files) => {
+      .then(() => {
         sinon.assert.callCount(spy, 3);
         sinon.assert.calledWithMatch(spy, 'dummy.txt');
         sinon.assert.calledWithMatch(spy, 'a.json');
@@ -827,7 +827,22 @@ describe('FileHound', () => {
     const query = fh.find();
 
     return query
-      .then((files) => {
+      .then(() => {
+        sinon.assert.callCount(spy, 1);
+      });
+  });
+
+  it('emits an error event', () => {
+    const fh = FileHound.create();
+    fh.path(fixtureDir + '/justBad');
+
+    const spy = sinon.spy();
+    fh.on('error', spy);
+
+    const query = fh.find();
+
+    return query
+      .catch((e) => {
         sinon.assert.callCount(spy, 1);
       });
   });
