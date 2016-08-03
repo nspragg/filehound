@@ -119,7 +119,6 @@ describe('FileHound', () => {
       return query
         .catch((err) => {
           assert.ok(err);
-          assert.ok(_.includes(err.message, 'no such file or directory'));
         });
     });
   });
