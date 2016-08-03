@@ -831,4 +831,20 @@ describe('FileHound', () => {
         sinon.assert.callCount(spy, 1);
       });
   });
+
+  it('emits an error event', () => {
+    const fh = FileHound.create();
+    fh.path(fixtureDir + '/justBad');
+
+    const spy = sinon.spy();
+    fh.on('error', spy);
+
+    const query = fh.find();
+
+    return query
+      .catch((e) => {
+        assert.ok(e);
+        sinon.assert.callCount(spy, 1);
+      });
+  });
 });
