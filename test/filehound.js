@@ -254,6 +254,16 @@ describe('FileHound', () => {
     });
   });
 
+  describe('.findSync', () => {
+    it('returns an array of matching files', () => {
+      const files = FileHound.create()
+        .paths(fixtureDir + '/justFiles')
+        .findSync();
+
+      assert.deepEqual(files, justFiles);
+    });
+  });
+
   describe('.ext', () => {
     it('returns files for a given ext', () => {
       const query = FileHound.create()
