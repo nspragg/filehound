@@ -795,7 +795,7 @@ describe('FileHound', () => {
     const query = fh.find();
 
     return query
-      .then((files) => {
+      .then(() => {
         sinon.assert.callCount(spy, 3);
         sinon.assert.calledWithMatch(spy, 'dummy.txt');
         sinon.assert.calledWithMatch(spy, 'a.json');
@@ -813,7 +813,7 @@ describe('FileHound', () => {
     const query = fh.find();
 
     return query
-      .then((files) => {
+      .then(() => {
         sinon.assert.callCount(spy, 1);
       });
   });

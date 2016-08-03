@@ -4,7 +4,7 @@
   "description": "Find files the easy way",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint ./src",
+    "lint": "eslint ./src ./test",
     "coverage": "node_modules/.bin/babel-node node_modules/.bin/babel-istanbul cover node_modules/.bin/_mocha -- -R dot",
     "compile": "babel --presets es2015,stage-0 -d lib/ src/",
     "clean": "rm lib/*",
