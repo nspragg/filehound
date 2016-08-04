@@ -156,7 +156,7 @@ FileHound.create()
   });
 ```
 
-#### Binding to match and end events
+#### Binding to match, error and end events
 
 Bind to a 'match' event to process each file on match:
 ```js
@@ -165,6 +165,10 @@ const filehound = FileHound.create();
 
   filehound.on('match', (file) => {
     console(`process ${file}`);
+  });
+
+  filehound.on('error', (error) => {
+    console(`error ${error}`);
   });
 
   filehound.on('end', (file) => {
