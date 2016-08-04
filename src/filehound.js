@@ -170,6 +170,10 @@ class FileHound extends EventEmitter {
     return bluebird
       .all(searches)
       .reduce(flatten)
+      .catch((e) => {
+        this.emit('error', e);
+        throw e;
+      })
       .asCallback(cb)
       .finally(() => {
         this.emit('end');

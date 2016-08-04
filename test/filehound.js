@@ -5,6 +5,7 @@ import * as files from '../lib/files';
 import FileHound from '../lib/filehound';
 import moment from 'moment';
 import sinon from 'sinon';
+import _ from 'lodash';
 
 const justFiles = qualifyNames(['/justFiles/a.json', '/justFiles/b.json', '/justFiles/dummy.txt']);
 const nestedFiles = qualifyNames(['/nested/c.json', 'nested/d.json', '/nested/mydir/e.json']);
@@ -105,6 +106,19 @@ describe('FileHound', () => {
       return query
         .then((files) => {
           assert.deepEqual(files, justFiles);
+        });
+    });
+
+    it('returns an error when a given path is invalid', () => {
+      const badLocation = fixtureDir + '/justBad';
+
+      const query = FileHound.create()
+        .path(badLocation)
+        .find();
+
+      return query
+        .catch((err) => {
+          assert.ok(err);
         });
     });
   });
@@ -814,6 +828,22 @@ describe('FileHound', () => {
 
     return query
       .then(() => {
+        sinon.assert.callCount(spy, 1);
+      });
+  });
+
+  it('emits an error event', () => {
+    const fh = FileHound.create();
+    fh.path(fixtureDir + '/justBad');
+
+    const spy = sinon.spy();
+    fh.on('error', spy);
+
+    const query = fh.find();
+
+    return query
+      .catch((e) => {
+        assert.ok(e);
         sinon.assert.callCount(spy, 1);
       });
   });
