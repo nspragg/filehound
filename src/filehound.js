@@ -43,6 +43,10 @@ class FileHound extends EventEmitter {
     return files.readFiles(dir).map(files.joinWith(dir));
   }
 
+  _getFilesSync(dir) {
+    return files.readFilesSync(dir).map(files.joinWith(dir));
+  }
+
   _isMatch(file) {
     let isMatch = compose(this.filters);
     if (this.negateFilters) {
@@ -74,6 +78,19 @@ class FileHound extends EventEmitter {
       })
       .each((file) => {
         this.emit('match', file);
+      });
+  }
+
+  _searchSync(root, dir) {
+    if (this._shouldFilterDirectory(root, dir)) return [];
+
+    return this._getFilesSync(dir)
+      .map((file) => {
+        return files.isDirectory(file) ? this._search(root, file) : file;
+      })
+      .reduce(flatten, [])
+      .filter((file) => {
+        return this._isMatch(file);
       });
   }
 
@@ -178,6 +195,15 @@ class FileHound extends EventEmitter {
       .finally(() => {
         this.emit('end');
       });
+  }
+
+  findSync() {
+    const paths = this.getSearchPaths();
+    const results = paths.map((path) => {
+      return this._searchSync(path, path);
+    });
+
+    return results.reduce(flatten);
   }
 }
 

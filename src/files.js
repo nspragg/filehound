@@ -44,6 +44,10 @@ export function readFiles(dir) {
   return bluebird.resolve(fsp.readdirAsync(dir));
 }
 
+export function readFilesSync(dir) {
+  return fs.readdirSync(dir);
+}
+
 export function findSubDirectories(paths) {
   return paths
     .map((path) => {
