@@ -142,6 +142,17 @@ const jsonFiles = FileHound.create()
   .find();
 ```
 
+#### Search synchronously
+
+Find all JSON files in '/tmp' synchronously
+
+```js
+const jsonFiles = FileHound.create()
+  .paths('/tmp')
+  .ext('json')
+  .findSync();
+```
+
 #### Using callbacks
 
 Find all empty text files in /tmp:
@@ -321,6 +332,13 @@ synonym for .glob
 
 ##### Returns
 * Returns a Promise of all matches. If the Promise fulfils, the fulfilment value is an array of all matching files.
+
+### `.findSync() -> array`
+
+##### Parameters - None
+
+##### Returns
+* Returns an array of all matches.
 
 ## Test
 
