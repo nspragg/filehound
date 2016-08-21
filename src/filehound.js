@@ -21,13 +21,27 @@ function flatten(a, b) {
   return a.concat(b);
 }
 
+// TODO: move to files
+function getFiles(dir, read) {
+  return read(dir).map(files.joinWith(dir));
+}
+
+function getFilesSync(dir) {
+  return getFiles(dir, files.readFilesSync);
+}
+
+function getFilesAsync(dir) {
+  return getFiles(dir, files.readFiles);
+}
+
 class FileHound extends EventEmitter {
   constructor() {
     super();
-    this.filters = [];
-    this.searchPaths = [];
-    this.searchPaths.push(process.cwd());
+    this._filters = [];
+    this._searchPaths = [];
+    this._searchPaths.push(process.cwd());
     this._ignoreHiddenDirectories = false;
+    this._isMatch = _.noop;
   }
 
   static create() {
@@ -37,22 +51,6 @@ class FileHound extends EventEmitter {
   static any() {
     const args = arrays.from(arguments);
     return bluebird.all(args).reduce(flatten, []);
-  }
-
-  _getFiles(dir) {
-    return files.readFiles(dir).map(files.joinWith(dir));
-  }
-
-  _getFilesSync(dir) {
-    return files.readFilesSync(dir).map(files.joinWith(dir));
-  }
-
-  _isMatch(file) {
-    let isMatch = compose(this.filters);
-    if (this.negateFilters) {
-      isMatch = negate(isMatch);
-    }
-    return isMatch(file);
   }
 
   _atMaxDepth(root, dir) {
@@ -65,37 +63,39 @@ class FileHound extends EventEmitter {
       (this._ignoreHiddenDirectories && files.isHiddenDirectory(dir));
   }
 
-  _search(root, dir) {
-    if (this._shouldFilterDirectory(root, dir)) return [];
-
-    return this._getFiles(dir)
-      .map((file) => {
-        return files.isDirectory(file) ? this._search(root, file) : file;
-      })
-      .reduce(flatten, [])
-      .filter((file) => {
-        return this._isMatch(file);
-      })
-      .each((file) => {
-        this.emit('match', file);
-      });
+  _createMatcher() {
+    const isMatch = compose(this._filters);
+    if (this.negateFilters) {
+      return negate(isMatch);
+    }
+    return isMatch;
   }
 
-  _searchSync(root, dir) {
+  _searchSync(dir) {
+    const root = dir;
+    return this.search(root, dir, getFilesSync);
+  }
+
+  _searchAsync(dir) {
+    const root = dir;
+    return this.search(root, dir, getFilesAsync).each((file) => {
+      this.emit('match', file);
+    });
+  }
+
+  search(root, dir, getFiles) {
     if (this._shouldFilterDirectory(root, dir)) return [];
 
-    return this._getFilesSync(dir)
+    return getFiles(dir)
       .map((file) => {
-        return files.isDirectory(file) ? this._search(root, file) : file;
+        return files.isDirectory(file) ? this.search(root, file, getFiles) : file;
       })
       .reduce(flatten, [])
-      .filter((file) => {
-        return this._isMatch(file);
-      });
+      .filter(this._isMatch);
   }
 
   getSearchPaths() {
-    const excludeSubDirs = files.reducePaths(this.searchPaths);
+    const excludeSubDirs = files.reducePaths(this._searchPaths);
     return arrays.copy(excludeSubDirs);
   }
 
@@ -115,17 +115,17 @@ class FileHound extends EventEmitter {
   }
 
   addFilter(filter) {
-    this.filters.push(filter);
+    this._filters.push(filter);
     return this;
   }
 
   paths() {
-    this.searchPaths = _.uniq(arrays.from(arguments));
+    this._searchPaths = _.uniq(arrays.from(arguments));
     return this;
   }
 
   path() {
-    this.searchPaths = arrays.fromFirst(arguments);
+    this._searchPaths = arrays.fromFirst(arguments);
     return this;
   }
 
@@ -179,10 +179,10 @@ class FileHound extends EventEmitter {
   }
 
   find(cb) {
-    const searches = bluebird
-      .map(this.getSearchPaths(), (dir) => {
-        return this._search(dir, dir);
-      });
+    this._isMatch = this._createMatcher();
+
+    const sync = this._searchAsync.bind(this);
+    const searches = bluebird.map(this.getSearchPaths(), sync);
 
     return bluebird
       .all(searches)
@@ -198,12 +198,12 @@ class FileHound extends EventEmitter {
   }
 
   findSync() {
-    const paths = this.getSearchPaths();
-    const results = paths.map((path) => {
-      return this._searchSync(path, path);
-    });
+    this._isMatch = this._createMatcher();
+    const fn = this._searchSync.bind(this);
 
-    return results.reduce(flatten);
+    return this.getSearchPaths()
+      .map(fn)
+      .reduce(flatten);
   }
 }
 
