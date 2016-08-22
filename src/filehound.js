@@ -21,19 +21,6 @@ function flatten(a, b) {
   return a.concat(b);
 }
 
-// TODO: move to files
-function getFiles(dir, read) {
-  return read(dir).map(files.joinWith(dir));
-}
-
-function getFilesSync(dir) {
-  return getFiles(dir, files.readFilesSync);
-}
-
-function getFilesAsync(dir) {
-  return getFiles(dir, files.readFiles);
-}
-
 class FileHound extends EventEmitter {
   constructor() {
     super();
@@ -63,7 +50,7 @@ class FileHound extends EventEmitter {
       (this._ignoreHiddenDirectories && files.isHiddenDirectory(dir));
   }
 
-  _createMatcher() {
+  _newMatcher() {
     const isMatch = compose(this._filters);
     if (this.negateFilters) {
       return negate(isMatch);
@@ -71,14 +58,18 @@ class FileHound extends EventEmitter {
     return isMatch;
   }
 
+  _initFilters() {
+    this._isMatch = this._newMatcher();
+  }
+
   _searchSync(dir) {
     const root = dir;
-    return this.search(root, dir, getFilesSync);
+    return this.search(root, dir, files.getFilesSync);
   }
 
   _searchAsync(dir) {
     const root = dir;
-    return this.search(root, dir, getFilesAsync).each((file) => {
+    return this.search(root, dir, files.getFilesAsync).each((file) => {
       this.emit('match', file);
     });
   }
@@ -179,10 +170,10 @@ class FileHound extends EventEmitter {
   }
 
   find(cb) {
-    this._isMatch = this._createMatcher();
+    this._initFilters();
 
-    const sync = this._searchAsync.bind(this);
-    const searches = bluebird.map(this.getSearchPaths(), sync);
+    const searchAsync = this._searchAsync.bind(this);
+    const searches = bluebird.map(this.getSearchPaths(), searchAsync);
 
     return bluebird
       .all(searches)
@@ -198,11 +189,12 @@ class FileHound extends EventEmitter {
   }
 
   findSync() {
-    this._isMatch = this._createMatcher();
-    const fn = this._searchSync.bind(this);
+    this._initFilters();
+
+    const searchSync = this._searchSync.bind(this);
 
     return this.getSearchPaths()
-      .map(fn)
+      .map(searchSync)
       .reduce(flatten);
   }
 }

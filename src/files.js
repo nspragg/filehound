@@ -143,3 +143,15 @@ export function reducePaths(searchPaths) {
   const subDirs = findSubDirectories(searchPaths.sort());
   return searchPaths.filter(notSubDirectory(subDirs));
 }
+
+function getFiles(dir, read) {
+  return read(dir).map(joinWith(dir));
+}
+
+export function getFilesSync(dir) {
+  return getFiles(dir, readFilesSync);
+}
+
+export function getFilesAsync(dir) {
+  return getFiles(dir, readFiles);
+}
