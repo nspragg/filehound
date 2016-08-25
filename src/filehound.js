@@ -199,4 +199,4 @@ class FileHound extends EventEmitter {
   }
 }
 
-export default FileHound;
+module.exports = FileHound;
