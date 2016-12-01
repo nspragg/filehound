@@ -182,10 +182,10 @@ class FileHound extends EventEmitter {
         this.emit('error', e);
         throw e;
       })
-      .asCallback(cb)
       .finally(() => {
         this.emit('end');
-      });
+      })
+      .asCallback(cb);
   }
 
   findSync() {
