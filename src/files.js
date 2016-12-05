@@ -155,9 +155,3 @@ export function getFilesSync(dir) {
 export function getFilesAsync(dir) {
   return getFiles(dir, readFiles);
 }
-
-export function invalidPaths(paths) {
-  return paths.filter((path) => {
-    return !fs.existsSync(path);
-  });
-}
