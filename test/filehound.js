@@ -474,9 +474,6 @@ describe('FileHound', () => {
             ['/sizes/10b.txt', '/sizes/1b.txt', '/sizes/1k.txt']));
         });
     });
-
-    // it('returns files within for a specific size in megabytes');
-    // it('returns files within for a specific size in gigabytes');
   });
 
   describe('.isEmpty()', () => {

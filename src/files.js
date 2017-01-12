@@ -40,12 +40,8 @@ export function getDepth(root, dir) {
   return pathDepth(dir) - pathDepth(root);
 }
 
-export function readFiles(dir) {
-  return bluebird.resolve(fsp.readdirAsync(dir));
-}
-
-export function readFilesSync(dir) {
-  return fs.readdirSync(dir);
+export function pathDepth(dir) {
+  return splitPath(dir).length;
 }
 
 export function findSubDirectories(paths) {
@@ -127,10 +123,6 @@ export function isVisibleFile(path) {
   return !(/^\./).test(pathParts.pop());
 }
 
-export function pathDepth(dir) {
-  return splitPath(dir).length;
-}
-
 export function isHiddenDirectory(dir) {
   return (/(^|\/)\.[^\/\.]/g).test(dir);
 }
@@ -142,6 +134,14 @@ export function reducePaths(searchPaths) {
 
   const subDirs = findSubDirectories(searchPaths.sort());
   return searchPaths.filter(notSubDirectory(subDirs));
+}
+
+export function readFiles(dir) {
+  return bluebird.resolve(fsp.readdirAsync(dir));
+}
+
+export function readFilesSync(dir) {
+  return fs.readdirSync(dir);
 }
 
 function getFiles(dir, read) {
