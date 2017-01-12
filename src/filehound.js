@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import bluebird from 'bluebird';
+import path from 'path';
 
 import {
   negate,
@@ -111,13 +112,12 @@ class FileHound extends EventEmitter {
   }
 
   paths() {
-    this._searchPaths = _.uniq(arrays.from(arguments));
+    this._searchPaths = _.uniq(arrays.from(arguments)).map(path.normalize);
     return this;
   }
 
   path() {
-    this._searchPaths = arrays.fromFirst(arguments);
-    return this;
+    return this.paths(arrays.fromFirst(arguments));
   }
 
   discard(pattern) {
