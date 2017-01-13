@@ -1,7 +1,6 @@
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
-import * as files from '../lib/files';
 import FileHound from '../lib/filehound';
 import moment from 'moment';
 import sinon from 'sinon';
@@ -474,9 +473,6 @@ describe('FileHound', () => {
             ['/sizes/10b.txt', '/sizes/1b.txt', '/sizes/1k.txt']));
         });
     });
-
-    // it('returns files within for a specific size in megabytes');
-    // it('returns files within for a specific size in gigabytes');
   });
 
   describe('.isEmpty()', () => {
@@ -524,8 +520,7 @@ describe('FileHound', () => {
     it('returns files based on a custom filter', () => {
       const customFilter = FileHound.create()
         .addFilter((file) => {
-          const stats = files.getStats(file);
-          return stats.size === 1024;
+          return file.sizeSync() === 1024;
         })
         .paths(fixtureDir + '/custom')
         .find();
