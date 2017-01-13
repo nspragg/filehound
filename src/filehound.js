@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
-
+import path from 'path';
 import {
   negate,
   compose
@@ -9,6 +9,11 @@ import {
 import * as files from './files';
 import File from '../lib/file';
 import * as arrays from './arrays';
+
+import {
+  isDate,
+  isNumber
+} from 'unit-compare';
 
 import {
   EventEmitter
@@ -24,6 +29,12 @@ function flatten(a, b) {
 
 function getFilename(file) {
   return file.getName();
+}
+
+function isRegExpMatch(pattern) {
+  return (file) => {
+    return new RegExp(pattern).test(file.getName());
+  }
 }
 
 class FileHound extends EventEmitter {
@@ -47,7 +58,7 @@ class FileHound extends EventEmitter {
   }
 
   _atMaxDepth(root, dir) {
-    const depth = root.getDepthSync() - dir.getDepthSync();
+    const depth = dir.getDepthSync() - root.getDepthSync();
     return isDefined(this.maxDepth) && depth > this.maxDepth;
   }
 
@@ -69,22 +80,24 @@ class FileHound extends EventEmitter {
   }
 
   _searchSync(dir) {
-    const root = dir;
-    return this.search(root, dir, files.getFilesSync);
+    this._sync = true;
+    const root = File.create(dir);
+    return this.search(root, root);
   }
 
   _searchAsync(dir) {
     const root = File.create(dir);
     return this.search(root, root).each((file) => {
-      this.emit('match', file);
+      this.emit('match', file.getName());
     });
   }
 
   search(root, path) {
     if (this._shouldFilterDirectory(root, path)) return [];
-    // TODO to be or not to be async? i.e check mode ...
 
-    return path.getFiles()
+    const getFiles = this._sync ? path.getFilesSync.bind(path) : path.getFiles.bind(path);
+
+    return getFiles()
       .map((file) => {
         file = File.create(file);
         return file.isDirectorySync() ? this.search(root, file) : file;
@@ -99,17 +112,26 @@ class FileHound extends EventEmitter {
   }
 
   modified(pattern) {
-    this.addFilter(files.utimeMatcher(pattern, 'mtime'));
+    this.addFilter((file) => {
+      const modified = file.lastModifiedSync();
+      return isDate(modified).assert(pattern);
+    });
     return this;
   }
 
   accessed(pattern) {
-    this.addFilter(files.utimeMatcher(pattern, 'atime'));
+    this.addFilter((file) => {
+      const accessed = file.lastAccessedSync();
+      return isDate(accessed).assert(pattern);
+    });
     return this;
   }
 
   changed(pattern) {
-    this.addFilter(files.utimeMatcher(pattern, 'ctime'));
+    this.addFilter((file) => {
+      const changed = file.lastChangedSync();
+      return isDate(changed).assert(pattern);
+    });
     return this;
   }
 
@@ -119,17 +141,16 @@ class FileHound extends EventEmitter {
   }
 
   paths() {
-    this._searchPaths = _.uniq(arrays.from(arguments));
+    this._searchPaths = _.uniq(arrays.from(arguments)).map(path.normalize);
     return this;
   }
 
   path() {
-    this._searchPaths = arrays.fromFirst(arguments);
-    return this;
+    return this.paths(arrays.fromFirst(arguments));
   }
 
   discard(pattern) {
-    this.addFilter(negate(files.match(pattern)));
+    this.addFilter(negate(isRegExpMatch(pattern)));
     return this;
   }
 
@@ -141,7 +162,10 @@ class FileHound extends EventEmitter {
   }
 
   size(sizeExpression) {
-    this.addFilter(files.sizeMatcher(sizeExpression));
+    this.addFilter((file) => {
+      const size = file.sizeSync();
+      return isNumber(size).assert(sizeExpression);
+    });
     return this;
   }
 
@@ -210,7 +234,8 @@ class FileHound extends EventEmitter {
 
     return this.getSearchPaths()
       .map(searchSync)
-      .reduce(flatten);
+      .reduce(flatten)
+      .map(getFilename);
   }
 }
 

@@ -3,6 +3,9 @@ import assert from 'assert';
 import path from 'path';
 import File from '../lib/file';
 import moment from 'moment';
+import sinon from 'sinon';
+
+const sandbox = sinon.sandbox.create();
 
 function getAbsolutePath(file) {
   return path.join(__dirname + '/fixtures/', file);
@@ -10,6 +13,10 @@ function getAbsolutePath(file) {
 
 function qualifyNames(names) {
   return names.map(getAbsolutePath);
+}
+
+function formatDate(date) {
+  return date.format('DD/MM/YYYY');
 }
 
 function createFile(fname, opts) {
@@ -173,7 +180,6 @@ describe('File', () => {
     });
   });
 
-
   describe('.lastModified', () => {
     before(() => {
       fs.mkdirSync(getAbsolutePath('dates'));
@@ -221,18 +227,151 @@ describe('File', () => {
       });
     });
 
-    it.only('returns the modified time of a given file', () => {
-      const file = File.create(getAbsolutePath('dates/a.txt'));
-      assert.equal(file.lastModifiedSync(), 10);
+    it('returns the modified time of a given file', () => {
+      files.forEach((file) => {
+        const pathname = File.create(file.name);
+        const actual = formatDate(moment(pathname.lastModifiedSync()));
+        assert.equal(actual, formatDate(moment().subtract(file.modified, 'days')));
+      });
     });
 
   });
 
-  describe('.lastAcccessed', () => {
+  describe('.lastAccessed', () => {
+    before(() => {
+      fs.mkdirSync(getAbsolutePath('dates'));
+    });
 
+    after(() => {
+      fs.rmdirSync(getAbsolutePath('dates'));
+    });
+
+    const files = [
+      {
+        name: getAbsolutePath('dates/a.txt'),
+        accessed: 10
+      },
+      {
+        name: getAbsolutePath('dates/w.txt'),
+        accessed: 9
+      },
+      {
+        name: getAbsolutePath('dates/x.txt'),
+        accessed: 2
+      },
+      {
+        name: getAbsolutePath('dates/y.txt'),
+        accessed: 1
+      },
+      {
+        name: getAbsolutePath('dates/z.txt'),
+        accessed: 0
+      }
+    ];
+
+    beforeEach(() => {
+      files.forEach((file) => {
+        createFile(file.name, {
+          duration: file.accessed,
+          modifier: 'hours'
+        });
+      });
+    });
+
+    afterEach(() => {
+      files.forEach((file) => {
+        deleteFile(file.name);
+      });
+    });
+
+    it('returns the accessed time of a given file', () => {
+      files.forEach((file) => {
+        const pathname = File.create(file.name);
+        const actual = formatDate(moment(pathname.lastAccessedSync()));
+        const expectedDate = formatDate(moment().subtract(file.accessed, 'hours'));
+        assert.equal(actual, expectedDate);
+      });
+    });
   });
 
   describe('.lastChanged', () => {
+    let statSync;
 
+    before(() => {
+      fs.mkdirSync(getAbsolutePath('dates'));
+
+      statSync = sandbox.stub(fs, 'statSync');
+      statSync.returns({
+        isDirectory: function () {
+          return true;
+        }
+      });
+    });
+
+    after(() => {
+      fs.rmdirSync(getAbsolutePath('dates'));
+      sandbox.restore();
+    });
+
+    const files = [
+      {
+        name: getAbsolutePath('dates/a.txt'),
+        changed: 10
+      },
+      {
+        name: getAbsolutePath('dates/w.txt'),
+        changed: 9
+      },
+      {
+        name: getAbsolutePath('dates/x.txt'),
+        changed: 2
+      },
+      {
+        name: getAbsolutePath('dates/y.txt'),
+        changed: 1
+      },
+      {
+        name: getAbsolutePath('dates/z.txt'),
+        changed: 0
+      }
+    ];
+
+    beforeEach(() => {
+      files.forEach((file) => {
+        createFile(file.name, {
+          duration: file.changed,
+          modifier: 'hours'
+        });
+
+        statSync.withArgs(file.name).returns({
+          ctime: moment().subtract(file.changed, 'hours'),
+          isDirectory: function () {
+            return false;
+          }
+        });
+      });
+    });
+
+    afterEach(() => {
+      files.forEach((file) => {
+        deleteFile(file.name);
+      });
+    });
+
+    it('returns the last changed time of a given file', () => {
+      files.forEach((file) => {
+        const pathname = File.create(file.name);
+        const actual = formatDate(moment(pathname.lastChangedSync()));
+        const expectedDate = formatDate(moment().subtract(file.changed, 'hours'));
+        assert.equal(actual, expectedDate);
+      });
+    });
+  });
+
+  describe('.size', () => {
+    it('returns the size of a pathname in bytes', () => {
+      const pathname = File.create(getAbsolutePath('sizes/10b.txt'));
+      assert.equal(pathname.sizeSync(), 10);
+    });
   });
 });

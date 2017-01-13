@@ -5,6 +5,7 @@ import * as files from '../lib/files';
 import FileHound from '../lib/filehound';
 import moment from 'moment';
 import sinon from 'sinon';
+import File from '../lib/file';
 
 const justFiles = qualifyNames(['/justFiles/a.json', '/justFiles/b.json', '/justFiles/dummy.txt']);
 const nestedFiles = qualifyNames(['/nested/c.json', 'nested/d.json', '/nested/mydir/e.json']);
@@ -521,8 +522,7 @@ describe('FileHound', () => {
     it('returns files based on a custom filter', () => {
       const customFilter = FileHound.create()
         .addFilter((file) => {
-          const stats = files.getStats(file);
-          return stats.size === 1024;
+          return file.sizeSync() === 1024;
         })
         .paths(fixtureDir + '/custom')
         .find();

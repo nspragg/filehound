@@ -2,6 +2,10 @@ import Promise from 'bluebird';
 import fs from 'fs';
 import path from 'path';
 import fileGlob from 'minimatch';
+import {
+  isDate,
+  isNumber
+} from 'unit-compare';
 
 const fsp = Promise.promisifyAll(fs);
 
@@ -88,7 +92,19 @@ class File {
   }
 
   lastModifiedSync() {
+    return this._getStatsSync()['mtime'];
+  }
 
+  lastAccessedSync() {
+    return this._getStatsSync()['atime'];
+  }
+
+  lastChangedSync() {
+    return this._getStatsSync()['ctime'];
+  }
+
+  sizeSync() {
+    return this._getStatsSync().size;
   }
 }
 
