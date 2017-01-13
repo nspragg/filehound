@@ -34,7 +34,7 @@ function getFilename(file) {
 function isRegExpMatch(pattern) {
   return (file) => {
     return new RegExp(pattern).test(file.getName());
-  }
+  };
 }
 
 class FileHound extends EventEmitter {

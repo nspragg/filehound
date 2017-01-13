@@ -2,10 +2,6 @@ import Promise from 'bluebird';
 import fs from 'fs';
 import path from 'path';
 import fileGlob from 'minimatch';
-import {
-  isDate,
-  isNumber
-} from 'unit-compare';
 
 const fsp = Promise.promisifyAll(fs);
 
