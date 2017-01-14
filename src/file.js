@@ -24,6 +24,26 @@ class File {
     return fsp.statAsync(this._pathname);
   }
 
+  _isFile() {
+    return (/^\./).test(path.basename(this._pathname));
+  }
+
+  _isDirectory() {
+    return (/(^|\/)\.[^\/\.]/g).test(this._pathname);
+  }
+
+  _depth(pathname) {
+    return pathname.split(path.sep).length - 1;
+  }
+
+  _access(permission) {
+    let hasPermission = true;
+
+    return fsp.accessAsync(this._pathname, permission)
+      .catch(() => hasPermission = false)
+      .then(() => hasPermission);
+  }
+
   isDirectorySync() {
     return this._getStatsSync().isDirectory();
   }
@@ -37,9 +57,19 @@ class File {
 
   isHiddenSync() {
     if (!this.isDirectorySync()) {
-      return (/^\./).test(path.basename(this._pathname));
+      return this._isFile();
     }
-    return (/(^|\/)\.[^\/\.]/g).test(this._pathname);
+    return this._isDirectory();
+  }
+
+  isHidden() {
+    this.isDirectory()
+      .then((isDirectory) => {
+        if (!isDirectory) {
+          return this._isFile();
+        }
+        return this._isDirectory();
+      });
   }
 
   getFilesSync() {
@@ -59,10 +89,6 @@ class File {
         }
         return null;
       });
-  }
-
-  _depth(pathname) {
-    return pathname.split(path.sep).length - 1;
   }
 
   getDepthSync() {
