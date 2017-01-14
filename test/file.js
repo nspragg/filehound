@@ -106,12 +106,12 @@ describe('File', () => {
     });
   });
 
-  describe('.isHiddenSync(path)', () => {
+  describe('.isHiddenSync', () => {
     it('returns true when the file is hidden', () => {
       const hiddenPaths = [
-        './test/fixtures/visibility/.hidden.json',
-        './test/fixtures/visibility/.hidden/.hidden.json'
-      ];
+      './test/fixtures/visibility/.hidden.json',
+      './test/fixtures/visibility/.hidden/.hidden.json'
+    ];
       hiddenPaths.forEach((path) => {
         const file = File.create(path);
         assert.strictEqual(file.isHiddenSync(), true);
@@ -120,9 +120,10 @@ describe('File', () => {
 
     it('returns false when the file is visible', () => {
       const visiblePaths = [
-        './test/fixtures/visibility/visible.json',
-        './test/fixtures/visibility/.hidden/visible.json',
-      ];
+      './test/fixtures/visibility/visible.json',
+      './test/fixtures/visibility/.hidden/visible.json',
+      './test/fixtures/visibility/visible'
+    ];
       visiblePaths.forEach((path) => {
         const file = File.create(path);
         assert.strictEqual(file.isHiddenSync(), false);
