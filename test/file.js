@@ -109,9 +109,9 @@ describe('File', () => {
   describe('.isHiddenSync', () => {
     it('returns true when the file is hidden', () => {
       const hiddenPaths = [
-      './test/fixtures/visibility/.hidden.json',
-      './test/fixtures/visibility/.hidden/.hidden.json'
-    ];
+        './test/fixtures/visibility/.hidden.json',
+        './test/fixtures/visibility/.hidden/.hidden.json'
+      ];
       hiddenPaths.forEach((path) => {
         const file = File.create(path);
         assert.strictEqual(file.isHiddenSync(), true);
@@ -120,13 +120,29 @@ describe('File', () => {
 
     it('returns false when the file is visible', () => {
       const visiblePaths = [
-      './test/fixtures/visibility/visible.json',
-      './test/fixtures/visibility/.hidden/visible.json',
-      './test/fixtures/visibility/visible'
-    ];
+        './test/fixtures/visibility/visible.json',
+        './test/fixtures/visibility/.hidden/visible.json',
+        './test/fixtures/visibility/visible'
+      ];
       visiblePaths.forEach((path) => {
         const file = File.create(path);
         assert.strictEqual(file.isHiddenSync(), false);
+      });
+    });
+  });
+
+  describe('.isHidden', () => {
+    it('returns true when the file is hidden', () => {
+      const file = File.create('./test/fixtures/visibility/.hidden.json');
+      file.isHidden((isHidden) => {
+        assert.strictEqual(isHidden, true);
+      });
+    });
+
+    it('returns false when the file is visible', () => {
+      const file = File.create('./test/fixtures/visibility/');
+      file.isHidden((isHidden) => {
+        assert.strictEqual(isHidden, false);
       });
     });
   });
@@ -155,7 +171,7 @@ describe('File', () => {
     });
   });
 
-  describe('.glob', () => {
+  describe('.isMatch', () => {
     it('returns true if the pathname is a match for a given glob', () => {
       const paths = [
         ['./test/fixtures/justFiles/a.json', '*.json'],
@@ -373,6 +389,13 @@ describe('File', () => {
     it('returns the size of a pathname in bytes', () => {
       const pathname = File.create(getAbsolutePath('sizes/10b.txt'));
       assert.equal(pathname.sizeSync(), 10);
+    });
+  });
+
+  describe('.getName', () => {
+    it('returns the pathname representation by the object', () => {
+      const file = File.create(getAbsolutePath('dates/a.txt'));
+      assert.equal(file.getName(), getAbsolutePath('dates/a.txt'));
     });
   });
 });
