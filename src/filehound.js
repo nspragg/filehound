@@ -108,8 +108,10 @@ class FileHound extends EventEmitter {
   }
 
   getSearchPaths() {
-    const excludeSubDirs = files.reducePaths(this._searchPaths);
-    return arrays.copy(excludeSubDirs);
+    const paths = isDefined(this.maxDepth) ?
+      this._searchPaths : files.reducePaths(this._searchPaths);
+
+    return arrays.copy(paths);
   }
 
   modified(pattern) {

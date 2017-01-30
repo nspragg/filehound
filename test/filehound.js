@@ -79,6 +79,24 @@ describe('FileHound', () => {
             ]));
         });
     });
+
+    it('returns files n level deep relative to path', () => {
+      const query = FileHound.create()
+        .paths(fixtureDir + '/deeplyNested', fixtureDir + '/deeplyNested/mydir')
+        .depth(0)
+        .find();
+
+      return query
+        .then((files) => {
+          files.sort();
+          assert.deepEqual(files,
+            qualifyNames([
+              'deeplyNested/c.json',
+              'deeplyNested/d.json',
+              'deeplyNested/mydir/e.json',
+            ]));
+        });
+    });
   });
 
   describe('.path', () => {
