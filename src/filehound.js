@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
 import path from 'path';
+import File from 'file-js';
 
 import {
   negate,
@@ -8,7 +9,6 @@ import {
 } from './functions';
 
 import * as files from './files';
-import File from '../lib/file';
 import * as arrays from './arrays';
 
 import {
@@ -96,7 +96,7 @@ class FileHound extends EventEmitter {
   search(root, path) {
     if (this._shouldFilterDirectory(root, path)) return [];
 
-    const getFiles = this._sync ? path.getFilesSync.bind(path) : path.getFiles.bind(path);
+    const getFiles = this._sync ? path.getListSync.bind(path) : path.getList.bind(path);
 
     return getFiles()
       .map((file) => {
