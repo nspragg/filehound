@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
 import path from 'path';
-import File from './file';
+import File from 'file-js';
 
 import {
   negate,
