@@ -1,6 +1,6 @@
 {
   "name": "filehound",
-  "version": "1.13.2",
+  "version": "1.13.3",
   "description": "Find files the easy way",
   "main": "index.js",
   "scripts": {
@@ -86,7 +86,6 @@
     "lodash": "^4.13.1",
     "minimatch": "^3.0.2",
     "moment": "^2.14.1",
-    "unit-compare": "^1.0.1",
-    "file-js": "^0.0.1"
+    "unit-compare": "^1.0.1"
   }
 }
