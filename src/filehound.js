@@ -38,6 +38,7 @@ function isRegExpMatch(pattern) {
   };
 }
 
+/** @class */
 class FileHound extends EventEmitter {
   constructor() {
     super();
@@ -50,17 +51,37 @@ class FileHound extends EventEmitter {
   }
 
   /**
+   * Static factory method to create an instance of FileHound
    *
    * @name create
    * @static
+   * @memberOf FileHound
    * @method
-   * @param {string} title - The title of the book.
-   * @param {string} author - The author of the book.
+   * Create a FileHound instance
+   * @return FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
    */
   static create() {
     return new FileHound();
   }
 
+  /**
+   * Returns all matches from one of more FileHound instances
+   *
+   * @name any
+   * @static
+   * @memberOf FileHound
+   * @method
+   * All Matches
+   * @return a promise containing all matches. If the Promise fulfils, the fulfilment value is an array of all matching files.
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.any(fh1, fh2);
+   */
   static any() {
     const args = arrays.from(arguments);
     return Promise.all(args).reduce(flatten, []);

@@ -8,7 +8,7 @@
   },
   "plugins": ["plugins/markdown"],
   "opts": {
-    "readme": "README.md",
+    "readme": "docs.md",
     "template": "docconfig/template",
     "encoding": "utf8",
     "destination": "./docs",
