@@ -4,28 +4,11 @@
 
 > Flexible and fluent interface for searching the file system
 
-* [Installation](#installation)
-* [Features](#features)
-* [Demo](#demo)
-* [Usage](#usage)
-* [API](#api)
-* [Instance methods](#instance-methods)
-* [Test](#test)
-* [Contributing](#contributing)
-
 ## Installation
 
 ```
 npm install --save filehound
 ```
-
-## Features
-
-* Flexible search filters
-* Simple fluent interface
-* Ability to combine search results from multiple queries
-* Supports promises and callbacks
-* Supports events for efficient file processing
 
 ## Demo
 
@@ -189,156 +172,6 @@ const filehound = FileHound.create();
 
 #### Find files by matching content
 See [FileSniffer](https://github.com/nspragg/filesniffer)
-
-## API
-
-### Static methods
-
-### `FileHound.create() -> FileHound`
-
-##### Parameters - None
-
-##### Returns
-Returns a FileHound instance.
-
-### `FileHound.any(FileHound...) -> Promise`
-
-##### Parameters
-* Accepts one or more instances of FileHound.
-
-##### Returns
-Returns a Promise of all matches. If the Promise fulfils, the fulfilment value is an array of all matching files.
-
-### `FileHound.not(FileHound...) -> Promise`
-
-##### Parameters
-* Accepts one or more instances of FileHound to negate. Will unpack an array.
-
-##### Returns
-* If the Promise fulfils, the fulfilment value is an array of negated matches
-
-## Instance methods
-
-### `.paths(paths...) -> FileHound`
-
-Directories to search.
-
-##### Parameters
-* path - one or more directories (as variable arguments) or a reference to an array of directories
-
-##### Returns
-* Returns a FileHound instance
-
-### `.path(path) -> FileHound`
-
-Directory to search.
-
-##### Parameters
-* path
-
-##### Returns
-* Returns a FileHound instance
-
-### `.ext(extension) -> FileHound`
-
-##### Parameters
-* extension - file extension to filter by
-
-##### Returns
-* Returns a FileHound instance
-
-### `.glob(globPattern) -> FileHound`
-
-##### Parameters
-* glob - file glob (as string) to filter by
-
-##### Returns
-* Returns a FileHound instance
-
-### `.match(globPattern) -> FileHound`
-
-synonym for .glob
-
-### `.size(sizeExpression) -> FileHound`
-
-##### Parameters
-* sizeExpression - See [unit-compare](https://github.com/nspragg/unit-compare#parameters-2)
-
-##### Returns
-* Returns a FileHound instance
-
-### `.modified(dateExpression) -> FileHound`
-
-##### Parameters
-* dateExpression - See [unit-compare](https://github.com/nspragg/unit-compare#parameters-8)
-
-##### Returns
-* Returns a FileHound instance
-
-### `.accessed(dateExpression) -> FileHound`
-##### Parameters
-* dateExpression (see `.modified`)
-
-##### Returns
-* Returns a FileHound instance
-
-### `.changed(dateExpression) -> FileHound`
-##### Parameters
-* dateExpression (see `.modified`)
-
-##### Returns
-* Returns a FileHound instance
-
-### `.isEmpty() -> FileHound`
-
-##### Parameters - None
-
-##### Returns
-* Returns a FileHound instance
-
-### `.addFilter(fn) -> FileHound`
-
-##### Parameters
-* fn(file) - accepts a custom file matching predicate
-
-##### Returns
-* Returns a FileHound instance
-
-### `.ignoreHiddenFiles() -> FileHound`
-
-##### Parameters - none
-
-##### Returns
-* Returns a FileHound instance
-
-### `.ignoreHiddenDirectory() -> FileHound`
-
-##### Parameters - none
-
-##### Returns
-* Returns a FileHound instance
-
-### `.discard(regularExpression) -> FileHound`
-
-##### Parameters
-* RegularExpression - accepts a regular expression (as string) matching sub-directories or files to ignore
-
-##### Returns
-* Returns a FileHound instance
-
-### `.find() -> Promise`
-
-##### Parameters - None
-
-##### Returns
-* Returns a Promise of all matches. If the Promise fulfils, the fulfilment value is an array of all matching files.
-
-### `.findSync() -> array`
-
-##### Parameters - None
-
-##### Returns
-* Returns an array of all matches.
 
 ## Test
 

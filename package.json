@@ -4,6 +4,7 @@
   "description": "Find files the easy way",
   "main": "index.js",
   "scripts": {
+    "jsdoc": "jsdoc -c ./docconfig/jsdoc.json",
     "lint": "eslint ./src ./test",
     "coverage": "node_modules/.bin/babel-node node_modules/.bin/babel-istanbul cover node_modules/.bin/_mocha -- -R dot",
     "compile": "babel --presets es2015,stage-0 -d lib/ src/",
@@ -46,6 +47,7 @@
     "coveralls": "^2.11.9",
     "eslint": "^3.11.1",
     "istanbul": "^0.4.4",
+    "jsdoc": "^3.4.3",
     "mocha": "^3.0.0",
     "sinon": "^1.17.4"
   },
