@@ -53,11 +53,11 @@ class FileHound extends EventEmitter {
   /**
    * Static factory method to create an instance of FileHound
    *
-   * @name create
    * @static
    * @memberOf FileHound
    * @method
-   * Create a FileHound instance
+   * create
+   * @category static
    * @return FileHound instance
    * @example
    * import FileHound from 'filehound';
@@ -71,11 +71,11 @@ class FileHound extends EventEmitter {
   /**
    * Returns all matches from one of more FileHound instances
    *
-   * @name any
    * @static
    * @memberOf FileHound
    * @method
-   * All Matches
+   * any
+   * @category static
    * @return a promise containing all matches. If the Promise fulfils, the fulfilment value is an array of all matching files.
    * @example
    * import FileHound from 'filehound';
@@ -87,62 +87,24 @@ class FileHound extends EventEmitter {
     return Promise.all(args).reduce(flatten, []);
   }
 
-  _atMaxDepth(root, dir) {
-    const depth = dir.getDepthSync() - root.getDepthSync();
-    return isDefined(this.maxDepth) && depth > this.maxDepth;
-  }
-
-  _shouldFilterDirectory(root, dir) {
-    return this._atMaxDepth(root, dir) ||
-      (this._ignoreHiddenDirectories && dir.isHiddenSync());
-  }
-
-  _newMatcher() {
-    const isMatch = compose(this._filters);
-    if (this.negateFilters) {
-      return negate(isMatch);
-    }
-    return isMatch;
-  }
-
-  _initFilters() {
-    this._isMatch = this._newMatcher();
-  }
-
-  _searchSync(dir) {
-    this._sync = true;
-    const root = File.create(dir);
-    return this.search(root, root);
-  }
-
-  _searchAsync(dir) {
-    const root = File.create(dir);
-    return this.search(root, root).each((file) => {
-      this.emit('match', file.getName());
-    });
-  }
-
-  search(root, path) {
-    if (this._shouldFilterDirectory(root, path)) return [];
-
-    const getFiles = this._sync ? path.getListSync.bind(path) : path.getList.bind(path);
-
-    return getFiles()
-      .map((file) => {
-        file = File.create(file);
-        return file.isDirectorySync() ? this.search(root, file) : file;
-      })
-      .reduce(flatten, [])
-      .filter(this._isMatch);
-  }
-
-  getSearchPaths() {
-    const paths = isDefined(this.maxDepth) ?
-      this._searchPaths : files.reducePaths(this._searchPaths);
-
-    return arrays.copy(paths);
-  }
-
+  /**
+   * Filters by modifiction time
+   *
+   * @memberOf FileHound
+   * @method
+   * modified
+   * @category filter
+   * @param {string} dateExpression - date expression
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .modified("< 2 days")
+   *   .find()
+   *   .each(console.log);
+   */
   modified(pattern) {
     this.addFilter((file) => {
       const modified = file.lastModifiedSync();
@@ -151,6 +113,24 @@ class FileHound extends EventEmitter {
     return this;
   }
 
+  /**
+   * Filters by file access time
+   *
+   * @memberOf FileHound
+   * @method
+   * accessed
+   * @param {string} dateExpression - date expression
+   * @category filter
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .accessed("< 10 minutes")
+   *   .find()
+   *   .each(console.log);
+   */
   accessed(pattern) {
     this.addFilter((file) => {
       const accessed = file.lastAccessedSync();
@@ -159,6 +139,25 @@ class FileHound extends EventEmitter {
     return this;
   }
 
+  /**
+   * Filters change time
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * changed
+   * @param {string} dateExpression - date expression
+   * @category filter
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .changed("< 10 minutes")
+   *   .find()
+   *   .each(console.log);
+   */
   changed(pattern) {
     this.addFilter((file) => {
       const changed = file.lastChangedSync();
@@ -167,6 +166,24 @@ class FileHound extends EventEmitter {
     return this;
   }
 
+  /**
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * addFilter
+   * @param {function} function - custom filter function
+   * @category filter
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .addFilter(customFilter)
+   *   .find()
+   *   .each(consoe.log);
+   */
   addFilter(filter) {
     this._filters.push(filter);
     return this;
@@ -268,6 +285,62 @@ class FileHound extends EventEmitter {
       .map(searchSync)
       .reduce(flatten)
       .map(getFilename);
+  }
+
+  _atMaxDepth(root, dir) {
+    const depth = dir.getDepthSync() - root.getDepthSync();
+    return isDefined(this.maxDepth) && depth > this.maxDepth;
+  }
+
+  _shouldFilterDirectory(root, dir) {
+    return this._atMaxDepth(root, dir) ||
+      (this._ignoreHiddenDirectories && dir.isHiddenSync());
+  }
+
+  _newMatcher() {
+    const isMatch = compose(this._filters);
+    if (this.negateFilters) {
+      return negate(isMatch);
+    }
+    return isMatch;
+  }
+
+  _initFilters() {
+    this._isMatch = this._newMatcher();
+  }
+
+  _searchSync(dir) {
+    this._sync = true;
+    const root = File.create(dir);
+    return this.search(root, root);
+  }
+
+  _searchAsync(dir) {
+    const root = File.create(dir);
+    return this.search(root, root).each((file) => {
+      this.emit('match', file.getName());
+    });
+  }
+
+  search(root, path) {
+    if (this._shouldFilterDirectory(root, path)) return [];
+
+    const getFiles = this._sync ? path.getListSync.bind(path) : path.getList.bind(path);
+
+    return getFiles()
+      .map((file) => {
+        file = File.create(file);
+        return file.isDirectorySync() ? this.search(root, file) : file;
+      })
+      .reduce(flatten, [])
+      .filter(this._isMatch);
+  }
+
+  getSearchPaths() {
+    const paths = isDefined(this.maxDepth) ?
+      this._searchPaths : files.reducePaths(this._searchPaths);
+
+    return arrays.copy(paths);
   }
 }
 

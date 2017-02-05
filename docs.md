@@ -4,7 +4,7 @@
 
 > Flexible and fluent interface for searching the file system
 
-## Usage
+## Common examples
 
 The example below prints all of the files in a directory that have the `.json` file extension:
 
