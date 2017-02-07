@@ -76,7 +76,8 @@ class FileHound extends EventEmitter {
    * @method
    * any
    * @category static
-   * @return a promise containing all matches. If the Promise fulfils, the fulfilment value is an array of all matching files.
+   * @return a promise containing all matches. If the Promise fulfils,
+   * the fulfilment value is an array of all matching files.
    * @example
    * import FileHound from 'filehound';
    *
@@ -189,20 +190,92 @@ class FileHound extends EventEmitter {
     return this;
   }
 
+  /**
+   * Defines the search paths
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * paths
+   * @param {array} path - array of paths
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .paths("/tmp", "/etc") // or ["/tmp", "/etc"]
+   *   .find()
+   *   .each(console.log);
+   */
   paths() {
     this._searchPaths = _.uniq(arrays.from(arguments)).map(path.normalize);
     return this;
   }
 
+  /**
+   * Define the search path
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * path
+   * @param {string} path - path
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .path("/tmp")
+   *   .find()
+   *   .each(console.log);
+   */
   path() {
     return this.paths(arrays.fromFirst(arguments));
   }
 
+  /**
+   * Ignores files or sub-directories matching pattern
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * discard
+   * @param {string} path - path
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .discard("*.tmp*")
+   *   .find()
+   *   .each(console.log);
+   */
   discard(pattern) {
     this.addFilter(negate(isRegExpMatch(pattern)));
     return this;
   }
 
+  /**
+   * Filter on file extension
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * ext
+   * @param {string} path - path
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .ext(".json")
+   *   .find()
+   *   .each(console.log);
+   */
   ext(extension) {
     this.addFilter((file) => {
       return file.getPathExtension() === extension;
@@ -210,6 +283,24 @@ class FileHound extends EventEmitter {
     return this;
   }
 
+  /**
+   * Filter by file size
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * size
+   * @param {string} sizeExpression - a size expression
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .size("<10kb")
+   *   .find()
+   *   .each(console.log);
+   */
   size(sizeExpression) {
     this.addFilter((file) => {
       const size = file.sizeSync();
@@ -218,15 +309,55 @@ class FileHound extends EventEmitter {
     return this;
   }
 
+  /**
+   * Filter by zero length files
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * isEmpty
+   * @param {string} path - path
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .size("<10kb")
+   *   .find()
+   *   .each(console.log);
+   */
   isEmpty() {
     this.size(0);
     return this;
   }
 
+  /**
+   * Filter by a file glob
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * glob
+   * @param {string} glob - file glob
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .glob("*tmp*")
+   *   .find()
+   *   .each(console.log); // array of files names all containing 'tmp'
+   */
   glob(globPattern) {
     return this.match(globPattern);
   }
 
+  /**
+   * Same as glob
+   * @see glob
+   */
   match(globPattern) {
     this.addFilter((file) => {
       return file.isMatch(globPattern);
@@ -234,11 +365,47 @@ class FileHound extends EventEmitter {
     return this;
   }
 
+  /**
+   * Negates filters
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * not
+   * @param {string} glob - file glob
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .not()
+   *   .glob("*tmp*")
+   *   .find()
+   *   .each(console.log); // array of files names NOT containing 'tmp'
+   */
   not() {
     this.negateFilters = true;
     return this;
   }
 
+  /**
+   * Filter to ignore hidden files
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * ignoreHiddenFiles
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .ignoreHiddenFiles()
+   *   .find()
+   *   .each(console.log); // array of files names that are not hidden files
+   */
   ignoreHiddenFiles() {
     this.addFilter((file) => {
       return !file.isHiddenSync();
@@ -246,16 +413,77 @@ class FileHound extends EventEmitter {
     return this;
   }
 
+  /**
+   * Filter to ignore hidden directories
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * ignoreHiddenDirectories
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .ignoreHiddenDirectories()
+   *   .find()
+   *   .each(console.log); // array of files names that are not hidden directories
+   */
   ignoreHiddenDirectories() {
     this._ignoreHiddenDirectories = true;
     return this;
   }
 
+  /**
+   * Specify the directory search depth. If set to zero, recursive searching
+   * will be disabled
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * depth
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .depth(0)
+   *   .find()
+   *   .each(console.log); // array of files names only in the current directory
+   */
   depth(depth) {
     this.maxDepth = depth;
     return this;
   }
 
+  /**
+   * Asynchronously executes a file search.
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * find
+   * @param {function} function - Optionally accepts a callback function
+   * @return Returns a Promise of all matches. If the Promise fulfils,
+   * the fulfilment value is an array of all matching files
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .find()
+   *   .each(console.log);
+   *
+   * // using a callback
+   * filehound
+   *   .find((err, files) => {
+   *      if (err) return console.error(err);
+   *
+   *      console.log(files);
+   *   });
+   */
   find(cb) {
     this._initFilters();
 
@@ -276,6 +504,22 @@ class FileHound extends EventEmitter {
       .asCallback(cb);
   }
 
+  /**
+   * Synchronously executes a file search.
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * findSync
+   * @return Returns an array of all matching files
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * const files = filehound.findSync();
+   * console.log(files);
+   *
+   */
   findSync() {
     this._initFilters();
 
