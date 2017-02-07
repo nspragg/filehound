@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Home - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="FileHound.html">FileHound</a><ul class='methods'><li data-type='method'><a href="FileHound.html#.accessed">accessed</a></li><li data-type='method'><a href="FileHound.html#.any">any</a></li><li data-type='method'><a href="FileHound.html#.create">create</a></li><li data-type='method'><a href="FileHound.html#.modified">modified</a></li><li data-type='method'><a href="FileHound.html#addFilter">addFilter</a></li><li data-type='method'><a href="FileHound.html#changed">changed</a></li><li data-type='method'><a href="FileHound.html#depth">depth</a></li><li data-type='method'><a href="FileHound.html#discard">discard</a></li><li data-type='method'><a href="FileHound.html#ext">ext</a></li><li data-type='method'><a href="FileHound.html#find">find</a></li><li data-type='method'><a href="FileHound.html#findSync">findSync</a></li><li data-type='method'><a href="FileHound.html#glob">glob</a></li><li data-type='method'><a href="FileHound.html#ignoreHiddenDirectories">ignoreHiddenDirectories</a></li><li data-type='method'><a href="FileHound.html#ignoreHiddenFiles">ignoreHiddenFiles</a></li><li data-type='method'><a href="FileHound.html#isEmpty">isEmpty</a></li><li data-type='method'><a href="FileHound.html#match">match</a></li><li data-type='method'><a href="FileHound.html#not">not</a></li><li data-type='method'><a href="FileHound.html#path">path</a></li><li data-type='method'><a href="FileHound.html#paths">paths</a></li><li data-type='method'><a href="FileHound.html#size">size</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+
+    
+
+
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+    <section class="readme">
+        <article><h1>Filehound</h1><p><a href="https://travis-ci.org/nspragg/filehound"><img src="https://travis-ci.org/nspragg/filehound.svg" alt="Build Status"></a> <a href="https://coveralls.io/github/nspragg/filehound?branch=master"><img src="https://coveralls.io/repos/github/nspragg/filehound/badge.svg?branch=master" alt="Coverage Status"></a></p>
+<blockquote>
+<p>Flexible and fluent interface for searching the file system</p>
+</blockquote>
+<h2>Common examples</h2><p>The example below prints all of the files in a directory that have the <code>.json</code> file extension:</p>
+<pre class="prettyprint source lang-js"><code>const FileHound = require('filehound');
+
+const files = FileHound.create()
+  .paths('/some/dir')
+  .ext('json')
+  .find();
+
+files.then(console.log);</code></pre><h4>Matching the filename</h4><p>Find all the files that start with <code>dev</code>:</p>
+<pre class="prettyprint source lang-js"><code>const files = FileHound.create()
+  .paths('/etc/pki/')
+  .match('dev*')
+  .find();</code></pre><h4>Filtering by file size</h4><p>Find all of the files in a directory that are larger than 1024 bytes:</p>
+<pre class="prettyprint source lang-js"><code>const files = FileHound.create()
+  .paths('/some/dir')
+  .size('>1024')
+  .find();
+
+const files = FileHound.create()
+  .paths('/some/dir')
+  .size('&lt;=1mb')
+  .find();</code></pre><h4>Combining filters</h4><p>Find all the <code>.txt</code> files that are larger than 1024 bytes <em>and</em> start with <code>note</code>:</p>
+<pre class="prettyprint source lang-js"><code>const files = FileHound.create()
+  .paths('/etc/pki/')
+  .match('note*')
+  .ext('txt')
+  .size('>1024')
+  .find();</code></pre><h4>Inverse filtering</h4><p>Find all of the files that <em>don't</em> have the <code>.json</code> extension:</p>
+<pre class="prettyprint source lang-js"><code>const files = FileHound.create()
+  .ext('json')
+  .not()
+  .find();</code></pre><h4>Limiting the depth of a recursive search</h4><p>Find all files but <em>only</em> in the current directory (recursion off):</p>
+<pre class="prettyprint source lang-js"><code>const files = FileHound.create()
+  .depth(0)
+  .find();</code></pre><h4>Combining multiple searches</h4><p>Find all the files that are <em>either</em> over 1K <em>or</em> have the <code>.json</code> file extension:</p>
+<pre class="prettyprint source lang-js"><code>const filesOverOneK = FileHound.create()
+  .paths('/some/dir')
+  .size('>1k')
+  .find();
+
+const jsonFiles = FileHound.create()
+  .paths('/some/dir')
+  .ext('json')
+  .find();
+
+const files = FileHound.any(filesOverOneK, jsonFiles);</code></pre><h4>Defining multiple search locations</h4><p>Find all JSON files in '/some/dir1' and '/some/dir2'</p>
+<pre class="prettyprint source lang-js"><code>const jsonFiles = FileHound.create()
+  .paths('/some/dir1', '/some/dir2')
+  .ext('json')
+  .find();
+
+const myPaths = ['/some/dir1', '/some/dir2'];
+const jsonFiles = FileHound.create()
+  .paths(myPaths)
+  .ext('json')
+  .find();</code></pre><h4>Search synchronously</h4><p>Find all JSON files in '/tmp' synchronously</p>
+<pre class="prettyprint source lang-js"><code>const jsonFiles = FileHound.create()
+  .paths('/tmp')
+  .ext('json')
+  .findSync();</code></pre><h4>Using callbacks</h4><p>Find all empty text files in /tmp:</p>
+<pre class="prettyprint source lang-js"><code>FileHound.create()
+  .paths('/tmp')
+  .ext('txt')
+  .isEmpty()
+  .find((err, emptyTextFiles) => {
+    console.log(emptyTextFiles);
+  });</code></pre><h4>Binding to match, error and end events</h4><p>Bind to a 'match' event to process each file on match:</p>
+<pre class="prettyprint source lang-js"><code>const filehound = FileHound.create();
+  filehound.find();
+
+  filehound.on('match', (file) => {
+    console(`process ${file}`);
+  });
+
+  filehound.on('error', (error) => {
+    console(`error ${error}`);
+  });
+
+  filehound.on('end', (file) => {
+    console(`search complete`);
+  });</code></pre><h4>Find files by matching content</h4><p>See <a href="https://github.com/nspragg/filesniffer">FileSniffer</a></p></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Feb 07 2017 15:45:05 GMT+0000 (GMT) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
