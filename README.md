@@ -29,6 +29,9 @@ const files = FileHound.create()
 files.then(console.log);
 ```
 
+## Documentation
+For more examples and API details, see [API documentation](http://nspragg.github.io/filehound/)
+
 ## Test
 
 ```
