@@ -57,7 +57,6 @@ class FileHound extends EventEmitter {
    * @memberOf FileHound
    * @method
    * create
-   * @category static
    * @return FileHound instance
    * @example
    * import FileHound from 'filehound';
@@ -75,7 +74,6 @@ class FileHound extends EventEmitter {
    * @memberOf FileHound
    * @method
    * any
-   * @category static
    * @return a promise containing all matches. If the Promise fulfils,
    * the fulfilment value is an array of all matching files.
    * @example
@@ -94,7 +92,6 @@ class FileHound extends EventEmitter {
    * @memberOf FileHound
    * @method
    * modified
-   * @category filter
    * @param {string} dateExpression - date expression
    * @return a FileHound instance
    * @example
@@ -121,7 +118,6 @@ class FileHound extends EventEmitter {
    * @method
    * accessed
    * @param {string} dateExpression - date expression
-   * @category filter
    * @return a FileHound instance
    * @example
    * import FileHound from 'filehound';
@@ -148,7 +144,6 @@ class FileHound extends EventEmitter {
    * @method
    * changed
    * @param {string} dateExpression - date expression
-   * @category filter
    * @return a FileHound instance
    * @example
    * import FileHound from 'filehound';
@@ -174,7 +169,6 @@ class FileHound extends EventEmitter {
    * @method
    * addFilter
    * @param {function} function - custom filter function
-   * @category filter
    * @return a FileHound instance
    * @example
    * import FileHound from 'filehound';
@@ -556,17 +550,17 @@ class FileHound extends EventEmitter {
   _searchSync(dir) {
     this._sync = true;
     const root = File.create(dir);
-    return this.search(root, root);
+    return this._search(root, root);
   }
 
   _searchAsync(dir) {
     const root = File.create(dir);
-    return this.search(root, root).each((file) => {
+    return this._search(root, root).each((file) => {
       this.emit('match', file.getName());
     });
   }
 
-  search(root, path) {
+  _search(root, path) {
     if (this._shouldFilterDirectory(root, path)) return [];
 
     const getFiles = this._sync ? path.getListSync.bind(path) : path.getList.bind(path);
@@ -574,7 +568,7 @@ class FileHound extends EventEmitter {
     return getFiles()
       .map((file) => {
         file = File.create(file);
-        return file.isDirectorySync() ? this.search(root, file) : file;
+        return file.isDirectorySync() ? this._search(root, file) : file;
       })
       .reduce(flatten, [])
       .filter(this._isMatch);
