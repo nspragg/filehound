@@ -30,7 +30,7 @@ files.then(console.log);
 ```
 
 ## Documentation
-For more examples and API details, see [API documentation](http://nspragg.github.io/filehound/)
+For more examples and API details, see [API documentation](https://nspragg.github.io/filehound/)
 
 ## Test
 
