@@ -259,7 +259,7 @@ class FileHound extends EventEmitter {
    * @instance
    * @method
    * ext
-   * @param {string|array} extensions - extension of array of extensions
+   * @param {string|array} extensions - extension or an array of extensions
    * @return a FileHound instance
    * @example
    * import FileHound from 'filehound';
