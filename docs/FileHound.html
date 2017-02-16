@@ -251,7 +251,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line117">line 117</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line114">line 114</a>
     </li></ul></dd>
     
 
@@ -354,7 +354,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line71">line 71</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line70">line 70</a>
     </li></ul></dd>
     
 
@@ -602,7 +602,7 @@ const filehound = FileHound.create();</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line91">line 91</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line89">line 89</a>
     </li></ul></dd>
     
 
@@ -750,7 +750,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line170">line 170</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line165">line 165</a>
     </li></ul></dd>
     
 
@@ -902,7 +902,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line143">line 143</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line139">line 139</a>
     </li></ul></dd>
     
 
@@ -1006,7 +1006,7 @@ will be disabled</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line438">line 438</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line448">line 448</a>
     </li></ul></dd>
     
 
@@ -1158,7 +1158,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line238">line 238</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line232">line 232</a>
     </li></ul></dd>
     
 
@@ -1210,7 +1210,7 @@ filehound
 
     
 
-    <h4 class="name" id="ext"><span class="type-signature"></span>ext<span class="signature">(path)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="ext"><span class="type-signature"></span>ext<span class="signature">(extensions)</span><span class="type-signature"></span></h4>
 
     
 
@@ -1253,13 +1253,16 @@ filehound
 
         <tr>
             
-                <td class="name"><code>path</code></td>
+                <td class="name"><code>extensions</code></td>
             
 
             <td class="type">
             
                 
 <span class="param-type">string</span>
+|
+
+<span class="param-type">array</span>
 
 
             
@@ -1269,7 +1272,7 @@ filehound
 
             
 
-            <td class="description last"><p>path</p></td>
+            <td class="description last"><p>extension of array of extensions</p></td>
         </tr>
 
     
@@ -1310,7 +1313,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line261">line 261</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line255">line 255</a>
     </li></ul></dd>
     
 
@@ -1349,9 +1352,23 @@ filehound
     
     <pre class="prettyprint"><code>import FileHound from 'filehound';
 
-const filehound = FileHound.create();
+let filehound = FileHound.create();
 filehound
   .ext(".json")
+  .find()
+  .each(console.log);
+
+// array of extensions to filter by
+filehound = FileHound.create();
+filehound
+  .ext([".json", ".txt"])
+  .find()
+  .each(console.log);
+
+// supports var args
+filehound = FileHound.create();
+filehound
+  .ext(".json", ".txt")
   .find()
   .each(console.log);</code></pre>
 
@@ -1462,7 +1479,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line461">line 461</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line471">line 471</a>
     </li></ul></dd>
     
 
@@ -1573,7 +1590,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line507">line 507</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line517">line 517</a>
     </li></ul></dd>
     
 
@@ -1723,7 +1740,7 @@ console.log(files);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line335">line 335</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line345">line 345</a>
     </li></ul></dd>
     
 
@@ -1826,7 +1843,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line416">line 416</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line426">line 426</a>
     </li></ul></dd>
     
 
@@ -1929,7 +1946,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line392">line 392</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line402">line 402</a>
     </li></ul></dd>
     
 
@@ -2081,7 +2098,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line312">line 312</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line322">line 322</a>
     </li></ul></dd>
     
 
@@ -2184,7 +2201,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line361">line 361</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line371">line 371</a>
     </li></ul></dd>
     
 
@@ -2322,7 +2339,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line368">line 368</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line378">line 378</a>
     </li></ul></dd>
     
 
@@ -2475,7 +2492,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line216">line 216</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line210">line 210</a>
     </li></ul></dd>
     
 
@@ -2627,7 +2644,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line193">line 193</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line187">line 187</a>
     </li></ul></dd>
     
 
@@ -2779,7 +2796,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line286">line 286</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line296">line 296</a>
     </li></ul></dd>
     
 
@@ -2844,7 +2861,7 @@ filehound
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Feb 07 2017 15:45:05 GMT+0000 (GMT) using the Minami theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Feb 16 2017 13:43:38 GMT+0000 (GMT) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

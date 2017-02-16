@@ -8,6 +8,7 @@ import sinon from 'sinon';
 const justFiles = qualifyNames(['/justFiles/a.json', '/justFiles/b.json', '/justFiles/dummy.txt']);
 const nestedFiles = qualifyNames(['/nested/c.json', 'nested/d.json', '/nested/mydir/e.json']);
 const textFiles = qualifyNames(['/justFiles/dummy.txt']);
+const mixedExtensions = qualifyNames(['/ext/dummy.json', '/ext/dummy.txt']);
 const matchFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json']);
 
 function getAbsolutePath(file) {
@@ -313,6 +314,30 @@ describe('FileHound', () => {
       return query
         .then((files) => {
           assert.deepEqual(files, textFiles);
+        });
+    });
+
+    it('returns files for all matching extensions', () => {
+      const query = FileHound.create()
+        .ext(['txt', 'json'])
+        .paths(fixtureDir + '/ext')
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, mixedExtensions);
+        });
+    });
+
+    it('supports var args', () => {
+      const query = FileHound.create()
+        .ext('txt', 'json')
+        .paths(fixtureDir + '/ext')
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, mixedExtensions);
         });
     });
   });

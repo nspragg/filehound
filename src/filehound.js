@@ -259,20 +259,36 @@ class FileHound extends EventEmitter {
    * @instance
    * @method
    * ext
-   * @param {string} path - path
+   * @param {string|array} extensions - extension or an array of extensions
    * @return a FileHound instance
    * @example
    * import FileHound from 'filehound';
    *
-   * const filehound = FileHound.create();
+   * let filehound = FileHound.create();
    * filehound
    *   .ext(".json")
    *   .find()
    *   .each(console.log);
+   *
+   * // array of extensions to filter by
+   * filehound = FileHound.create();
+   * filehound
+   *   .ext([".json", ".txt"])
+   *   .find()
+   *   .each(console.log);
+   *
+   * // supports var args
+   * filehound = FileHound.create();
+   * filehound
+   *   .ext(".json", ".txt")
+   *   .find()
+   *   .each(console.log);
    */
-  ext(extension) {
+  ext() {
+    const extensions = arrays.from(arguments);
+
     this.addFilter((file) => {
-      return file.getPathExtension() === extension;
+      return _.includes(extensions, file.getPathExtension());
     });
     return this;
   }
