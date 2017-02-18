@@ -1,8 +1,15 @@
 # Filehound
 
+![npm](https://img.shields.io/npm/v/filehound.svg)
 [![Build Status](https://travis-ci.org/nspragg/filehound.svg)](https://travis-ci.org/nspragg/filehound) [![Coverage Status](https://coveralls.io/repos/github/nspragg/filehound/badge.svg?branch=master)](https://coveralls.io/github/nspragg/filehound?branch=master)
-
+ ![license](https://img.shields.io/badge/license-MIT-blue.svg) 
+![github-issues](https://img.shields.io/github/issues/nspragg/filehound.svg)
+![stars](https://img.shields.io/github/stars/nspragg/filehound.svg)
+![forks](https://img.shields.io/github/forks/nspragg/filehound.svg)
 > Flexible and fluent interface for searching the file system
+
+![nodei.co](https://nodei.co/npm/filehound.png?downloads=true&downloadRank=true&stars=true)
+
 
 ## Installation
 
