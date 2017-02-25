@@ -1,16 +1,22 @@
 import _ from 'lodash';
 import path from 'path';
+import os from 'os';
 
 function flatten(a, b) {
   return a.concat(b);
 }
 
 function hasParent(parent) {
-  return parent && (parent !== '/' && parent !== '.');
+  const root = getRoot(parent);
+  return parent && (parent !== root && parent !== '.');
 }
 
 function getParent(dir) {
   return path.dirname(dir);
+}
+
+export function getRoot(dir) {
+  return os.platform() === 'win32' ? dir.split(path.sep)[0] + path.sep : path.sep;
 }
 
 function getSubDirectories(base, allPaths) {

@@ -13,4 +13,11 @@ describe('Files', () => {
       assert.strictEqual(isSubDirectory('./fixtures/nested'), false);
     });
   });
+
+  describe('.getRoot', () => {
+    it('returns the root of a given path', () => {
+      const root = files.getRoot('/a/b/c');
+      assert.equal('/', root);
+    });
+  });
 });
