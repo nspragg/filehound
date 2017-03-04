@@ -33,6 +33,27 @@ function deleteFile(fname) {
 describe('FileHound', () => {
   const fixtureDir = __dirname + '/fixtures';
 
+  describe('.directories', () => {
+    it('returns sub-directories of a given directory', () => {
+      const expectedDirectories =
+        qualifyNames([
+          '/deeplyNested/mydir',
+          '/deeplyNested/mydir/mydir2',
+          '/deeplyNested/mydir/mydir2/mydir3',
+          '/deeplyNested/mydir/mydir2/mydir3/mydir4']);
+
+      const query = FileHound.create()
+        .paths(fixtureDir + '/deeplyNested')
+        .directories()
+        .find();
+
+      return query
+        .then((directories) => {
+          assert.deepEqual(directories, expectedDirectories);
+        });
+    });
+  });
+
   describe('.depth', () => {
     it('only returns files in the current directory', () => {
       const query = FileHound.create()

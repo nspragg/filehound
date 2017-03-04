@@ -48,6 +48,7 @@ class FileHound extends EventEmitter {
     this._ignoreHiddenDirectories = false;
     this._isMatch = _.noop;
     this._sync = false;
+    this._directoriesOnly = false;
   }
 
   /**
@@ -446,6 +447,28 @@ class FileHound extends EventEmitter {
   }
 
   /**
+   * Find sub-directories
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * directories
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .directories()
+   *   .find()
+   *   .each(console.log); // array of matching sub-directories
+   */
+  directories() {
+    this._directoriesOnly = true;
+    return this;
+  }
+
+  /**
    * Specify the directory search depth. If set to zero, recursive searching
    * will be disabled
    *
@@ -499,7 +522,6 @@ class FileHound extends EventEmitter {
 
     const searchAsync = this._searchAsync.bind(this);
     const searches = Promise.map(this.getSearchPaths(), searchAsync);
-
     return Promise
       .all(searches)
       .reduce(flatten)
@@ -566,28 +588,44 @@ class FileHound extends EventEmitter {
   _searchSync(dir) {
     this._sync = true;
     const root = File.create(dir);
-    return this._search(root, root);
+    return this._search(root, root, []);
   }
 
   _searchAsync(dir) {
     const root = File.create(dir);
-    return this._search(root, root).each((file) => {
+    return this._search(root, root, []).each((file) => {
       this.emit('match', file.getName());
     });
   }
 
-  _search(root, path) {
+  _search(root, path, trackedPaths) {
     if (this._shouldFilterDirectory(root, path)) return [];
 
     const getFiles = this._sync ? path.getListSync.bind(path) : path.getList.bind(path);
 
-    return getFiles()
+    const files = getFiles()
       .map((file) => {
         file = File.create(file);
-        return file.isDirectorySync() ? this._search(root, file) : file;
-      })
-      .reduce(flatten, [])
-      .filter(this._isMatch);
+        if (file.isDirectorySync()) {
+          trackedPaths.push(file);
+          return this._search(root, file, trackedPaths);
+        }
+        return file;
+      });
+
+    if (this._sync) {
+      return this._directoriesOnly ? trackedPaths : files;
+    }
+
+    return files
+      .then((files) => {
+        if (this._directoriesOnly) {
+          return Promise.resolve(trackedPaths);
+        }
+        return Promise.resolve(files)
+          .reduce(flatten, [])
+          .filter(this._isMatch);
+      });
   }
 
   getSearchPaths() {
