@@ -522,6 +522,7 @@ class FileHound extends EventEmitter {
 
     const searchAsync = this._searchAsync.bind(this);
     const searches = Promise.map(this.getSearchPaths(), searchAsync);
+
     return Promise
       .all(searches)
       .reduce(flatten)
@@ -588,20 +589,25 @@ class FileHound extends EventEmitter {
   _searchSync(dir) {
     this._sync = true;
     const root = File.create(dir);
-    return this._search(root, root, []);
+    const trackedPaths = [];
+    const files = this._search(root, root, trackedPaths);
+    return this._directoriesOnly ? trackedPaths.filter(this._isMatch) : files;
   }
 
   _searchAsync(dir) {
     const root = File.create(dir);
-    return this._search(root, root, []).each((file) => {
-      this.emit('match', file.getName());
-    });
-  }
+    const trackedPaths = [];
+    const pending = this._search(root, root, trackedPaths);
 
-  _applyFilters(files) {
-    return files
-      .reduce(flatten, [])
-      .filter(this._isMatch);
+    return pending
+      .then((files) => {
+        if (this._directoriesOnly) return trackedPaths.filter(this._isMatch);
+
+        files.forEach((file) => {
+          this.emit('match', file.getName());
+        });
+        return files;
+      });
   }
 
   _search(root, path, trackedPaths) {
@@ -609,26 +615,18 @@ class FileHound extends EventEmitter {
 
     const getFiles = this._sync ? path.getListSync.bind(path) : path.getList.bind(path);
 
-    const files = getFiles()
+    return getFiles()
       .map((file) => {
         file = File.create(file);
         if (file.isDirectorySync()) {
-          if (!this._shouldFilterDirectory(root, file)) {
-            trackedPaths.push(file);
-          }
+          if (!this._shouldFilterDirectory(root, file)) trackedPaths.push(file);
+
           return this._search(root, file, trackedPaths);
         }
         return file;
-      });
-
-    if (this._sync) {
-      return this._applyFilters(this._directoriesOnly ? trackedPaths : files);
-    }
-
-    return files
-      .then((files) => {
-        return this._applyFilters(this._directoriesOnly ? trackedPaths : files);
-      });
+      })
+      .reduce(flatten, [])
+      .filter(this._isMatch);
   }
 
   getSearchPaths() {
