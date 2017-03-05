@@ -24,7 +24,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="FileHound.html">FileHound</a><ul class='methods'><li data-type='method'><a href="FileHound.html#.accessed">accessed</a></li><li data-type='method'><a href="FileHound.html#.any">any</a></li><li data-type='method'><a href="FileHound.html#.create">create</a></li><li data-type='method'><a href="FileHound.html#.modified">modified</a></li><li data-type='method'><a href="FileHound.html#addFilter">addFilter</a></li><li data-type='method'><a href="FileHound.html#changed">changed</a></li><li data-type='method'><a href="FileHound.html#depth">depth</a></li><li data-type='method'><a href="FileHound.html#discard">discard</a></li><li data-type='method'><a href="FileHound.html#ext">ext</a></li><li data-type='method'><a href="FileHound.html#find">find</a></li><li data-type='method'><a href="FileHound.html#findSync">findSync</a></li><li data-type='method'><a href="FileHound.html#glob">glob</a></li><li data-type='method'><a href="FileHound.html#ignoreHiddenDirectories">ignoreHiddenDirectories</a></li><li data-type='method'><a href="FileHound.html#ignoreHiddenFiles">ignoreHiddenFiles</a></li><li data-type='method'><a href="FileHound.html#isEmpty">isEmpty</a></li><li data-type='method'><a href="FileHound.html#match">match</a></li><li data-type='method'><a href="FileHound.html#not">not</a></li><li data-type='method'><a href="FileHound.html#path">path</a></li><li data-type='method'><a href="FileHound.html#paths">paths</a></li><li data-type='method'><a href="FileHound.html#size">size</a></li></ul></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="FileHound.html">FileHound</a><ul class='methods'><li data-type='method'><a href="FileHound.html#.accessed">accessed</a></li><li data-type='method'><a href="FileHound.html#.any">any</a></li><li data-type='method'><a href="FileHound.html#.create">create</a></li><li data-type='method'><a href="FileHound.html#.modified">modified</a></li><li data-type='method'><a href="FileHound.html#addFilter">addFilter</a></li><li data-type='method'><a href="FileHound.html#changed">changed</a></li><li data-type='method'><a href="FileHound.html#depth">depth</a></li><li data-type='method'><a href="FileHound.html#directories">directories</a></li><li data-type='method'><a href="FileHound.html#discard">discard</a></li><li data-type='method'><a href="FileHound.html#ext">ext</a></li><li data-type='method'><a href="FileHound.html#find">find</a></li><li data-type='method'><a href="FileHound.html#findSync">findSync</a></li><li data-type='method'><a href="FileHound.html#glob">glob</a></li><li data-type='method'><a href="FileHound.html#ignoreHiddenDirectories">ignoreHiddenDirectories</a></li><li data-type='method'><a href="FileHound.html#ignoreHiddenFiles">ignoreHiddenFiles</a></li><li data-type='method'><a href="FileHound.html#isEmpty">isEmpty</a></li><li data-type='method'><a href="FileHound.html#match">match</a></li><li data-type='method'><a href="FileHound.html#not">not</a></li><li data-type='method'><a href="FileHound.html#path">path</a></li><li data-type='method'><a href="FileHound.html#paths">paths</a></li><li data-type='method'><a href="FileHound.html#size">size</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -89,6 +89,7 @@ class FileHound extends EventEmitter {
     this._ignoreHiddenDirectories = false;
     this._isMatch = _.noop;
     this._sync = false;
+    this._directoriesOnly = false;
   }
 
   /**
@@ -300,7 +301,7 @@ class FileHound extends EventEmitter {
    * @instance
    * @method
    * ext
-   * @param {string|array} extensions - extension of array of extensions
+   * @param {string|array} extensions - extension or an array of extensions
    * @return a FileHound instance
    * @example
    * import FileHound from 'filehound';
@@ -465,7 +466,7 @@ class FileHound extends EventEmitter {
   }
 
   /**
-   * Filter to ignore hidden directories
+   * Ignore hidden directories
    *
    * @memberOf FileHound
    * @instance
@@ -483,6 +484,28 @@ class FileHound extends EventEmitter {
    */
   ignoreHiddenDirectories() {
     this._ignoreHiddenDirectories = true;
+    return this;
+  }
+
+  /**
+   * Find sub-directories
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * directories
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .directories()
+   *   .find()
+   *   .each(console.log); // array of matching sub-directories
+   */
+  directory() {
+    this._directoriesOnly = true;
     return this;
   }
 
@@ -540,7 +563,6 @@ class FileHound extends EventEmitter {
 
     const searchAsync = this._searchAsync.bind(this);
     const searches = Promise.map(this.getSearchPaths(), searchAsync);
-
     return Promise
       .all(searches)
       .reduce(flatten)
@@ -607,28 +629,47 @@ class FileHound extends EventEmitter {
   _searchSync(dir) {
     this._sync = true;
     const root = File.create(dir);
-    return this._search(root, root);
+    return this._search(root, root, []);
   }
 
   _searchAsync(dir) {
     const root = File.create(dir);
-    return this._search(root, root).each((file) => {
+    return this._search(root, root, []).each((file) => {
       this.emit('match', file.getName());
     });
   }
 
-  _search(root, path) {
+  _applyFilters(files) {
+    return files
+      .reduce(flatten, [])
+      .filter(this._isMatch);
+  }
+
+  _search(root, path, trackedPaths) {
     if (this._shouldFilterDirectory(root, path)) return [];
 
     const getFiles = this._sync ? path.getListSync.bind(path) : path.getList.bind(path);
 
-    return getFiles()
+    const files = getFiles()
       .map((file) => {
         file = File.create(file);
-        return file.isDirectorySync() ? this._search(root, file) : file;
-      })
-      .reduce(flatten, [])
-      .filter(this._isMatch);
+        if (file.isDirectorySync()) {
+          if (!this._shouldFilterDirectory(root, file)) {
+            trackedPaths.push(file);
+          }
+          return this._search(root, file, trackedPaths);
+        }
+        return file;
+      });
+
+    if (this._sync) {
+      return this._applyFilters(this._directoriesOnly ? trackedPaths : files);
+    }
+
+    return files
+      .then((files) => {
+        return this._applyFilters(this._directoriesOnly ? trackedPaths : files);
+      });
   }
 
   getSearchPaths() {
@@ -652,7 +693,7 @@ module.exports = FileHound;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Feb 16 2017 13:43:38 GMT+0000 (GMT) using the Minami theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Sun Mar 05 2017 11:22:43 GMT+0000 (GMT) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
