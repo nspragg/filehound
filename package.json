@@ -1,6 +1,6 @@
 {
   "name": "filehound",
-  "version": "1.14.2",
+  "version": "1.15.0",
   "description": "Find files the easy way",
   "main": "index.js",
   "scripts": {
