@@ -33,7 +33,7 @@ function deleteFile(fname) {
 describe('FileHound', () => {
   const fixtureDir = __dirname + '/fixtures';
 
-  describe('.directories', () => {
+  describe('.directory', () => {
     it('returns sub-directories of a given directory', () => {
       const expectedDirectories =
         qualifyNames([
@@ -44,7 +44,47 @@ describe('FileHound', () => {
 
       const query = FileHound.create()
         .paths(fixtureDir + '/deeplyNested')
-        .directories()
+        .directory()
+        .find();
+
+      return query
+        .then((directories) => {
+          assert.deepEqual(directories, expectedDirectories);
+        });
+    });
+
+    it('ignores hidden directories', () => {
+      const expectedDirectories =
+        qualifyNames([
+          '/deeplyNestedWithHiddenDir/mydir',
+          '/deeplyNestedWithHiddenDir/mydir/mydir2',
+          '/deeplyNestedWithHiddenDir/mydir/mydir2/mydir3',
+          '/deeplyNestedWithHiddenDir/mydir/mydir2/mydir3/mydir4']);
+
+      const query = FileHound.create()
+        .paths(fixtureDir + '/deeplyNestedWithHiddenDir')
+        .directory()
+        .ignoreHiddenDirectories()
+        .find();
+
+      return query
+        .then((directories) => {
+          assert.deepEqual(directories, expectedDirectories);
+        });
+    });
+
+    it('filters matching directories', () => {
+      const expectedDirectories =
+        qualifyNames([
+          '/deeplyNested/mydir',
+          '/deeplyNested/mydir/mydir2',
+          '/deeplyNested/mydir/mydir2/mydir3']);
+
+      const query = FileHound.create()
+        .paths(fixtureDir + '/deeplyNested')
+        .directory()
+        .match('*dir4*')
+        .not()
         .find();
 
       return query
@@ -322,6 +362,32 @@ describe('FileHound', () => {
         .findSync();
 
       assert.deepEqual(files, justFiles);
+    });
+
+    it('filters matching directories', () => {
+      const expectedDirectories =
+        qualifyNames([
+          '/deeplyNested/mydir',
+          '/deeplyNested/mydir/mydir2',
+          '/deeplyNested/mydir/mydir2/mydir3']);
+
+      const directories = FileHound.create()
+        .paths(fixtureDir + '/deeplyNested')
+        .directory()
+        .match('*dir4*')
+        .not()
+        .findSync();
+
+      assert.deepEqual(directories, expectedDirectories);
+    });
+
+    it('filters matching files', () => {
+      const files = FileHound.create()
+        .paths(fixtureDir + '/justFiles')
+        .ext('txt')
+        .findSync();
+
+      assert.deepEqual(files, textFiles);
     });
   });
 

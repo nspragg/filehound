@@ -425,7 +425,7 @@ class FileHound extends EventEmitter {
   }
 
   /**
-   * Filter to ignore hidden directories
+   * Ignore hidden directories
    *
    * @memberOf FileHound
    * @instance
@@ -463,7 +463,7 @@ class FileHound extends EventEmitter {
    *   .find()
    *   .each(console.log); // array of matching sub-directories
    */
-  directories() {
+  directory() {
     this._directoriesOnly = true;
     return this;
   }
@@ -598,6 +598,12 @@ class FileHound extends EventEmitter {
     });
   }
 
+  _applyFilters(files) {
+    return files
+      .reduce(flatten, [])
+      .filter(this._isMatch);
+  }
+
   _search(root, path, trackedPaths) {
     if (this._shouldFilterDirectory(root, path)) return [];
 
@@ -607,24 +613,21 @@ class FileHound extends EventEmitter {
       .map((file) => {
         file = File.create(file);
         if (file.isDirectorySync()) {
-          trackedPaths.push(file);
+          if (!this._shouldFilterDirectory(root, file)) {
+            trackedPaths.push(file);
+          }
           return this._search(root, file, trackedPaths);
         }
         return file;
       });
 
     if (this._sync) {
-      return this._directoriesOnly ? trackedPaths : files;
+      return this._applyFilters(this._directoriesOnly ? trackedPaths : files);
     }
 
     return files
       .then((files) => {
-        if (this._directoriesOnly) {
-          return Promise.resolve(trackedPaths);
-        }
-        return Promise.resolve(files)
-          .reduce(flatten, [])
-          .filter(this._isMatch);
+        return this._applyFilters(this._directoriesOnly ? trackedPaths : files);
       });
   }
 
