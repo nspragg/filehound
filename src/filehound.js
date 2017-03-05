@@ -452,14 +452,14 @@ class FileHound extends EventEmitter {
    * @memberOf FileHound
    * @instance
    * @method
-   * directories
+   * directory
    * @return a FileHound instance
    * @example
    * import FileHound from 'filehound';
    *
    * const filehound = FileHound.create();
    * filehound
-   *   .directories()
+   *   .directory()
    *   .find()
    *   .each(console.log); // array of matching sub-directories
    */
