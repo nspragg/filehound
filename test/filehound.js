@@ -4,12 +4,16 @@ import path from 'path';
 import FileHound from '../lib/filehound';
 import moment from 'moment';
 import sinon from 'sinon';
+import File from 'file-js';
+import Promise from 'bluebird';
 
 const justFiles = qualifyNames(['/justFiles/a.json', '/justFiles/b.json', '/justFiles/dummy.txt']);
 const nestedFiles = qualifyNames(['/nested/c.json', 'nested/d.json', '/nested/mydir/e.json']);
 const textFiles = qualifyNames(['/justFiles/dummy.txt']);
 const mixedExtensions = qualifyNames(['/ext/dummy.json', '/ext/dummy.txt']);
 const matchFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json']);
+
+const sandbox = sinon.sandbox.create();
 
 function getAbsolutePath(file) {
   return path.join(__dirname + '/fixtures/', file);
@@ -32,6 +36,49 @@ function deleteFile(fname) {
 
 describe('FileHound', () => {
   const fixtureDir = __dirname + '/fixtures';
+
+  describe('.socket', () => {
+    const file = {
+      isSocket: () => {
+        return true;
+      },
+      isDirectorySync: () => {
+        return false;
+      },
+      getName: () => {
+        return getAbsolutePath('/types/socket1');
+      }
+    };
+    beforeEach(() => {
+      const root = {
+        getDepthSync: () => {
+          return 0;
+        },
+        getFiles: () => {
+          return Promise.resolve().then(() => {
+            return [file];
+          });
+        }
+      };
+      sandbox.stub(File, 'create').returns(root);
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it('filters by socket type files', () => {
+      const query = FileHound.create()
+        .paths(fixtureDir + '/types')
+        .socket()
+        .find();
+
+      return query
+        .then((sockets) => {
+          assert.deepEqual(sockets, [file.getName()]);
+        });
+    });
+  });
 
   describe('.directory', () => {
     it('returns sub-directories of a given directory', () => {

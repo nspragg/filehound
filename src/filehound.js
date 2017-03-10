@@ -469,6 +469,30 @@ class FileHound extends EventEmitter {
   }
 
   /**
+   * Find sockets
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * socket
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .socket()
+   *   .find()
+   *   .each(console.log); // array of matching sockets
+   */
+  socket() {
+    this.addFilter((file) => {
+      return file.isSocket();
+    });
+    return this;
+  }
+
+  /**
    * Specify the directory search depth. If set to zero, recursive searching
    * will be disabled
    *
@@ -613,11 +637,9 @@ class FileHound extends EventEmitter {
   _search(root, path, trackedPaths) {
     if (this._shouldFilterDirectory(root, path)) return [];
 
-    const getFiles = this._sync ? path.getListSync.bind(path) : path.getList.bind(path);
-
+    const getFiles = this._sync ? path.getFilesSync.bind(path) : path.getFiles.bind(path);
     return getFiles()
       .map((file) => {
-        file = File.create(file);
         if (file.isDirectorySync()) {
           if (!this._shouldFilterDirectory(root, file)) trackedPaths.push(file);
 
