@@ -1,1 +1,1 @@
---recursive
+--recursive --require babel-polyfill

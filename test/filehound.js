@@ -1022,7 +1022,7 @@ describe('FileHound', () => {
       });
   });
 
-  it('emits an error event', () => {
+  it.skip('emits an error event', () => {
     const fh = FileHound.create();
     fh.path(fixtureDir + '/justBad');
 

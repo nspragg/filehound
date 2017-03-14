@@ -65,6 +65,7 @@ class FileHound extends EventEmitter {
    * const filehound = FileHound.create();
    */
   static create() {
+    // await test()
     return new FileHound();
   }
 
@@ -541,24 +542,30 @@ class FileHound extends EventEmitter {
    *      console.log(files);
    *   });
    */
-  find(cb) {
+  async find(cb) {
     this._initFilters();
 
-    const searchAsync = this._searchAsync.bind(this);
-    const searches = Promise.map(this.getSearchPaths(), searchAsync);
+    try {
+      const fn = this._searchAsync.bind(this);
+      const results = await Promise.map(this.getSearchPaths(), fn);
+      const files = results
+        .reduce(flatten)
+        .map(getFilename);
 
-    return Promise
-      .all(searches)
-      .reduce(flatten)
-      .map(getFilename)
-      .catch((e) => {
-        this.emit('error', e);
-        throw e;
-      })
-      .finally(() => {
-        this.emit('end');
-      })
-      .asCallback(cb);
+      if (cb) {
+        return cb(null, files);
+      }
+
+      return files;
+
+    } catch (e) {
+      if (cb) cb(e);
+      this.emit('error', e);
+
+      // throw e;
+    } finally {
+      this.emit('end');
+    }
   }
 
   /**
@@ -618,20 +625,18 @@ class FileHound extends EventEmitter {
     return this._directoriesOnly ? trackedPaths.filter(this._isMatch) : files;
   }
 
-  _searchAsync(dir) {
+  async _searchAsync(dir) {
     const root = File.create(dir);
     const trackedPaths = [];
-    const pending = this._search(root, root, trackedPaths);
 
-    return pending
-      .then((files) => {
-        if (this._directoriesOnly) return trackedPaths.filter(this._isMatch);
+    const files = await this._search(root, root, trackedPaths);
 
-        files.forEach((file) => {
-          this.emit('match', file.getName());
-        });
-        return files;
-      });
+    if (this._directoriesOnly) return trackedPaths.filter(this._isMatch);
+    files.forEach((file) => {
+      this.emit('match', file.getName());
+    });
+
+    return files;
   }
 
   _search(root, path, trackedPaths) {
