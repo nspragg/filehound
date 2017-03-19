@@ -39,7 +39,7 @@ function isRegExpMatch(pattern) {
 }
 
 function cleanExtension(ext) {
-  if (ext.startsWith('.')) {
+  if (_.startsWith(ext, '.')) {
     return ext.slice(1);
   }
   return ext;
