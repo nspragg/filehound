@@ -451,9 +451,21 @@ describe('FileHound', () => {
         });
     });
 
+    it('returns files for a given ext including a period', () => {
+      const query = FileHound.create()
+        .ext('.txt')
+        .paths(fixtureDir + '/justFiles')
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, textFiles);
+        });
+    });
+
     it('returns files for all matching extensions', () => {
       const query = FileHound.create()
-        .ext(['txt', 'json'])
+        .ext(['txt', '.json'])
         .paths(fixtureDir + '/ext')
         .find();
 
@@ -465,7 +477,7 @@ describe('FileHound', () => {
 
     it('supports var args', () => {
       const query = FileHound.create()
-        .ext('txt', 'json')
+        .ext('.txt', 'json')
         .paths(fixtureDir + '/ext')
         .find();
 

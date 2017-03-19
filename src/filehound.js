@@ -38,6 +38,13 @@ function isRegExpMatch(pattern) {
   };
 }
 
+function cleanExtension(ext) {
+  if (ext.startsWith('.')) {
+    return ext.slice(1);
+  }
+  return ext;
+}
+
 /** @class */
 class FileHound extends EventEmitter {
   constructor() {
@@ -286,7 +293,7 @@ class FileHound extends EventEmitter {
    *   .each(console.log);
    */
   ext() {
-    const extensions = arrays.from(arguments);
+    const extensions = arrays.from(arguments).map(cleanExtension);
 
     this.addFilter((file) => {
       return _.includes(extensions, file.getPathExtension());
