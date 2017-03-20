@@ -8,8 +8,15 @@ import {
   compose
 } from './functions';
 
-import * as files from './files';
-import * as arrays from './arrays';
+import {
+  reducePaths
+} from './files';
+
+import {
+  fromFirst,
+  copy,
+  from
+} from './arrays';
 
 import {
   isDate,
@@ -90,7 +97,7 @@ class FileHound extends EventEmitter {
    * const filehound = FileHound.any(fh1, fh2);
    */
   static any() {
-    const args = arrays.from(arguments);
+    const args = from(arguments);
     return Promise.all(args).reduce(flatten, []);
   }
 
@@ -211,7 +218,7 @@ class FileHound extends EventEmitter {
    *   .each(console.log);
    */
   paths() {
-    this._searchPaths = _.uniq(arrays.from(arguments)).map(path.normalize);
+    this._searchPaths = _.uniq(from(arguments)).map(path.normalize);
     return this;
   }
 
@@ -234,7 +241,7 @@ class FileHound extends EventEmitter {
    *   .each(console.log);
    */
   path() {
-    return this.paths(arrays.fromFirst(arguments));
+    return this.paths(fromFirst(arguments));
   }
 
   /**
@@ -293,7 +300,7 @@ class FileHound extends EventEmitter {
    *   .each(console.log);
    */
   ext() {
-    const extensions = arrays.from(arguments).map(cleanExtension);
+    const extensions = from(arguments).map(cleanExtension);
 
     this.addFilter((file) => {
       return _.includes(extensions, file.getPathExtension());
@@ -660,10 +667,10 @@ class FileHound extends EventEmitter {
 
   getSearchPaths() {
     const paths = isDefined(this.maxDepth) ?
-      this._searchPaths : files.reducePaths(this._searchPaths);
+      this._searchPaths : reducePaths(this._searchPaths);
 
-    return arrays.copy(paths);
+    return copy(paths);
   }
 }
 
-module.exports = FileHound;
+export default FileHound;
