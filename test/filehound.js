@@ -379,6 +379,30 @@ describe('FileHound', () => {
           assert.deepEqual(files, nestedFiles);
         });
     });
+
+    it('applies multiple discard filters as variable aruments', () => {
+      const query = FileHound.create()
+        .paths(fixtureDir + '/mixed')
+        .discard('a\.json', 'z\.json')
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json']));
+        });
+    });
+
+    it('applies an array of discard filters', () => {
+      const query = FileHound.create()
+        .paths(fixtureDir + '/mixed')
+        .discard(['a\.json', 'z\.json'])
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files, qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json']));
+        });
+    });
   });
 
   describe('callbacks', () => {

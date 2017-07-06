@@ -251,7 +251,7 @@ class FileHound extends EventEmitter {
    * @instance
    * @method
    * discard
-   * @param {string} path - path
+   * @param {string|array} regex - regex or array of regex
    * @return a FileHound instance
    * @example
    * import FileHound from 'filehound';
@@ -262,8 +262,11 @@ class FileHound extends EventEmitter {
    *   .find()
    *   .each(console.log);
    */
-  discard(pattern) {
-    this.addFilter(negate(isRegExpMatch(pattern)));
+  discard() {
+    const patterns = from(arguments);
+    patterns.forEach((pattern) => {
+      this.addFilter(negate(isRegExpMatch(pattern)));
+    });
     return this;
   }
 
