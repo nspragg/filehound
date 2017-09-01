@@ -30,7 +30,8 @@
     "walker",
     "promise",
     "finder",
-    "fs"
+    "fs",
+    "file system"
   ],
   "author": "nspragg@gmail.com",
   "license": "ISC",
