@@ -1,31 +1,13 @@
-import _ from 'lodash';
-import Promise from 'bluebird';
-import path from 'path';
-import File from 'file-js';
+import * as _ from "lodash";
+import { Promise } from "bluebird";
+import * as path from "path";
+import * as File from "file-js";
 
-import {
-  negate,
-  compose
-} from './functions';
-
-import {
-  reducePaths
-} from './files';
-
-import {
-  fromFirst,
-  copy,
-  from
-} from './arrays';
-
-import {
-  isDate,
-  isNumber
-} from 'unit-compare';
-
-import {
-  EventEmitter
-} from 'events';
+import { negate, compose } from "./functions";
+import { reducePaths } from "./files";
+import { copy, from } from "./arrays";
+import { isDate, isNumber } from "unit-compare";
+import { EventEmitter } from "events";
 
 function isDefined(value) {
   return value !== undefined;
@@ -40,13 +22,13 @@ function getFilename(file) {
 }
 
 function isRegExpMatch(pattern) {
-  return (file) => {
+  return file => {
     return new RegExp(pattern).test(file.getName());
   };
 }
 
 function cleanExtension(ext) {
-  if (_.startsWith(ext, '.')) {
+  if (_.startsWith(ext, ".")) {
     return ext.slice(1);
   }
   return ext;
@@ -54,15 +36,24 @@ function cleanExtension(ext) {
 
 /** @class */
 class FileHound extends EventEmitter {
+  private filters: Array<(args: any) => any>;
+  private searchPaths: Array<string>;
+  private ignoreDirs: boolean;
+  private isMatch: (args: any) => boolean;
+  private sync: boolean;
+  private directoriesOnly: boolean;
+  private negateFilters: boolean;
+  private maxDepth: number;
+
   constructor() {
     super();
-    this._filters = [];
-    this._searchPaths = [];
-    this._searchPaths.push(process.cwd());
-    this._ignoreHiddenDirectories = false;
-    this._isMatch = _.noop;
-    this._sync = false;
-    this._directoriesOnly = false;
+    this.filters = [];
+    this.searchPaths = [];
+    this.searchPaths.push(process.cwd());
+    this.ignoreDirs = false;
+    this.isMatch = _.noop;
+    this.sync = false;
+    this.directoriesOnly = false;
   }
 
   /**
@@ -78,7 +69,7 @@ class FileHound extends EventEmitter {
    *
    * const filehound = FileHound.create();
    */
-  static create() {
+  static create(): FileHound {
     return new FileHound();
   }
 
@@ -96,9 +87,9 @@ class FileHound extends EventEmitter {
    *
    * const filehound = FileHound.any(fh1, fh2);
    */
-  static any() {
-    const args = from(arguments);
-    return Promise.all(args).reduce(flatten, []);
+  static any(...args) {
+    const args1 = from(args);
+    return Promise.all(args1).reduce(flatten, []);
   }
 
   /**
@@ -119,7 +110,7 @@ class FileHound extends EventEmitter {
    *   .each(console.log);
    */
   modified(pattern) {
-    this.addFilter((file) => {
+    this.addFilter(file => {
       const modified = file.lastModifiedSync();
       return isDate(modified).assert(pattern);
     });
@@ -144,7 +135,7 @@ class FileHound extends EventEmitter {
    *   .each(console.log);
    */
   accessed(pattern) {
-    this.addFilter((file) => {
+    this.addFilter(file => {
       const accessed = file.lastAccessedSync();
       return isDate(accessed).assert(pattern);
     });
@@ -170,7 +161,7 @@ class FileHound extends EventEmitter {
    *   .each(console.log);
    */
   changed(pattern) {
-    this.addFilter((file) => {
+    this.addFilter(file => {
       const changed = file.lastChangedSync();
       return isDate(changed).assert(pattern);
     });
@@ -195,7 +186,7 @@ class FileHound extends EventEmitter {
    *   .each(consoe.log);
    */
   addFilter(filter) {
-    this._filters.push(filter);
+    this.filters.push(filter);
     return this;
   }
 
@@ -217,8 +208,8 @@ class FileHound extends EventEmitter {
    *   .find()
    *   .each(console.log);
    */
-  paths() {
-    this._searchPaths = _.uniq(from(arguments)).map(path.normalize);
+  paths(...args) {
+    this.searchPaths = _.uniq(from(args)).map(path.normalize);
     return this;
   }
 
@@ -240,8 +231,8 @@ class FileHound extends EventEmitter {
    *   .find()
    *   .each(console.log);
    */
-  path() {
-    return this.paths(fromFirst(arguments));
+  path(path) {
+    return this.paths(path);
   }
 
   /**
@@ -262,9 +253,9 @@ class FileHound extends EventEmitter {
    *   .find()
    *   .each(console.log);
    */
-  discard() {
-    const patterns = from(arguments);
-    patterns.forEach((pattern) => {
+  discard(...args) {
+    const patterns = from(args);
+    patterns.forEach(pattern => {
       this.addFilter(negate(isRegExpMatch(pattern)));
     });
     return this;
@@ -302,10 +293,10 @@ class FileHound extends EventEmitter {
    *   .find()
    *   .each(console.log);
    */
-  ext() {
-    const extensions = from(arguments).map(cleanExtension);
+  ext(...args) {
+    const extensions = from(args).map(cleanExtension);
 
-    this.addFilter((file) => {
+    this.addFilter(file => {
       return _.includes(extensions, file.getPathExtension());
     });
     return this;
@@ -330,7 +321,7 @@ class FileHound extends EventEmitter {
    *   .each(console.log);
    */
   size(sizeExpression) {
-    this.addFilter((file) => {
+    this.addFilter(file => {
       const size = file.sizeSync();
       return isNumber(size).assert(sizeExpression);
     });
@@ -387,7 +378,7 @@ class FileHound extends EventEmitter {
    * @see glob
    */
   match(globPattern) {
-    this.addFilter((file) => {
+    this.addFilter(file => {
       return file.isMatch(globPattern);
     });
     return this;
@@ -435,7 +426,7 @@ class FileHound extends EventEmitter {
    *   .each(console.log); // array of files names that are not hidden files
    */
   ignoreHiddenFiles() {
-    this.addFilter((file) => {
+    this.addFilter(file => {
       return !file.isHiddenSync();
     });
     return this;
@@ -459,7 +450,7 @@ class FileHound extends EventEmitter {
    *   .each(console.log); // array of files names that are not hidden directories
    */
   ignoreHiddenDirectories() {
-    this._ignoreHiddenDirectories = true;
+    this.ignoreDirs = true;
     return this;
   }
 
@@ -481,7 +472,7 @@ class FileHound extends EventEmitter {
    *   .each(console.log); // array of matching sub-directories
    */
   directory() {
-    this._directoriesOnly = true;
+    this.directoriesOnly = true;
     return this;
   }
 
@@ -503,7 +494,7 @@ class FileHound extends EventEmitter {
    *   .each(console.log); // array of matching sockets
    */
   socket() {
-    this.addFilter((file) => {
+    this.addFilter(file => {
       return file.isSocket();
     });
     return this;
@@ -558,24 +549,22 @@ class FileHound extends EventEmitter {
    *      console.log(files);
    *   });
    */
-  find(cb) {
+  find() {
     this._initFilters();
 
     const searchAsync = this._searchAsync.bind(this);
     const searches = Promise.map(this.getSearchPaths(), searchAsync);
 
-    return Promise
-      .all(searches)
+    return Promise.all(searches)
       .reduce(flatten)
       .map(getFilename)
-      .catch((e) => {
-        this.emit('error', e);
+      .catch(e => {
+        this.emit("error", e);
         throw e;
       })
       .finally(() => {
-        this.emit('end');
-      })
-      .asCallback(cb);
+        this.emit("end");
+      });
   }
 
   /**
@@ -611,12 +600,13 @@ class FileHound extends EventEmitter {
   }
 
   _shouldFilterDirectory(root, dir) {
-    return this._atMaxDepth(root, dir) ||
-      (this._ignoreHiddenDirectories && dir.isHiddenSync());
+    return (
+      this._atMaxDepth(root, dir) || (this.ignoreDirs && dir.isHiddenSync())
+    );
   }
 
   _newMatcher() {
-    const isMatch = compose(this._filters);
+    const isMatch = compose(this.filters);
     if (this.negateFilters) {
       return negate(isMatch);
     }
@@ -624,15 +614,15 @@ class FileHound extends EventEmitter {
   }
 
   _initFilters() {
-    this._isMatch = this._newMatcher();
+    this.isMatch = this._newMatcher();
   }
 
   _searchSync(dir) {
-    this._sync = true;
+    this.sync = true;
     const root = File.create(dir);
     const trackedPaths = [];
     const files = this._search(root, root, trackedPaths);
-    return this._directoriesOnly ? trackedPaths.filter(this._isMatch) : files;
+    return this.directoriesOnly ? trackedPaths.filter(this.isMatch) : files;
   }
 
   _searchAsync(dir) {
@@ -640,23 +630,24 @@ class FileHound extends EventEmitter {
     const trackedPaths = [];
     const pending = this._search(root, root, trackedPaths);
 
-    return pending
-      .then((files) => {
-        if (this._directoriesOnly) return trackedPaths.filter(this._isMatch);
+    return pending.then(files => {
+      if (this.directoriesOnly) return trackedPaths.filter(this.isMatch);
 
-        files.forEach((file) => {
-          this.emit('match', file.getName());
-        });
-        return files;
+      files.forEach(file => {
+        this.emit("match", file.getName());
       });
+      return files;
+    });
   }
 
   _search(root, path, trackedPaths) {
     if (this._shouldFilterDirectory(root, path)) return [];
 
-    const getFiles = this._sync ? path.getFilesSync.bind(path) : path.getFiles.bind(path);
+    const getFiles = this.sync
+      ? path.getFilesSync.bind(path)
+      : path.getFiles.bind(path);
     return getFiles()
-      .map((file) => {
+      .map(file => {
         if (file.isDirectorySync()) {
           if (!this._shouldFilterDirectory(root, file)) trackedPaths.push(file);
 
@@ -665,12 +656,13 @@ class FileHound extends EventEmitter {
         return file;
       })
       .reduce(flatten, [])
-      .filter(this._isMatch);
+      .filter(this.isMatch);
   }
 
   getSearchPaths() {
-    const paths = isDefined(this.maxDepth) ?
-      this._searchPaths : reducePaths(this._searchPaths);
+    const paths = isDefined(this.maxDepth)
+      ? this.searchPaths
+      : reducePaths(this.searchPaths);
 
     return copy(paths);
   }
