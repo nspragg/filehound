@@ -10,6 +10,7 @@
     "watch": "tsc --watch",
     "clean": "rm -fr lib/*",
     "prepublish": "npm run build",
+    "prepublishOnly": "tsc -p ./ --outDir dist",
     "coverage":
       "istanbul cover -e .ts _mocha -- --compilers ts:ts-node/register",
     "test": "mocha -r ts-node/register test/*.ts"
