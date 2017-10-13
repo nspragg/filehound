@@ -1,6 +1,6 @@
 {
   "name": "filehound",
-  "version": "2.0.0",
+  "version": "2.0.0-alpha.1",
   "description": "Find files the easy way",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,8 @@
     "watch": "tsc --watch",
     "clean": "rm -fr lib/*",
     "prepublish": "npm run build",
-    "coverage": "istanbul cover -e .ts _mocha -- --compilers ts:ts-node/register",
+    "coverage":
+      "istanbul cover -e .ts _mocha -- --compilers ts:ts-node/register",
     "test": "mocha -r ts-node/register test/*.ts"
   },
   "repository": {
@@ -64,22 +65,13 @@
       "es6": true
     },
     "rules": {
-      "quotes": [
-        2,
-        "single"
-      ],
+      "quotes": [2, "single"],
       "eqeqeq": 2,
       "no-var": 2,
-      "one-var": [
-        2,
-        "never"
-      ],
+      "one-var": [2, "never"],
       "prefer-const": 2,
       "semi": 2,
-      "strict": [
-        2,
-        "global"
-      ],
+      "strict": [2, "global"],
       "arrow-parens": 2,
       "prefer-arrow-callback": 2
     }

@@ -1,1 +1,1 @@
-module.exports = require('./lib/filehound').default;
+module.exports = require('./lib/src/filehound').default;
