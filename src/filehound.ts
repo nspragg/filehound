@@ -1,13 +1,13 @@
-import * as _ from "lodash";
-import { Promise } from "bluebird";
-import * as path from "path";
-import * as File from "file-js";
+import * as _ from 'lodash';
+import { Promise } from 'bluebird';
+import * as path from 'path';
+import * as File from 'file-js';
 
-import { negate, compose } from "./functions";
-import { reducePaths } from "./files";
-import { copy, from } from "./arrays";
-import { isDate, isNumber } from "unit-compare";
-import { EventEmitter } from "events";
+import { negate, compose } from './functions';
+import { reducePaths } from './files';
+import { copy, from } from './arrays';
+import { isDate, isNumber } from 'unit-compare';
+import { EventEmitter } from 'events';
 
 function isDefined(value) {
   return value !== undefined;
@@ -28,7 +28,7 @@ function isRegExpMatch(pattern) {
 }
 
 function cleanExtension(ext) {
-  if (_.startsWith(ext, ".")) {
+  if (_.startsWith(ext, '.')) {
     return ext.slice(1);
   }
   return ext;
@@ -559,11 +559,11 @@ class FileHound extends EventEmitter {
       .reduce(flatten)
       .map(getFilename)
       .catch(e => {
-        this.emit("error", e);
+        this.emit('error', e);
         throw e;
       })
       .finally(() => {
-        this.emit("end");
+        this.emit('end');
       });
   }
 
@@ -634,7 +634,7 @@ class FileHound extends EventEmitter {
       if (this.directoriesOnly) return trackedPaths.filter(this.isMatch);
 
       files.forEach(file => {
-        this.emit("match", file.getName());
+        this.emit('match', file.getName());
       });
       return files;
     });
