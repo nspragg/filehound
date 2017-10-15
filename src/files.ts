@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import * as path from 'path';
 import * as os from 'os';
 
-function flatten(a: Array<any>, b: Array<any>) {
+function flatten(a, b) {
   return a.concat(b);
 }
 
