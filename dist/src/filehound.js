@@ -20,7 +20,7 @@ function toFilename(file) {
     return file.getName();
 }
 function isRegExpMatch(pattern) {
-    return file => {
+    return (file) => {
         return new RegExp(pattern).test(file.getName());
     };
 }
@@ -43,6 +43,7 @@ class FileHound extends events_1.EventEmitter {
         this.directoriesOnly = false;
         bind_1.default(this);
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Static factory method to create an instance of FileHound
      *
@@ -59,6 +60,7 @@ class FileHound extends events_1.EventEmitter {
     static create() {
         return new FileHound();
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Returns all matches from one of more FileHound instances
      *
@@ -76,6 +78,7 @@ class FileHound extends events_1.EventEmitter {
     static any(...args) {
         return bluebird_1.Promise.all(arrays_1.from(args)).reduce(flatten, []);
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Filters by modifiction time
      *
@@ -94,11 +97,12 @@ class FileHound extends events_1.EventEmitter {
      *   .each(console.log);
      */
     modified(pattern) {
-        return this.addFilter(file => {
+        return this.addFilter((file) => {
             const modified = file.lastModifiedSync();
             return unit_compare_1.isDate(modified).assert(pattern);
         });
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Filters by file access time
      *
@@ -117,11 +121,12 @@ class FileHound extends events_1.EventEmitter {
      *   .each(console.log);
      */
     accessed(pattern) {
-        return this.addFilter(file => {
+        return this.addFilter((file) => {
             const accessed = file.lastAccessedSync();
             return unit_compare_1.isDate(accessed).assert(pattern);
         });
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Filters change time
      *
@@ -141,11 +146,12 @@ class FileHound extends events_1.EventEmitter {
      *   .each(console.log);
      */
     changed(pattern) {
-        return this.addFilter(file => {
+        return this.addFilter((file) => {
             const changed = file.lastChangedSync();
             return unit_compare_1.isDate(changed).assert(pattern);
         });
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      *
      * @memberOf FileHound
@@ -167,6 +173,7 @@ class FileHound extends events_1.EventEmitter {
         this.filters.push(filter);
         return this;
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Defines the search paths
      *
@@ -189,6 +196,7 @@ class FileHound extends events_1.EventEmitter {
         this.searchPaths = _.uniq(arrays_1.from(args)).map(path.normalize);
         return this;
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Define the search path
      *
@@ -210,6 +218,7 @@ class FileHound extends events_1.EventEmitter {
     path(path) {
         return this.paths(path);
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Ignores files or sub-directories matching pattern
      *
@@ -230,11 +239,12 @@ class FileHound extends events_1.EventEmitter {
      */
     discard(...args) {
         const patterns = arrays_1.from(args);
-        patterns.forEach(pattern => {
+        patterns.forEach((pattern) => {
             this.addFilter(functions_1.negate(isRegExpMatch(pattern)));
         });
         return this;
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Filter on file extension
      *
@@ -271,6 +281,7 @@ class FileHound extends events_1.EventEmitter {
         const extensions = arrays_1.from(args).map(cleanExtension);
         return this.addFilter(file => _.includes(extensions, file.getPathExtension()));
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Filter by file size
      *
@@ -290,11 +301,12 @@ class FileHound extends events_1.EventEmitter {
      *   .each(console.log);
      */
     size(sizeExpression) {
-        return this.addFilter(file => {
+        return this.addFilter((file) => {
             const size = file.sizeSync();
             return unit_compare_1.isNumber(size).assert(sizeExpression);
         });
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Filter by zero length files
      *
@@ -316,6 +328,7 @@ class FileHound extends events_1.EventEmitter {
     isEmpty() {
         return this.size(0);
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Filter by a file glob
      *
@@ -337,6 +350,7 @@ class FileHound extends events_1.EventEmitter {
     glob(globPattern) {
         return this.match(globPattern);
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Same as glob
      * @see glob
@@ -344,6 +358,7 @@ class FileHound extends events_1.EventEmitter {
     match(globPattern) {
         return this.addFilter(file => file.isMatch(globPattern));
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Negates filters
      *
@@ -367,6 +382,7 @@ class FileHound extends events_1.EventEmitter {
         this.negateFilters = true;
         return this;
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Filter to ignore hidden files
      *
@@ -387,6 +403,7 @@ class FileHound extends events_1.EventEmitter {
     ignoreHiddenFiles() {
         return this.addFilter(file => !file.isHiddenSync());
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Ignore hidden directories
      *
@@ -408,6 +425,7 @@ class FileHound extends events_1.EventEmitter {
         this.ignoreDirs = true;
         return this;
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Find sub-directories
      *
@@ -429,6 +447,7 @@ class FileHound extends events_1.EventEmitter {
         this.directoriesOnly = true;
         return this;
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Find sockets
      *
@@ -449,6 +468,7 @@ class FileHound extends events_1.EventEmitter {
     socket() {
         return this.addFilter(file => file.isSocket());
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Specify the directory search depth. If set to zero, recursive searching
      * will be disabled
@@ -471,6 +491,7 @@ class FileHound extends events_1.EventEmitter {
         this.maxDepth = depth;
         return this;
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Asynchronously executes a file search.
      *
@@ -504,12 +525,13 @@ class FileHound extends events_1.EventEmitter {
         return bluebird_1.Promise.all(searches)
             .reduce(flatten)
             .map(toFilename)
-            .catch(e => {
+            .catch((e) => {
             this.emit('error', e);
             throw e;
         })
             .finally(() => this.emit('end'));
     }
+    // tslint:disable-next-line:valid-jsdoc
     /**
      * Synchronously executes a file search.
      *
@@ -567,26 +589,29 @@ class FileHound extends events_1.EventEmitter {
         const root = File.create(dir);
         const trackedPaths = [];
         const pending = this.search(root, root, trackedPaths);
-        return pending.then(files => {
-            if (this.directoriesOnly)
+        return pending.then((files) => {
+            if (this.directoriesOnly) {
                 return trackedPaths.filter(this.isMatch);
-            files.forEach(file => {
+            }
+            files.forEach((file) => {
                 this.emit('match', file.getName());
             });
             return files;
         });
     }
     search(root, path, trackedPaths) {
-        if (this.shouldFilterDirectory(root, path))
+        if (this.shouldFilterDirectory(root, path)) {
             return [];
+        }
         const getFiles = this.sync
             ? path.getFilesSync.bind(path)
             : path.getFiles.bind(path);
         return getFiles()
-            .map(file => {
+            .map((file) => {
             if (file.isDirectorySync()) {
-                if (!this.shouldFilterDirectory(root, file))
+                if (!this.shouldFilterDirectory(root, file)) {
                     trackedPaths.push(file);
+                }
                 return this.search(root, file, trackedPaths);
             }
             return file;

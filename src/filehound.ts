@@ -8,13 +8,13 @@ import { reducePaths } from './files';
 import { copy, from } from './arrays';
 import { isDate, isNumber } from 'unit-compare';
 import { EventEmitter } from 'events';
-import auto from './bind';
+import bind from './bind';
 
 function isDefined(value: any): any {
   return value !== undefined;
 }
 
-function flatten(a: Array<File>, b: Array<File>): Array<File> {
+function flatten(a: File[], b: File[]): File[] {
   return a.concat(b);
 }
 
@@ -23,7 +23,7 @@ function toFilename(file: File): string {
 }
 
 function isRegExpMatch(pattern: string): (file: File) => boolean {
-  return file => {
+  return (file) => {
     return new RegExp(pattern).test(file.getName());
   };
 }
@@ -37,8 +37,8 @@ function cleanExtension(ext: string): string {
 
 /** @class */
 class FileHound extends EventEmitter {
-  private filters: Array<(args: any) => any>;
-  private searchPaths: Array<string>;
+  private filters: ((args: any) => any)[];
+  private searchPaths: string[];
   private ignoreDirs: boolean;
   private isMatch: (args: any) => boolean;
   private sync: boolean;
@@ -55,9 +55,10 @@ class FileHound extends EventEmitter {
     this.isMatch = _.noop;
     this.sync = false;
     this.directoriesOnly = false;
-    auto(this);
+    bind(this);
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Static factory method to create an instance of FileHound
    *
@@ -75,6 +76,7 @@ class FileHound extends EventEmitter {
     return new FileHound();
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Returns all matches from one of more FileHound instances
    *
@@ -89,10 +91,11 @@ class FileHound extends EventEmitter {
    *
    * const filehound = FileHound.any(fh1, fh2);
    */
-  public static any(...args: Array<string>): Promise<Array<string>> {
+  public static any(...args: string[]): Promise<string[]> {
     return Promise.all(from(args)).reduce(flatten, []);
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Filters by modifiction time
    *
@@ -111,12 +114,13 @@ class FileHound extends EventEmitter {
    *   .each(console.log);
    */
   public modified(pattern): FileHound {
-    return this.addFilter(file => {
+    return this.addFilter((file) => {
       const modified = file.lastModifiedSync();
       return isDate(modified).assert(pattern);
     });
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Filters by file access time
    *
@@ -135,12 +139,13 @@ class FileHound extends EventEmitter {
    *   .each(console.log);
    */
   public accessed(pattern): FileHound {
-    return this.addFilter(file => {
+    return this.addFilter((file) => {
       const accessed = file.lastAccessedSync();
       return isDate(accessed).assert(pattern);
     });
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Filters change time
    *
@@ -160,12 +165,13 @@ class FileHound extends EventEmitter {
    *   .each(console.log);
    */
   public changed(pattern): FileHound {
-    return this.addFilter(file => {
+    return this.addFilter((file) => {
       const changed = file.lastChangedSync();
       return isDate(changed).assert(pattern);
     });
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    *
    * @memberOf FileHound
@@ -188,6 +194,7 @@ class FileHound extends EventEmitter {
     return this;
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Defines the search paths
    *
@@ -211,6 +218,8 @@ class FileHound extends EventEmitter {
     return this;
   }
 
+  // tslint:disable-next-line:valid-jsdoc
+
   /**
    * Define the search path
    *
@@ -233,6 +242,7 @@ class FileHound extends EventEmitter {
     return this.paths(path);
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Ignores files or sub-directories matching pattern
    *
@@ -253,12 +263,13 @@ class FileHound extends EventEmitter {
    */
   public discard(...args): FileHound {
     const patterns = from(args);
-    patterns.forEach(pattern => {
+    patterns.forEach((pattern) => {
       this.addFilter(negate(isRegExpMatch(pattern)));
     });
     return this;
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Filter on file extension
    *
@@ -293,12 +304,11 @@ class FileHound extends EventEmitter {
    */
   public ext(...args): FileHound {
     const extensions = from(args).map(cleanExtension);
-
-    return this.addFilter(file =>
-      _.includes(extensions, file.getPathExtension())
+    return this.addFilter(file => _.includes(extensions, file.getPathExtension())
     );
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Filter by file size
    *
@@ -318,12 +328,13 @@ class FileHound extends EventEmitter {
    *   .each(console.log);
    */
   public size(sizeExpression): FileHound {
-    return this.addFilter(file => {
+    return this.addFilter((file) => {
       const size = file.sizeSync();
       return isNumber(size).assert(sizeExpression);
     });
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Filter by zero length files
    *
@@ -346,6 +357,7 @@ class FileHound extends EventEmitter {
     return this.size(0);
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Filter by a file glob
    *
@@ -368,6 +380,7 @@ class FileHound extends EventEmitter {
     return this.match(globPattern);
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Same as glob
    * @see glob
@@ -376,6 +389,7 @@ class FileHound extends EventEmitter {
     return this.addFilter(file => file.isMatch(globPattern));
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Negates filters
    *
@@ -400,6 +414,7 @@ class FileHound extends EventEmitter {
     return this;
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Filter to ignore hidden files
    *
@@ -421,6 +436,7 @@ class FileHound extends EventEmitter {
     return this.addFilter(file => !file.isHiddenSync());
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Ignore hidden directories
    *
@@ -443,6 +459,7 @@ class FileHound extends EventEmitter {
     return this;
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Find sub-directories
    *
@@ -465,6 +482,7 @@ class FileHound extends EventEmitter {
     return this;
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Find sockets
    *
@@ -486,6 +504,7 @@ class FileHound extends EventEmitter {
     return this.addFilter(file => file.isSocket());
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Specify the directory search depth. If set to zero, recursive searching
    * will be disabled
@@ -509,6 +528,7 @@ class FileHound extends EventEmitter {
     return this;
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Asynchronously executes a file search.
    *
@@ -535,22 +555,23 @@ class FileHound extends EventEmitter {
    *      console.log(files);
    *   });
    */
-  public find(): Promise<Array<String>> {
+  public find(): Promise<string[]> {
     this.initFilters();
 
-    const paths: Array<string> = this.getSearchPaths();
+    const paths: string[] = this.getSearchPaths();
     const searches = Promise.map(paths, this.searchAsync);
 
     return Promise.all(searches)
       .reduce(flatten)
       .map(toFilename)
-      .catch(e => {
+      .catch((e) => {
         this.emit('error', e);
         throw e;
       })
       .finally(() => this.emit('end'));
   }
 
+  // tslint:disable-next-line:valid-jsdoc
   /**
    * Synchronously executes a file search.
    *
@@ -567,7 +588,7 @@ class FileHound extends EventEmitter {
    * console.log(files);
    *
    */
-  public findSync(): Array<string> {
+  public findSync(): string[] {
     this.initFilters();
 
     return this.getSearchPaths()
@@ -576,12 +597,12 @@ class FileHound extends EventEmitter {
       .map(toFilename);
   }
 
-  public getSearchPaths(): Array<string> {
+  public getSearchPaths(): string[] {
     const paths = isDefined(this.maxDepth)
       ? this.searchPaths
       : reducePaths(this.searchPaths);
 
-    return copy<Array<string>>(paths);
+    return copy<string[]>(paths);
   }
 
   private atMaxDepth(root, dir): boolean {
@@ -595,7 +616,7 @@ class FileHound extends EventEmitter {
     );
   }
 
-  private newMatcher(): (any) => boolean {
+  private newMatcher(): (args: any) => boolean {
     const isMatch = compose(this.filters);
     if (this.negateFilters) {
       return negate(isMatch);
@@ -607,7 +628,7 @@ class FileHound extends EventEmitter {
     this.isMatch = this.newMatcher();
   }
 
-  private searchSync(dir: string): Array<File> {
+  private searchSync(dir: string): File[] {
     this.sync = true;
     const root = File.create(dir);
     const trackedPaths = [];
@@ -615,15 +636,15 @@ class FileHound extends EventEmitter {
     return this.directoriesOnly ? trackedPaths.filter(this.isMatch) : files;
   }
 
-  private searchAsync(dir: string): Promise<Array<File>> {
+  private searchAsync(dir: string): Promise<File[]> {
     const root: File = File.create(dir);
-    const trackedPaths: Array<File> = [];
-    const pending: Promise<Array<File>> = this.search(root, root, trackedPaths);
+    const trackedPaths: File[] = [];
+    const pending: Promise<File[]> = this.search(root, root, trackedPaths);
 
-    return pending.then(files => {
-      if (this.directoriesOnly) return trackedPaths.filter(this.isMatch);
+    return pending.then((files) => {
+      if (this.directoriesOnly) { return trackedPaths.filter(this.isMatch); }
 
-      files.forEach(file => {
+      files.forEach((file) => {
         this.emit('match', file.getName());
       });
       return files;
@@ -633,18 +654,18 @@ class FileHound extends EventEmitter {
   private search(
     root: File,
     path: File,
-    trackedPaths: Array<File>
-  ): Promise<Array<File>> {
-    if (this.shouldFilterDirectory(root, path)) return [];
+    trackedPaths: File[]
+  ): Promise<File[]> {
+    if (this.shouldFilterDirectory(root, path)) { return []; }
 
     const getFiles = this.sync
       ? path.getFilesSync.bind(path)
       : path.getFiles.bind(path);
 
     return getFiles()
-      .map(file => {
+      .map((file) => {
         if (file.isDirectorySync()) {
-          if (!this.shouldFilterDirectory(root, file)) trackedPaths.push(file);
+          if (!this.shouldFilterDirectory(root, file)) { trackedPaths.push(file); }
 
           return this.search(root, file, trackedPaths);
         }

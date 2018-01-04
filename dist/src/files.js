@@ -20,20 +20,20 @@ function getRoot(dir) {
 }
 exports.getRoot = getRoot;
 function getSubDirectories(base, allPaths) {
-    return allPaths.filter(candidate => {
+    return allPaths.filter((candidate) => {
         return base !== candidate && isSubDirectory(base, candidate);
     });
 }
 function findSubDirectories(paths) {
     return paths
-        .map(path => {
+        .map((path) => {
         return getSubDirectories(path, paths);
     })
         .reduce(flatten, []);
 }
 exports.findSubDirectories = findSubDirectories;
 function notSubDirectory(subDirs) {
-    return path => {
+    return (path) => {
         return !_.includes(subDirs, path);
     };
 }

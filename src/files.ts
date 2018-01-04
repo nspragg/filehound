@@ -23,23 +23,23 @@ export function getRoot(dir: string): string {
 
 function getSubDirectories(
   base: string,
-  allPaths: Array<string>
-): Array<string> {
-  return allPaths.filter(candidate => {
+  allPaths: string[]
+): string[] {
+  return allPaths.filter((candidate) => {
     return base !== candidate && isSubDirectory(base, candidate);
   });
 }
 
-export function findSubDirectories(paths: Array<string>): Array<string> {
+export function findSubDirectories(paths: string[]): string[] {
   return paths
-    .map(path => {
+    .map((path) => {
       return getSubDirectories(path, paths);
     })
     .reduce(flatten, []);
 }
 
-export function notSubDirectory(subDirs: Array<string>): (string) => boolean {
-  return path => {
+export function notSubDirectory(subDirs: string[]): (s: string) => boolean {
+  return (path) => {
     return !_.includes(subDirs, path);
   };
 }
@@ -55,7 +55,7 @@ export function isSubDirectory(base, candidate: string): boolean {
   return false;
 }
 
-export function reducePaths(searchPaths: Array<string>): Array<string> {
+export function reducePaths(searchPaths: string[]): string[] {
   if (searchPaths.length === 1) {
     return searchPaths;
   }

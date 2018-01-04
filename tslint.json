@@ -1,0 +1,42 @@
+{
+  "extends": [
+    "tslint-eslint-rules",
+    "tslint-config-airbnb",
+    "eslint-config-iplayer-base"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2017
+  },
+  "rules": {
+    "no-magic-numbers": false,
+    "variable-name": [
+      true,
+      "ban-keywords"
+    ],
+    "align": false,
+    "max-line-length": false,
+    "no-parameter-reassignment": true,
+    "trailing-comma": [
+      true,
+      {
+        "multiline": "never",
+        "singleline": "never"
+      }
+    ],
+    "no-console": true,
+    "no-conditional-assignment": true,
+    "no-empty": false,
+    "newline-before-return": false,
+    "array-bracket-spacing": false,
+    "no-unused-variable": true,
+    "strict-boolean-expressions": false
+  },
+  "linterOptions": {
+    "exclude": [
+      "node_modules",
+      "coverage",
+      "bake-scripts",
+      "**/*.json"
+    ]
+  }
+}

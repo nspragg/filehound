@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
-import FileHound from '../src/filehound';
+import filehound from '../src/filehound';
 import * as moment from 'moment';
 import * as sinon from 'sinon';
 import * as File from 'file-js';
@@ -32,7 +32,7 @@ function qualifyNames(names) {
 }
 
 function createFile(fname, opts) {
-  const time = new Date(moment().subtract(opts.duration, opts.modifier));
+  const time = new Date(moment().subtract(opts.duration, opts.modifier).format());
   const fd = fs.openSync(fname, 'w+');
   fs.futimesSync(fd, time, time);
   fs.closeSync(fd);
@@ -76,12 +76,12 @@ describe('FileHound', () => {
     });
 
     it('filters by socket type files', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/types')
         .socket()
         .find();
 
-      return query.then(sockets => {
+      return query.then((sockets) => {
         assert.deepEqual(sockets, [file.getName()]);
       });
     });
@@ -96,12 +96,12 @@ describe('FileHound', () => {
         '/deeplyNested/mydir/mydir2/mydir3/mydir4'
       ]);
 
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/deeplyNested')
         .directory()
         .find();
 
-      return query.then(directories => {
+      return query.then((directories) => {
         assert.deepEqual(directories, expectedDirectories);
       });
     });
@@ -114,13 +114,13 @@ describe('FileHound', () => {
         '/deeplyNestedWithHiddenDir/mydir/mydir2/mydir3/mydir4'
       ]);
 
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/deeplyNestedWithHiddenDir')
         .directory()
         .ignoreHiddenDirectories()
         .find();
 
-      return query.then(directories => {
+      return query.then((directories) => {
         assert.deepEqual(directories, expectedDirectories);
       });
     });
@@ -132,14 +132,14 @@ describe('FileHound', () => {
         '/deeplyNested/mydir/mydir2/mydir3'
       ]);
 
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/deeplyNested')
         .directory()
         .match('*dir4*')
         .not()
         .find();
 
-      return query.then(directories => {
+      return query.then((directories) => {
         assert.deepEqual(directories, expectedDirectories);
       });
     });
@@ -147,12 +147,12 @@ describe('FileHound', () => {
 
   describe('.depth', () => {
     it('only returns files in the current directory', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/deeplyNested')
         .depth(0)
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(
           files,
           qualifyNames(['/deeplyNested/c.json', 'deeplyNested/d.json'])
@@ -161,12 +161,12 @@ describe('FileHound', () => {
     });
 
     it('only returns files one level deep', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/deeplyNested')
         .depth(1)
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(
           files,
           qualifyNames([
@@ -179,12 +179,12 @@ describe('FileHound', () => {
     });
 
     it('returns files n level deep', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/deeplyNested')
         .depth(3)
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         files.sort();
         assert.deepEqual(
           files,
@@ -201,12 +201,12 @@ describe('FileHound', () => {
     });
 
     it('returns files n level deep relative to path', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/deeplyNested', fixtureDir + '/deeplyNested/mydir')
         .depth(0)
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         files.sort();
         assert.deepEqual(
           files,
@@ -222,24 +222,23 @@ describe('FileHound', () => {
 
   describe('.path', () => {
     it('returns all files in a given directory', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .path(fixtureDir + '/justFiles')
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(files, justFiles);
       });
     });
 
     it('ignores all paths except the first', () => {
       const location1 = fixtureDir + '/justFiles';
-      const location2 = fixtureDir + '/nested';
 
-      const query = FileHound.create()
+      const query = filehound.create()
         .path(location1)
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(files, justFiles);
       });
     });
@@ -247,11 +246,11 @@ describe('FileHound', () => {
     it('returns an error when a given path is invalid', () => {
       const badLocation = fixtureDir + '/justBad';
 
-      const query = FileHound.create()
+      const query = filehound.create()
         .path(badLocation)
         .find();
 
-      return query.catch(err => {
+      return query.catch((err) => {
         assert.ok(err);
       });
     });
@@ -259,21 +258,21 @@ describe('FileHound', () => {
 
   describe('.paths', () => {
     it('returns all files in a given directory', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/justFiles')
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(files, justFiles);
       });
     });
 
     it('returns files performing a recursive search', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/nested')
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(files, nestedFiles);
       });
     });
@@ -282,11 +281,11 @@ describe('FileHound', () => {
       const location1 = fixtureDir + '/nested';
       const location2 = fixtureDir + '/justFiles';
 
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(location1, location2)
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         const expected = nestedFiles.concat(justFiles).sort();
         assert.deepEqual(files, expected);
       });
@@ -296,11 +295,11 @@ describe('FileHound', () => {
       const location1 = fixtureDir + '/nested';
       const location2 = fixtureDir + '/justFiles';
 
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths([location1, location2])
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         const expected = nestedFiles.concat(justFiles).sort();
         assert.deepEqual(files, expected);
       });
@@ -309,14 +308,14 @@ describe('FileHound', () => {
     it('removes duplicate paths', () => {
       const location1 = fixtureDir + '/nested';
 
-      const fh = FileHound.create();
+      const fh = filehound.create();
       fh.paths(location1, location1);
 
       assert.deepEqual(fh.getSearchPaths(), [location1]);
     });
 
     it('returns a defensive copy of the search directories', () => {
-      const fh = FileHound.create();
+      const fh = filehound.create();
       fh.paths('a', 'b', 'c');
       const directories = fh.getSearchPaths();
       directories.push('d');
@@ -330,7 +329,7 @@ describe('FileHound', () => {
       const location3 = fixtureDir + '/justFiles/moreFiles';
       const location4 = fixtureDir + '/justFiles';
 
-      const fh = FileHound.create();
+      const fh = filehound.create();
       fh.paths(location2, location1, location4, location3);
 
       assert.deepEqual(fh.getSearchPaths(), [location4, location1]);
@@ -339,12 +338,12 @@ describe('FileHound', () => {
 
   describe('.discard', () => {
     it('ignores matching sub-directories', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/nested')
         .discard('mydir')
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(
           files,
           qualifyNames(['/nested/c.json', '/nested/d.json'])
@@ -353,12 +352,12 @@ describe('FileHound', () => {
     });
 
     it('ignores files', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/nested')
         .discard('c.json')
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(
           files,
           qualifyNames(['/nested/d.json', '/nested/mydir/e.json'])
@@ -367,35 +366,35 @@ describe('FileHound', () => {
     });
 
     it('ignores everything using a greedy match', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/nested')
         .discard('.*')
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(files, []);
       });
     });
 
     it('matches all files after being negated', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/nested')
         .discard('.*')
         .not()
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(files, nestedFiles);
       });
     });
 
     it('applies multiple discard filters as variable aruments', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/mixed')
         .discard('a.json', 'z.json')
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(
           files,
           qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json'])
@@ -404,12 +403,12 @@ describe('FileHound', () => {
     });
 
     it('applies an array of discard filters', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .paths(fixtureDir + '/mixed')
         .discard(['a.json', 'z.json'])
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(
           files,
           qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json'])
@@ -420,7 +419,7 @@ describe('FileHound', () => {
 
   describe('.findSync', () => {
     it('returns an array of matching files', () => {
-      const files = FileHound.create()
+      const files = filehound.create()
         .paths(fixtureDir + '/justFiles')
         .findSync();
 
@@ -434,7 +433,7 @@ describe('FileHound', () => {
         '/deeplyNested/mydir/mydir2/mydir3'
       ]);
 
-      const directories = FileHound.create()
+      const directories = filehound.create()
         .paths(fixtureDir + '/deeplyNested')
         .directory()
         .match('*dir4*')
@@ -445,7 +444,7 @@ describe('FileHound', () => {
     });
 
     it('filters matching files', () => {
-      const files = FileHound.create()
+      const files = filehound.create()
         .paths(fixtureDir + '/justFiles')
         .ext('txt')
         .findSync();
@@ -456,45 +455,45 @@ describe('FileHound', () => {
 
   describe('.ext', () => {
     it('returns files for a given ext', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .ext('txt')
         .paths(fixtureDir + '/justFiles')
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(files, textFiles);
       });
     });
 
     it('returns files for a given ext including a period', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .ext('.txt')
         .paths(fixtureDir + '/justFiles')
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(files, textFiles);
       });
     });
 
     it('returns files for all matching extensions', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .ext(['txt', '.json'])
         .paths(fixtureDir + '/ext')
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(files, mixedExtensions);
       });
     });
 
     it('supports var args', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .ext('.txt', 'json')
         .paths(fixtureDir + '/ext')
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(files, mixedExtensions);
       });
     });
@@ -502,34 +501,34 @@ describe('FileHound', () => {
 
   describe('.match', () => {
     it('returns files for given match name', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .match('*ab*.json')
         .paths(fixtureDir + '/mixed')
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(files.sort(), matchFiles);
       });
     });
 
     it('returns files using glob method', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .glob('*ab*.json')
         .paths(fixtureDir + '/mixed')
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(files.sort(), matchFiles);
       });
     });
 
     it('performs recursive search using matching on a given pattern', () => {
-      const query = FileHound.create()
+      const query = filehound.create()
         .match('*.json')
         .paths(fixtureDir + '/nested')
         .find();
 
-      return query.then(files => {
+      return query.then((files) => {
         assert.deepEqual(files.sort(), nestedFiles);
       });
     });
@@ -537,13 +536,13 @@ describe('FileHound', () => {
 
   describe('.not', () => {
     it('returns files not matching the given query', () => {
-      const notJsonStartingWithZ = FileHound.create()
+      const notJsonStartingWithZ = filehound.create()
         .match('*.json')
         .paths(fixtureDir + '/justFiles')
         .not()
         .find();
 
-      return notJsonStartingWithZ.then(files => {
+      return notJsonStartingWithZ.then((files) => {
         assert.deepEqual(files, qualifyNames(['/justFiles/dummy.txt']));
       });
     });
@@ -551,19 +550,19 @@ describe('FileHound', () => {
 
   describe('.any', () => {
     it('returns matching files for any query', () => {
-      const jsonStartingWithZ = FileHound.create()
+      const jsonStartingWithZ = filehound.create()
         .match('*.json')
         .paths(fixtureDir + '/justFiles')
         .find();
 
-      const onlyTextFles = FileHound.create()
+      const onlyTextFles = filehound.create()
         .ext('txt')
         .paths(fixtureDir + '/justFiles')
         .find();
 
-      const results = FileHound.any(jsonStartingWithZ, onlyTextFles);
+      const results = filehound.any(jsonStartingWithZ, onlyTextFles);
 
-      return results.then(files => {
+      return results.then((files) => {
         assert.deepEqual(files, justFiles);
       });
     });
@@ -571,45 +570,45 @@ describe('FileHound', () => {
 
   describe('.size', () => {
     it('returns files matched using the equality operator by default', () => {
-      const sizeFile10Bytes = FileHound.create()
+      const sizeFile10Bytes = filehound.create()
         .size(20)
         .paths(fixtureDir + '/justFiles')
         .find();
 
-      return sizeFile10Bytes.then(files => {
+      return sizeFile10Bytes.then((files) => {
         assert.deepEqual(files, qualifyNames(['/justFiles/b.json']));
       });
     });
 
     it('returns files that equal a given number of bytes', () => {
-      const sizeFile10Bytes = FileHound.create()
+      const sizeFile10Bytes = filehound.create()
         .size('==20')
         .paths(fixtureDir + '/justFiles')
         .find();
 
-      return sizeFile10Bytes.then(files => {
+      return sizeFile10Bytes.then((files) => {
         assert.deepEqual(files, qualifyNames(['/justFiles/b.json']));
       });
     });
 
     it('returns files greater than a given size', () => {
-      const sizeGreaterThan1k = FileHound.create()
+      const sizeGreaterThan1k = filehound.create()
         .size('>1024')
         .paths(fixtureDir + '/sizes')
         .find();
 
-      return sizeGreaterThan1k.then(files => {
+      return sizeGreaterThan1k.then((files) => {
         assert.deepEqual(files, qualifyNames(['/sizes/2k.txt']));
       });
     });
 
     it('returns files less than a given size', () => {
-      const sizeLessThan1k = FileHound.create()
+      const sizeLessThan1k = filehound.create()
         .size('<1024')
         .paths(fixtureDir + '/sizes')
         .find();
 
-      return sizeLessThan1k.then(files => {
+      return sizeLessThan1k.then((files) => {
         assert.deepEqual(
           files,
           qualifyNames(['/sizes/10b.txt', '/sizes/1b.txt'])
@@ -618,12 +617,12 @@ describe('FileHound', () => {
     });
 
     it('returns files using file size units', () => {
-      const sizeLessThan15bytes = FileHound.create()
+      const sizeLessThan15bytes = filehound.create()
         .size('<15b')
         .paths(fixtureDir + '/sizes')
         .find();
 
-      return sizeLessThan15bytes.then(files => {
+      return sizeLessThan15bytes.then((files) => {
         assert.deepEqual(
           files,
           qualifyNames(['/sizes/10b.txt', '/sizes/1b.txt'])
@@ -632,12 +631,12 @@ describe('FileHound', () => {
     });
 
     it('returns files less than or equal to a given size', () => {
-      const lessThanOrEqualTo1k = FileHound.create()
+      const lessThanOrEqualTo1k = filehound.create()
         .size('<=1024')
         .paths(fixtureDir + '/sizes')
         .find();
 
-      return lessThanOrEqualTo1k.then(files => {
+      return lessThanOrEqualTo1k.then((files) => {
         assert.deepEqual(
           files,
           qualifyNames(['/sizes/10b.txt', '/sizes/1b.txt', '/sizes/1k.txt'])
@@ -646,12 +645,12 @@ describe('FileHound', () => {
     });
 
     it('returns files greater than or equal to a given size', () => {
-      const greaterThanOrEqualTo1k = FileHound.create()
+      const greaterThanOrEqualTo1k = filehound.create()
         .size('>=1024')
         .paths(fixtureDir + '/sizes')
         .find();
 
-      return greaterThanOrEqualTo1k.then(files => {
+      return greaterThanOrEqualTo1k.then((files) => {
         assert.deepEqual(
           files,
           qualifyNames(['/sizes/1k.txt', '/sizes/2k.txt'])
@@ -660,13 +659,13 @@ describe('FileHound', () => {
     });
 
     it('returns files within a given size range', () => {
-      const range = FileHound.create()
+      const range = filehound.create()
         .size('>0')
         .size('<=1024')
         .paths(fixtureDir + '/sizes')
         .find();
 
-      return range.then(files => {
+      return range.then((files) => {
         assert.deepEqual(
           files,
           qualifyNames(['/sizes/10b.txt', '/sizes/1b.txt', '/sizes/1k.txt'])
@@ -677,12 +676,12 @@ describe('FileHound', () => {
 
   describe('.isEmpty()', () => {
     it('returns zero length files', () => {
-      const allEmpty = FileHound.create()
+      const allEmpty = filehound.create()
         .isEmpty()
         .paths(fixtureDir + '/justFiles')
         .find();
 
-      return allEmpty.then(files => {
+      return allEmpty.then((files) => {
         assert.deepEqual(
           files,
           qualifyNames(['/justFiles/a.json', '/justFiles/dummy.txt'])
@@ -693,12 +692,12 @@ describe('FileHound', () => {
 
   describe('.ignoreHiddenFiles()', () => {
     it('ignores hidden files', () => {
-      const noHiddenFiles = FileHound.create()
+      const noHiddenFiles = filehound.create()
         .ignoreHiddenFiles()
         .paths(fixtureDir + '/visibility')
         .find();
 
-      noHiddenFiles.then(files => {
+      noHiddenFiles.then((files) => {
         assert.equal(files.length, 2);
         assert.deepEqual(
           files,
@@ -711,13 +710,13 @@ describe('FileHound', () => {
     });
 
     it('ignores files within hidden directories', () => {
-      const noHiddenFiles = FileHound.create()
+      const noHiddenFiles = filehound.create()
         .ignoreHiddenDirectories()
         .ignoreHiddenFiles()
         .paths(fixtureDir + '/visibility')
         .find();
 
-      noHiddenFiles.then(files => {
+      noHiddenFiles.then((files) => {
         assert.equal(files.length, 1);
         assert.deepEqual(files, qualifyNames(['/visibility/visible.json']));
       });
@@ -726,14 +725,14 @@ describe('FileHound', () => {
 
   describe('.addFilter', () => {
     it('returns files based on a custom filter', () => {
-      const customFilter = FileHound.create()
-        .addFilter(file => {
+      const customFilter = filehound.create()
+        .addFilter((file) => {
           return file.sizeSync() === 1024;
         })
         .paths(fixtureDir + '/custom')
         .find();
 
-      return customFilter.then(files => {
+      return customFilter.then((files) => {
         assert.deepEqual(files, qualifyNames(['/custom/passed.txt']));
       });
     });
@@ -772,7 +771,7 @@ describe('FileHound', () => {
     ];
 
     beforeEach(() => {
-      files.forEach(file => {
+      files.forEach((file) => {
         createFile(file.name, {
           duration: file.modified,
           modifier: 'days'
@@ -781,40 +780,40 @@ describe('FileHound', () => {
     });
 
     afterEach(() => {
-      files.forEach(file => {
+      files.forEach((file) => {
         deleteFile(file.name);
       });
     });
 
     it('returns files modified exactly n days', () => {
-      const modifiedNDaysAgo = FileHound.create()
+      const modifiedNDaysAgo = filehound.create()
         .paths(fixtureDir + '/dates')
         .modified(10)
         .find();
 
-      return modifiedNDaysAgo.then(files => {
+      return modifiedNDaysAgo.then((files) => {
         assert.deepEqual(files, qualifyNames(['/dates/a.txt']));
       });
     });
 
     it('returns files greater than n days', () => {
-      const modifiedNDaysAgo = FileHound.create()
+      const modifiedNDaysAgo = filehound.create()
         .paths(fixtureDir + '/dates')
         .modified('>2 days')
         .find();
 
-      return modifiedNDaysAgo.then(files => {
+      return modifiedNDaysAgo.then((files) => {
         assert.deepEqual(files, qualifyNames(['/dates/a.txt', '/dates/w.txt']));
       });
     });
 
     it('returns files less than n days', () => {
-      const modifiedNDaysAgo = FileHound.create()
+      const modifiedNDaysAgo = filehound.create()
         .paths(fixtureDir + '/dates')
         .modified('<10 days')
         .find();
 
-      return modifiedNDaysAgo.then(files => {
+      return modifiedNDaysAgo.then((files) => {
         assert.deepEqual(
           files,
           qualifyNames([
@@ -861,7 +860,7 @@ describe('FileHound', () => {
     ];
 
     beforeEach(() => {
-      files.forEach(file => {
+      files.forEach((file) => {
         createFile(file.name, {
           duration: file.accessed,
           modifier: 'hours'
@@ -870,29 +869,29 @@ describe('FileHound', () => {
     });
 
     afterEach(() => {
-      files.forEach(file => {
+      files.forEach((file) => {
         deleteFile(file.name);
       });
     });
 
     it('returns files accessed > 8 hours ago', () => {
-      const accessedFiles = FileHound.create()
+      const accessedFiles = filehound.create()
         .paths(fixtureDir + '/dates')
         .accessed('>8h')
         .find();
 
-      return accessedFiles.then(files => {
+      return accessedFiles.then((files) => {
         assert.deepEqual(files, qualifyNames(['/dates/a.txt', '/dates/w.txt']));
       });
     });
 
     it('returns files accessed < 3 hours ago', () => {
-      const accessedFiles = FileHound.create()
+      const accessedFiles = filehound.create()
         .paths(fixtureDir + '/dates')
         .accessed('<3h')
         .find();
 
-      return accessedFiles.then(files => {
+      return accessedFiles.then((files) => {
         assert.deepEqual(
           files,
           qualifyNames(['/dates/x.txt', '/dates/y.txt', '/dates/z.txt'])
@@ -901,12 +900,12 @@ describe('FileHound', () => {
     });
 
     it('returns files accessed 1 hour ago', () => {
-      const accessedFiles = FileHound.create()
+      const accessedFiles = filehound.create()
         .paths(fixtureDir + '/dates')
         .accessed('=1h')
         .find();
 
-      return accessedFiles.then(files => {
+      return accessedFiles.then((files) => {
         assert.deepEqual(files, qualifyNames(['/dates/y.txt']));
       });
     });
@@ -921,7 +920,7 @@ describe('FileHound', () => {
 
       statSync = sandbox.stub(fs, 'statSync');
       statSync.returns({
-        isDirectory: function() {
+        isDirectory() {
           return true;
         }
       });
@@ -956,7 +955,7 @@ describe('FileHound', () => {
     ];
 
     beforeEach(() => {
-      files.forEach(file => {
+      files.forEach((file) => {
         createFile(file.name, {
           duration: file.changed,
           modifier: 'hours'
@@ -964,7 +963,7 @@ describe('FileHound', () => {
 
         statSync.withArgs(file.name).returns({
           ctime: moment().subtract(file.changed, 'hours'),
-          isDirectory: function() {
+          isDirectory() {
             return false;
           }
         });
@@ -972,29 +971,29 @@ describe('FileHound', () => {
     });
 
     afterEach(() => {
-      files.forEach(file => {
+      files.forEach((file) => {
         deleteFile(file.name);
       });
     });
 
     it('returns files changed > 8 hours ago', () => {
-      const changedFiles = FileHound.create()
+      const changedFiles = filehound.create()
         .paths(fixtureDir + '/dates')
         .changed('>8h')
         .find();
 
-      return changedFiles.then(files => {
+      return changedFiles.then((files) => {
         assert.deepEqual(files, qualifyNames(['/dates/a.txt', '/dates/w.txt']));
       });
     });
 
     it('returns files changed < 3 hours ago', () => {
-      const changedFiles = FileHound.create()
+      const changedFiles = filehound.create()
         .paths(fixtureDir + '/dates')
         .changed('<3h')
         .find();
 
-      return changedFiles.then(files => {
+      return changedFiles.then((files) => {
         assert.deepEqual(
           files,
           qualifyNames(['/dates/x.txt', '/dates/y.txt', '/dates/z.txt'])
@@ -1003,19 +1002,19 @@ describe('FileHound', () => {
     });
 
     it('returns files changed 1 hour ago', () => {
-      const changedFiles = FileHound.create()
+      const changedFiles = filehound.create()
         .paths(fixtureDir + '/dates')
         .changed('=1h')
         .find();
 
-      return changedFiles.then(files => {
+      return changedFiles.then((files) => {
         assert.deepEqual(files, qualifyNames(['/dates/y.txt']));
       });
     });
   });
 
   it('emits a match event for each file matched', () => {
-    const fh = FileHound.create();
+    const fh = filehound.create();
     fh.path(fixtureDir + '/justFiles');
 
     const spy = sinon.spy();
@@ -1032,7 +1031,7 @@ describe('FileHound', () => {
   });
 
   it('emits an end event when the search is complete', () => {
-    const fh = FileHound.create();
+    const fh = filehound.create();
     fh.path(fixtureDir + '/justFiles');
 
     const spy = sinon.spy();
@@ -1046,7 +1045,7 @@ describe('FileHound', () => {
   });
 
   it('emits an error event', () => {
-    const fh = FileHound.create();
+    const fh = filehound.create();
     fh.path(fixtureDir + '/justBad');
 
     const spy = sinon.spy();
@@ -1054,7 +1053,7 @@ describe('FileHound', () => {
 
     const query = fh.find();
 
-    return query.catch(e => {
+    return query.catch((e) => {
       assert.ok(e);
       sinon.assert.callCount(spy, 1);
     });

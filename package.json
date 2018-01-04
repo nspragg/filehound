@@ -1,19 +1,20 @@
 {
   "name": "filehound",
-  "version": "2.0.0-alpha.3",
+  "version": "2.0.0-alpha.4",
   "description": "Find files the easy way",
   "main": "index.js",
   "scripts": {
     "jsdoc": "jsdoc -c ./docconfig/jsdoc.json",
-    "lint": "eslint ./src ./test",
     "build": "tsc",
     "watch": "tsc --watch",
-    "clean": "rm -fr lib/*",
+    "clean": "rm -fr dist/*",
     "prepublish": "npm run build",
     "prepublishOnly": "tsc -p ./ --outDir dist",
-    "coverage":
-      "istanbul cover -e .ts _mocha -- --compilers ts:ts-node/register",
-    "test": "mocha -r ts-node/register test/*.ts"
+    "test": "mocha -r ts-node/register test/*.ts",
+    "posttest": "npm run lint",
+    "postinstall": "npm run build",
+    "lint": "tslint --project tsconfig.json",
+    "coverage": "nyc mocha && nyc report --reporter=html && nyc report --reporter=json-summary"
   },
   "repository": {
     "type": "git",
@@ -45,6 +46,7 @@
     "@types/mocha": "^2.2.43",
     "@types/node": "^8.0.33",
     "@types/typescript": "^2.0.0",
+    "eslint-config-iplayer-base": "^1.0.0",
     "chai": "^4.1.2",
     "coveralls": "^2.11.9",
     "eslint": "^3.11.1",
@@ -52,30 +54,24 @@
     "jsdoc": "^3.4.3",
     "mocha": "^3.5.3",
     "sinon": "^2.1.0",
-    "ts-node": "^3.3.0"
+    "ts-node": "^3.3.0",
+    "tslint": "^5.8.0",
+    "tslint-config-airbnb": "^5.3.1",
+    "tslint-eslint-rules": "^4.1.1",
+    "typescript": "^2.6.1"
   },
-  "eslintConfig": {
-    "extends": "eslint:recommended",
-    "parserOptions": {
-      "ecmaVersion": 6,
-      "sourceType": "module"
-    },
-    "env": {
-      "node": true,
-      "mocha": true,
-      "es6": true
-    },
-    "rules": {
-      "quotes": [2, "single"],
-      "eqeqeq": 2,
-      "no-var": 2,
-      "one-var": [2, "never"],
-      "prefer-const": 2,
-      "semi": 2,
-      "strict": [2, "global"],
-      "arrow-parens": 2,
-      "prefer-arrow-callback": 2
-    }
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "sourceMap": true,
+    "instrument": true
   },
   "dependencies": {
     "bluebird": "^3.4.1",
