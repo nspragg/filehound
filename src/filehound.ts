@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { Promise } from 'bluebird';
+import * as bluebird from 'bluebird';
 import * as path from 'path';
 import * as File from 'file-js';
 
@@ -91,8 +91,9 @@ class FileHound extends EventEmitter {
    *
    * const filehound = FileHound.any(fh1, fh2);
    */
-  public static any(...args: string[]): Promise<string[]> {
-    return Promise.all(from(args)).reduce(flatten, []);
+  public static any(...args: FileHound[]): Promise<string[]> {
+    const pending = args.map(fh => fh.find());
+    return bluebird.all(pending).reduce(flatten, []);
   }
 
   // tslint:disable-next-line:valid-jsdoc
@@ -559,9 +560,9 @@ class FileHound extends EventEmitter {
     this.initFilters();
 
     const paths: string[] = this.getSearchPaths();
-    const searches = Promise.map(paths, this.searchAsync);
+    const searches = bluebird.map(paths, this.searchAsync);
 
-    return Promise.all(searches)
+    return bluebird.all(searches)
       .reduce(flatten)
       .map(toFilename)
       .catch((e) => {
@@ -632,31 +633,30 @@ class FileHound extends EventEmitter {
     this.sync = true;
     const root = File.create(dir);
     const trackedPaths = [];
-    const files = this.search(root, root, trackedPaths);
+    const files = <File[]>this.search(root, root, trackedPaths);
     return this.directoriesOnly ? trackedPaths.filter(this.isMatch) : files;
   }
 
-  private searchAsync(dir: string): Promise<File[]> {
+  private async searchAsync(dir: string): Promise<File[]> {
     const root: File = File.create(dir);
     const trackedPaths: File[] = [];
-    const pending: Promise<File[]> = this.search(root, root, trackedPaths);
+    const pending = <Promise<File[]>>this.search(root, root, trackedPaths);
 
-    return pending.then((files) => {
-      if (this.directoriesOnly) { return trackedPaths.filter(this.isMatch); }
+    const files = await pending;
+    if (this.directoriesOnly) { return trackedPaths.filter(this.isMatch); }
 
-      files.forEach((file) => {
-        this.emit('match', file.getName());
-      });
-      return files;
+    files.forEach((file) => {
+      this.emit('match', file.getName());
     });
+    return files;
   }
 
   private search(
     root: File,
     path: File,
     trackedPaths: File[]
-  ): Promise<File[]> {
-    if (this.shouldFilterDirectory(root, path)) { return []; }
+  ): Promise<File[]> | File[] {
+    if (this.shouldFilterDirectory(root, path)) { return Promise.resolve([]); }
 
     const getFiles = this.sync
       ? path.getFilesSync.bind(path)

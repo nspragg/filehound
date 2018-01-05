@@ -552,15 +552,15 @@ describe('FileHound', () => {
     it('returns matching files for any query', () => {
       const jsonStartingWithZ = filehound.create()
         .match('*.json')
-        .paths(fixtureDir + '/justFiles')
-        .find();
+        .paths(fixtureDir + '/justFiles');
+      // .find();
 
       const onlyTextFles = filehound.create()
         .ext('txt')
-        .paths(fixtureDir + '/justFiles')
-        .find();
+        .paths(fixtureDir + '/justFiles');
+      // .find();
 
-      const results = filehound.any(jsonStartingWithZ, onlyTextFles);
+      const results: Promise<string[]> = filehound.any(jsonStartingWithZ, onlyTextFles);
 
       return results.then((files) => {
         assert.deepEqual(files, justFiles);
