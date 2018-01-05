@@ -91,9 +91,11 @@ class FileHound extends EventEmitter {
    *
    * const filehound = FileHound.any(fh1, fh2);
    */
-  public static any(...args: FileHound[]): Promise<string[]> {
+  public static async any(...args: FileHound[]): Promise<string[]> {
     const pending = args.map(fh => fh.find());
-    return bluebird.all(pending).reduce(flatten, []);
+    const files = await Promise.all(pending);
+
+    return files.reduce(flatten, []);
   }
 
   // tslint:disable-next-line:valid-jsdoc
@@ -562,7 +564,7 @@ class FileHound extends EventEmitter {
     const paths: string[] = this.getSearchPaths();
     const searches = bluebird.map(paths, this.searchAsync);
 
-    return bluebird.all(searches)
+    const results = bluebird.all(searches)
       .reduce(flatten)
       .map(toFilename)
       .catch((e) => {
@@ -570,6 +572,8 @@ class FileHound extends EventEmitter {
         throw e;
       })
       .finally(() => this.emit('end'));
+
+    return Promise.resolve(results);
   }
 
   // tslint:disable-next-line:valid-jsdoc
