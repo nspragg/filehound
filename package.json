@@ -74,7 +74,6 @@
     "instrument": true
   },
   "dependencies": {
-    "bluebird": "^3.4.1",
     "file-js": "0.3.0",
     "lodash": "^4.13.1",
     "minimatch": "^3.0.2",

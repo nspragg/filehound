@@ -1,5 +1,4 @@
 import * as _ from 'lodash';
-import * as bluebird from 'bluebird';
 import * as path from 'path';
 import * as File from 'file-js';
 
@@ -75,7 +74,6 @@ class FileHound extends EventEmitter {
   public static create(): FileHound {
     return new FileHound();
   }
-
   // tslint:disable-next-line:valid-jsdoc
   /**
    * Returns all matches from one of more FileHound instances
@@ -558,22 +556,25 @@ class FileHound extends EventEmitter {
    *      console.log(files);
    *   });
    */
-  public find(): Promise<string[]> {
+  public async find(): Promise<string[]> {
     this.initFilters();
 
     const paths: string[] = this.getSearchPaths();
-    const searches = bluebird.map(paths, this.searchAsync);
+    const searches = [];
+    for (const path of paths) {
+      searches.push(this.searchAsync(path));
+    }
 
-    const results = bluebird.all(searches)
-      .reduce(flatten)
-      .map(toFilename)
-      .catch((e) => {
-        this.emit('error', e);
-        throw e;
-      })
-      .finally(() => this.emit('end'));
-
-    return Promise.resolve(results);
+    try {
+      const results = await Promise.all(searches);
+      return results
+        .reduce(flatten)
+        .map(toFilename);
+    } catch (e) {
+      this.emit('error', e);
+    } finally {
+      this.emit('end');
+    }
   }
 
   // tslint:disable-next-line:valid-jsdoc
