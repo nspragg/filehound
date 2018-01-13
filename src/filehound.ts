@@ -559,7 +559,11 @@ class FileHound extends EventEmitter {
       const results = await Promise.all(searches);
       return results
         .reduce(flatten)
-        .map(toFilename);
+        .map((file) => {
+          const name = toFilename(file);
+          this.emit('match', name);
+          return name;
+        });
     } catch (e) {
       this.emit('error', e);
     } finally {
@@ -599,6 +603,7 @@ class FileHound extends EventEmitter {
     return copy<string[]>(paths);
   }
 
+  // TODO:
   private searchSync(dir: string): File[] {
     const walker = new SyncWalker(
       File.create(dir), this.directoriesOnly, this.ignoreDirs, this.maxDepth);
@@ -606,16 +611,12 @@ class FileHound extends EventEmitter {
     return walker.walk(this.matcher.create());
   }
 
+  // TODO
   private async searchAsync(dir: string): Promise<File[]> {
     const walker = new AsyncWalker(
       File.create(dir), this.directoriesOnly, this.ignoreDirs, this.maxDepth);
 
-    const files = await walker.walk(this.matcher.create());
-
-    files.forEach((file) => {
-      this.emit('match', file.getName());
-    });
-    return files;
+    return await walker.walk(this.matcher.create());
   }
 }
 
