@@ -2,11 +2,14 @@ import * as _ from 'lodash';
 import * as path from 'path';
 import * as File from 'file-js';
 
-import { negate, compose } from './functions';
 import { reducePaths } from './files';
 import { copy, from } from './arrays';
 import { isDate, isNumber } from 'unit-compare';
 import { EventEmitter } from 'events';
+import { Matcher } from './matcher';
+import { AsyncWalker } from './asyncWalker';
+import { SyncWalker } from './syncWalker';
+
 import bind from './bind';
 
 function isDefined(value: any): any {
@@ -21,12 +24,6 @@ function toFilename(file: File): string {
   return file.getName();
 }
 
-function isRegExpMatch(pattern: string): (file: File) => boolean {
-  return (file) => {
-    return new RegExp(pattern).test(file.getName());
-  };
-}
-
 function cleanExtension(ext: string): string {
   if (_.startsWith(ext, '.')) {
     return ext.slice(1);
@@ -36,23 +33,18 @@ function cleanExtension(ext: string): string {
 
 /** @class */
 class FileHound extends EventEmitter {
-  private filters: ((args: any) => any)[];
+  private matcher: Matcher;
   private searchPaths: string[];
   private ignoreDirs: boolean;
-  private isMatch: (args: any) => boolean;
-  private sync: boolean;
   private directoriesOnly: boolean;
-  private negateFilters: boolean;
   private maxDepth: number;
 
   public constructor() {
     super();
-    this.filters = [];
+    this.matcher = new Matcher();
     this.searchPaths = [];
     this.searchPaths.push(process.cwd());
     this.ignoreDirs = false;
-    this.isMatch = _.noop;
-    this.sync = false;
     this.directoriesOnly = false;
     bind(this);
   }
@@ -191,7 +183,7 @@ class FileHound extends EventEmitter {
    *   .each(consoe.log);
    */
   public addFilter(filter): FileHound {
-    this.filters.push(filter);
+    this.matcher.on(filter);
     return this;
   }
 
@@ -265,7 +257,7 @@ class FileHound extends EventEmitter {
   public discard(...args): FileHound {
     const patterns = from(args);
     patterns.forEach((pattern) => {
-      this.addFilter(negate(isRegExpMatch(pattern)));
+      this.addFilter(Matcher.negate(Matcher.isMatch(pattern)));
     });
     return this;
   }
@@ -411,7 +403,7 @@ class FileHound extends EventEmitter {
    *   .each(console.log); // array of files names NOT containing 'tmp'
    */
   public not(): FileHound {
-    this.negateFilters = true;
+    this.matcher.negateAll();
     return this;
   }
 
@@ -557,8 +549,6 @@ class FileHound extends EventEmitter {
    *   });
    */
   public async find(): Promise<string[]> {
-    this.initFilters();
-
     const paths: string[] = this.getSearchPaths();
     const searches = [];
     for (const path of paths) {
@@ -595,8 +585,6 @@ class FileHound extends EventEmitter {
    *
    */
   public findSync(): string[] {
-    this.initFilters();
-
     return this.getSearchPaths()
       .map(this.searchSync)
       .reduce(flatten)
@@ -611,73 +599,23 @@ class FileHound extends EventEmitter {
     return copy<string[]>(paths);
   }
 
-  private atMaxDepth(root, dir): boolean {
-    const depth = dir.getDepthSync() - root.getDepthSync();
-    return isDefined(this.maxDepth) && depth > this.maxDepth;
-  }
-
-  private shouldFilterDirectory(root, dir): boolean {
-    return (
-      this.atMaxDepth(root, dir) || (this.ignoreDirs && dir.isHiddenSync())
-    );
-  }
-
-  private newMatcher(): (args: any) => boolean {
-    const isMatch = compose(this.filters);
-    if (this.negateFilters) {
-      return negate(isMatch);
-    }
-    return isMatch;
-  }
-
-  private initFilters(): void {
-    this.isMatch = this.newMatcher();
-  }
-
   private searchSync(dir: string): File[] {
-    this.sync = true;
-    const root = File.create(dir);
-    const trackedPaths = [];
-    const files = <File[]>this.search(root, root, trackedPaths);
-    return this.directoriesOnly ? trackedPaths.filter(this.isMatch) : files;
+    const walker = new SyncWalker(
+      File.create(dir), this.directoriesOnly, this.ignoreDirs, this.maxDepth);
+
+    return walker.walk(this.matcher.create());
   }
 
   private async searchAsync(dir: string): Promise<File[]> {
-    const root: File = File.create(dir);
-    const trackedPaths: File[] = [];
-    const pending = <Promise<File[]>>this.search(root, root, trackedPaths);
+    const walker = new AsyncWalker(
+      File.create(dir), this.directoriesOnly, this.ignoreDirs, this.maxDepth);
 
-    const files = await pending;
-    if (this.directoriesOnly) { return trackedPaths.filter(this.isMatch); }
+    const files = await walker.walk(this.matcher.create());
 
     files.forEach((file) => {
       this.emit('match', file.getName());
     });
     return files;
-  }
-
-  private search(
-    root: File,
-    path: File,
-    trackedPaths: File[]
-  ): Promise<File[]> | File[] {
-    if (this.shouldFilterDirectory(root, path)) { return Promise.resolve([]); }
-
-    const getFiles = this.sync
-      ? path.getFilesSync.bind(path)
-      : path.getFiles.bind(path);
-
-    return getFiles()
-      .map((file) => {
-        if (file.isDirectorySync()) {
-          if (!this.shouldFilterDirectory(root, file)) { trackedPaths.push(file); }
-
-          return this.search(root, file, trackedPaths);
-        }
-        return file;
-      })
-      .reduce(flatten, [])
-      .filter(this.isMatch);
   }
 }
 

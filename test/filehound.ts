@@ -5,7 +5,7 @@ import filehound from '../src/filehound';
 import * as moment from 'moment';
 import * as sinon from 'sinon';
 import * as File from 'file-js';
-import { Promise } from 'bluebird';
+import * as bluebird from 'bluebird';
 
 const justFiles = qualifyNames([
   '/justFiles/a.json',
@@ -42,16 +42,19 @@ function deleteFile(fname) {
   return fs.unlinkSync(fname);
 }
 
-describe('FileHound', () => {
+describe('FileHound', async () => {
   const fixtureDir = __dirname + '/fixtures';
 
-  describe('.socket', () => {
+  describe('.socket', async () => {
     const file = {
       isSocket: () => {
         return true;
       },
       isDirectorySync: () => {
         return false;
+      },
+      isDirectory: () => {
+        return bluebird.resolve(false);
       },
       getName: () => {
         return getAbsolutePath('/types/socket1');
@@ -63,7 +66,7 @@ describe('FileHound', () => {
           return 0;
         },
         getFiles: () => {
-          return Promise.resolve().then(() => {
+          return bluebird.resolve().then(() => {
             return [file];
           });
         }
@@ -75,15 +78,13 @@ describe('FileHound', () => {
       sandbox.restore();
     });
 
-    it('filters by socket type files', () => {
-      const query = filehound.create()
+    it('filters by socket type files', async () => {
+      const sockets = await filehound.create()
         .paths(fixtureDir + '/types')
         .socket()
         .find();
 
-      return query.then((sockets) => {
-        assert.deepEqual(sockets, [file.getName()]);
-      });
+      assert.deepEqual(sockets, [file.getName()]);
     });
   });
 
