@@ -1,11 +1,11 @@
 import { assert } from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
-import filehound from '../src/filehound';
 import * as moment from 'moment';
 import * as sinon from 'sinon';
 import * as File from 'file-js';
 import * as bluebird from 'bluebird';
+import filehound from '../src/filehound';
 
 const justFiles = qualifyNames([
   '/justFiles/a.json',
