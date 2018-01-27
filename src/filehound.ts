@@ -9,6 +9,7 @@ import { EventEmitter } from 'events';
 import { Matcher } from './matcher';
 import { AsyncWalker } from './asyncWalker';
 import { SyncWalker } from './syncWalker';
+import { walk } from './walker';
 
 import bind from './bind';
 
@@ -605,10 +606,14 @@ class FileHound extends EventEmitter {
 
   // TODO:
   private searchSync(dir: string): File[] {
-    const walker = new SyncWalker(
-      File.create(dir), this.directoriesOnly, this.ignoreDirs, this.maxDepth);
+    // const walker = new SyncWalker(
+    //   File.create(dir), this.directoriesOnly, this.ignoreDirs, this.maxDepth);
 
-    return walker.walk(this.matcher.create());
+    // return walker.walk(this.matcher.create());
+    walk(dir, () => {
+      
+    });
+
   }
 
   // TODO
