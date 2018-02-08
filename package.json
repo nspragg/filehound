@@ -3,6 +3,7 @@
   "version": "2.0.0-alpha.4",
   "description": "Find files the easy way",
   "main": "index.js",
+  "types": "./dist/src/filehound",
   "scripts": {
     "jsdoc": "jsdoc -c ./docconfig/jsdoc.json",
     "build": "tsc",

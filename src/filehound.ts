@@ -32,7 +32,7 @@ function cleanExtension(ext: string): string {
 }
 
 /** @class */
-class FileHound extends EventEmitter {
+export class FileHound extends EventEmitter {
   private matcher: Matcher;
   private searchPaths: string[];
   private ignoreDirs: boolean;
@@ -620,4 +620,3 @@ class FileHound extends EventEmitter {
   }
 }
 
-export default FileHound;

@@ -2,7 +2,7 @@
 
 ![npm](https://img.shields.io/npm/v/filehound.svg)
 [![Build Status](https://travis-ci.org/nspragg/filehound.svg)](https://travis-ci.org/nspragg/filehound) [![Coverage Status](https://coveralls.io/repos/github/nspragg/filehound/badge.svg?branch=master)](https://coveralls.io/github/nspragg/filehound?branch=master)
- ![license](https://img.shields.io/badge/license-MIT-blue.svg) 
+ ![license](https://img.shields.io/badge/license-MIT-blue.svg)
 ![github-issues](https://img.shields.io/github/issues/nspragg/filehound.svg)
 ![stars](https://img.shields.io/github/stars/nspragg/filehound.svg)
 ![forks](https://img.shields.io/github/forks/nspragg/filehound.svg)
@@ -26,7 +26,7 @@ npm install --save filehound
 The example below prints all of the files in a directory that have the `.json` file extension:
 
 ```js
-const FileHound = require('filehound');
+import { FileHound } from 'filehound'
 
 const files = FileHound.create()
   .paths('/some/dir')
