@@ -29,7 +29,8 @@
     "newline-before-return": false,
     "array-bracket-spacing": false,
     "no-unused-variable": true,
-    "strict-boolean-expressions": false
+    "strict-boolean-expressions": false,
+    "newline-per-chained-call": false
   },
   "linterOptions": {
     "exclude": [
