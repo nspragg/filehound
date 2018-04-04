@@ -76,12 +76,14 @@ describe('FileHound', async () => {
           return 0;
         },
         getFiles: () => {
-          return bluebird.resolve().then(() => {
-            return [file];
-          });
+          return bluebird.resolve()
+            .then(() => {
+              return [file];
+            });
         }
       };
-      sandbox.stub(File, 'create').returns(root);
+      sandbox.stub(File, 'create')
+        .returns(root);
     });
 
     afterEach(() => {
@@ -312,7 +314,8 @@ describe('FileHound', async () => {
         .find();
 
       return query.then((files) => {
-        const expected = nestedFiles.concat(justFiles).sort();
+        const expected = nestedFiles.concat(justFiles)
+          .sort();
         assert.deepEqual(files, expected);
       });
     });
@@ -971,12 +974,14 @@ describe('FileHound', async () => {
           modifier: 'hours'
         });
 
-        statSync.withArgs(file.name).returns({
-          ctime: moment().subtract(file.changed, 'hours'),
-          isDirectory() {
-            return false;
-          }
-        });
+        statSync.withArgs(file.name)
+          .returns({
+            ctime: moment()
+              .subtract(file.changed, 'hours'),
+            isDirectory() {
+              return false;
+            }
+          });
       });
     });
 

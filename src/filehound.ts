@@ -23,10 +23,6 @@ function flatten(a: File[], b: File[]): File[] {
   return a.concat(b);
 }
 
-function toFilename(file: File): string {
-  return file.getName();
-}
-
 function cleanExtension(ext: string): string {
   if (_.startsWith(ext, '.')) {
     return ext.slice(1);

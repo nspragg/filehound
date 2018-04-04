@@ -1,4 +1,4 @@
-function getDirNames(dir): string[] {
+function getDirNames(dir) {
     const names = dir.getFilesSync();
     return names.sort();
 }
@@ -9,7 +9,7 @@ export function walkSync(path, fn) {
     }
 
     const cont = fn(path);
-    if (!cont) return;
+    if (!cont) { return; }
 
     const names = getDirNames(path);
     for (const name of names) {

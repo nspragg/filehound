@@ -9,7 +9,7 @@ export async function walkAsync(path, fn) {
     }
 
     const cont = await fn(path);
-    if (!cont) return;
+    if (!cont) { return; }
 
     const names = await getDirNames(path);
     for (const name of names) {
