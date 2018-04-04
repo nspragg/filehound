@@ -1,6 +1,6 @@
 {
   "name": "filehound",
-  "version": "2.0.0-alpha.4",
+  "version": "2.0.0",
   "description": "Find files the easy way",
   "main": "index.js",
   "scripts": {
@@ -52,7 +52,7 @@
     "eslint": "^3.11.1",
     "istanbul": "1.1.0-alpha.1",
     "jsdoc": "^3.4.3",
-    "mocha": "^3.5.3",
+    "mocha": "^5.0.5",
     "sinon": "^2.1.0",
     "ts-node": "^3.3.0",
     "tslint": "^5.8.0",
@@ -75,9 +75,9 @@
   },
   "dependencies": {
     "file-js": "0.3.0",
-    "lodash": "^4.13.1",
-    "minimatch": "^3.0.2",
-    "moment": "^2.19.3",
+    "lodash": "^4.17.5",
+    "minimatch": "^3.0.4",
+    "moment": "^2.22.0",
     "unit-compare": "^1.0.1"
   }
 }

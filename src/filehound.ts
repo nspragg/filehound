@@ -7,10 +7,13 @@ import { copy, from } from './arrays';
 import { isDate, isNumber } from 'unit-compare';
 import { EventEmitter } from 'events';
 import { Matcher } from './matcher';
-import { AsyncWalker } from './asyncWalker';
-import { SyncWalker } from './syncWalker';
+import { walkSync } from './walkSync';
+import { walkAsync } from './walkAsync';
 
 import bind from './bind';
+
+const TERMINATE = false;
+const CONTINUE = true;
 
 function isDefined(value: any): any {
   return value !== undefined;
@@ -18,10 +21,6 @@ function isDefined(value: any): any {
 
 function flatten(a: File[], b: File[]): File[] {
   return a.concat(b);
-}
-
-function toFilename(file: File): string {
-  return file.getName();
 }
 
 function cleanExtension(ext: string): string {
@@ -109,7 +108,8 @@ class FileHound extends EventEmitter {
   public modified(pattern): FileHound {
     return this.addFilter((file) => {
       const modified = file.lastModifiedSync();
-      return isDate(modified).assert(pattern);
+      return isDate(modified)
+        .assert(pattern);
     });
   }
 
@@ -134,7 +134,8 @@ class FileHound extends EventEmitter {
   public accessed(pattern): FileHound {
     return this.addFilter((file) => {
       const accessed = file.lastAccessedSync();
-      return isDate(accessed).assert(pattern);
+      return isDate(accessed)
+        .assert(pattern);
     });
   }
 
@@ -160,7 +161,8 @@ class FileHound extends EventEmitter {
   public changed(pattern): FileHound {
     return this.addFilter((file) => {
       const changed = file.lastChangedSync();
-      return isDate(changed).assert(pattern);
+      return isDate(changed)
+        .assert(pattern);
     });
   }
 
@@ -207,7 +209,8 @@ class FileHound extends EventEmitter {
    *   .each(console.log);
    */
   public paths(...args): FileHound {
-    this.searchPaths = _.uniq(from(args)).map(path.normalize);
+    this.searchPaths = _.uniq(from(args))
+      .map(path.normalize);
     return this;
   }
 
@@ -296,7 +299,8 @@ class FileHound extends EventEmitter {
    *   .each(console.log);
    */
   public ext(...args): FileHound {
-    const extensions = from(args).map(cleanExtension);
+    const extensions = from(args)
+      .map(cleanExtension);
     return this.addFilter(file => _.includes(extensions, file.getPathExtension())
     );
   }
@@ -323,7 +327,8 @@ class FileHound extends EventEmitter {
   public size(sizeExpression): FileHound {
     return this.addFilter((file) => {
       const size = file.sizeSync();
-      return isNumber(size).assert(sizeExpression);
+      return isNumber(size)
+        .assert(sizeExpression);
     });
   }
 
@@ -560,9 +565,8 @@ class FileHound extends EventEmitter {
       return results
         .reduce(flatten)
         .map((file) => {
-          const name = toFilename(file);
-          this.emit('match', name);
-          return name;
+          this.emit('match', file);
+          return file;
         });
     } catch (e) {
       this.emit('error', e);
@@ -591,8 +595,7 @@ class FileHound extends EventEmitter {
   public findSync(): string[] {
     return this.getSearchPaths()
       .map(this.searchSync)
-      .reduce(flatten)
-      .map(toFilename);
+      .reduce(flatten);
   }
 
   public getSearchPaths(): string[] {
@@ -603,20 +606,59 @@ class FileHound extends EventEmitter {
     return copy<string[]>(paths);
   }
 
-  // TODO:
-  private searchSync(dir: string): File[] {
-    const walker = new SyncWalker(
-      File.create(dir), this.directoriesOnly, this.ignoreDirs, this.maxDepth);
-
-    return walker.walk(this.matcher.create());
+  private atMaxDepth(dir, root): boolean {
+    const depth = dir.getDepthSync() - root.getDepthSync();
+    return isDefined(this.maxDepth) && depth > this.maxDepth;
   }
 
-  // TODO
-  private async searchAsync(dir: string): Promise<File[]> {
-    const walker = new AsyncWalker(
-      File.create(dir), this.directoriesOnly, this.ignoreDirs, this.maxDepth);
+  private shouldFilterDirectory(dir, root): boolean {
+    return (this.atMaxDepth(dir, root) || (this.ignoreDirs && dir.isHiddenSync()));
+  }
 
-    return await walker.walk(this.matcher.create());
+  private searchSync(dir: string): File[] {
+    const root = File.create(dir);
+    const files = [];
+    const isMatch = this.matcher.create();
+
+    walkSync(root, (path) => {
+      if (path.isDirectorySync() && this.shouldFilterDirectory(path, root)) {
+        return TERMINATE;
+      }
+
+      if (this.directoriesOnly) {
+        if (path !== root && path.isDirectorySync() && isMatch(path)) {
+          files.push(path.getName());
+        }
+      } else if (!path.isDirectorySync() && isMatch(path)) {
+        files.push(path.getName());
+      }
+
+      return CONTINUE;
+    });
+
+    return files;
+  }
+
+  private async searchAsync(dir: string): Promise<string[]> {
+    const root = File.create(dir);
+    const files = [];
+    const isMatch = this.matcher.create();
+
+    await walkAsync(root, async (path) => {
+      if (await path.isDirectory() && this.shouldFilterDirectory(path, root)) {
+        return TERMINATE;
+      }
+      if (this.directoriesOnly) {
+        if (path !== root && await path.isDirectory() && isMatch(path)) {
+          files.push(path.getName());
+        }
+      } else if (!await path.isDirectory() && isMatch(path)) {
+        files.push(path.getName());
+      }
+      return CONTINUE;
+    });
+
+    return files;
   }
 }
 

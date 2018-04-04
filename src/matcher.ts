@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import * as File from 'file-js';
 import bind from './bind';
 
+// TODO: re-create matcher - retaining state i.e filters?
 export class Matcher {
   private filters: ((args: any) => any)[];
   private negate: boolean;

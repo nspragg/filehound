@@ -8,6 +8,7 @@
     "ecmaVersion": 2017
   },
   "rules": {
+    "ter-indent": false,
     "no-magic-numbers": false,
     "variable-name": [
       true,

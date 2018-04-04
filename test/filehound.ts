@@ -13,6 +13,7 @@ const justFiles = qualifyNames([
   '/justFiles/dummy.txt'
 ]);
 const nestedFiles = qualifyNames([
+  '/nested/.hidden1/bad.txt',
   '/nested/c.json',
   'nested/d.json',
   '/nested/mydir/e.json'
@@ -32,7 +33,10 @@ function qualifyNames(names) {
 }
 
 function createFile(fname, opts) {
-  const time = new Date(moment().subtract(opts.duration, opts.modifier).format());
+  const time = new Date(moment()
+    .subtract(opts.duration, opts.modifier)
+    .format());
+
   const fd = fs.openSync(fname, 'w+');
   fs.futimesSync(fd, time, time);
   fs.closeSync(fd);
@@ -62,16 +66,24 @@ describe('FileHound', async () => {
     };
     beforeEach(() => {
       const root = {
+        isDirectorySync: () => {
+          return true;
+        },
+        isDirectory: async () => {
+          return true;
+        },
         getDepthSync: () => {
           return 0;
         },
         getFiles: () => {
-          return bluebird.resolve().then(() => {
-            return [file];
-          });
+          return bluebird.resolve()
+            .then(() => {
+              return [file];
+            });
         }
       };
-      sandbox.stub(File, 'create').returns(root);
+      sandbox.stub(File, 'create')
+        .returns(root);
     });
 
     afterEach(() => {
@@ -287,7 +299,8 @@ describe('FileHound', async () => {
         .find();
 
       return query.then((files) => {
-        const expected = nestedFiles.concat(justFiles).sort();
+        const expected = nestedFiles.concat(justFiles)
+          .sort();
         assert.deepEqual(files, expected);
       });
     });
@@ -301,7 +314,8 @@ describe('FileHound', async () => {
         .find();
 
       return query.then((files) => {
-        const expected = nestedFiles.concat(justFiles).sort();
+        const expected = nestedFiles.concat(justFiles)
+          .sort();
         assert.deepEqual(files, expected);
       });
     });
@@ -344,11 +358,9 @@ describe('FileHound', async () => {
         .discard('mydir')
         .find();
 
+      const expected = nestedFiles.filter(f => !/mydir/.test(f));
       return query.then((files) => {
-        assert.deepEqual(
-          files,
-          qualifyNames(['/nested/c.json', '/nested/d.json'])
-        );
+        assert.deepEqual(files, expected);
       });
     });
 
@@ -358,11 +370,9 @@ describe('FileHound', async () => {
         .discard('c.json')
         .find();
 
+      const expected = nestedFiles.filter(f => !/c.json/.test(f));
       return query.then((files) => {
-        assert.deepEqual(
-          files,
-          qualifyNames(['/nested/d.json', '/nested/mydir/e.json'])
-        );
+        assert.deepEqual(files, expected);
       });
     });
 
@@ -525,12 +535,14 @@ describe('FileHound', async () => {
 
     it('performs recursive search using matching on a given pattern', () => {
       const query = filehound.create()
-        .match('*.json')
         .paths(fixtureDir + '/nested')
+        .match('*.json')
         .find();
 
+      const expected = nestedFiles.filter(f => /\.json$/.test(f));
+
       return query.then((files) => {
-        assert.deepEqual(files.sort(), nestedFiles);
+        assert.deepEqual(files.sort(), expected);
       });
     });
   });
@@ -962,12 +974,14 @@ describe('FileHound', async () => {
           modifier: 'hours'
         });
 
-        statSync.withArgs(file.name).returns({
-          ctime: moment().subtract(file.changed, 'hours'),
-          isDirectory() {
-            return false;
-          }
-        });
+        statSync.withArgs(file.name)
+          .returns({
+            ctime: moment()
+              .subtract(file.changed, 'hours'),
+            isDirectory() {
+              return false;
+            }
+          });
       });
     });
 
