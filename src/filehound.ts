@@ -7,13 +7,9 @@ import { copy, from } from './arrays';
 import { isDate, isNumber } from 'unit-compare';
 import { EventEmitter } from 'events';
 import { Matcher } from './matcher';
-import { walkSync } from './walkSync';
-import { walkAsync } from './walkAsync';
+import * as walker from './walker/walk';
 
 import bind from './bind';
-
-const TERMINATE = false;
-const CONTINUE = true;
 
 function isDefined(value: any): any {
   return value !== undefined;
@@ -56,8 +52,8 @@ class FileHound extends EventEmitter {
    * @memberOf FileHound
    * @method
    * create
-   * @return FileHound instance
    * @example
+   * @return FileHound instance
    * import FileHound from 'filehound';
    *
    * const filehound = FileHound.create();
@@ -606,59 +602,20 @@ class FileHound extends EventEmitter {
     return copy<string[]>(paths);
   }
 
-  private atMaxDepth(dir, root): boolean {
-    const depth = dir.getDepthSync() - root.getDepthSync();
-    return isDefined(this.maxDepth) && depth > this.maxDepth;
-  }
-
-  private shouldFilterDirectory(dir, root): boolean {
-    return (this.atMaxDepth(dir, root) || (this.ignoreDirs && dir.isHiddenSync()));
+  private createSearchOpts() {
+    return {
+      ignoreDirs: this.ignoreDirs,
+      maxDepth: this.maxDepth,
+      directoriesOnly: this.directoriesOnly
+    };
   }
 
   private searchSync(dir: string): File[] {
-    const root = File.create(dir);
-    const files = [];
-    const isMatch = this.matcher.create();
-
-    walkSync(root, (path) => {
-      if (path.isDirectorySync() && this.shouldFilterDirectory(path, root)) {
-        return TERMINATE;
-      }
-
-      if (this.directoriesOnly) {
-        if (path !== root && path.isDirectorySync() && isMatch(path)) {
-          files.push(path.getName());
-        }
-      } else if (!path.isDirectorySync() && isMatch(path)) {
-        files.push(path.getName());
-      }
-
-      return CONTINUE;
-    });
-
-    return files;
+    return walker.sync(dir, this.matcher.create(), this.createSearchOpts());
   }
 
   private async searchAsync(dir: string): Promise<string[]> {
-    const root = File.create(dir);
-    const files = [];
-    const isMatch = this.matcher.create();
-
-    await walkAsync(root, async (path) => {
-      if (await path.isDirectory() && this.shouldFilterDirectory(path, root)) {
-        return TERMINATE;
-      }
-      if (this.directoriesOnly) {
-        if (path !== root && await path.isDirectory() && isMatch(path)) {
-          files.push(path.getName());
-        }
-      } else if (!await path.isDirectory() && isMatch(path)) {
-        files.push(path.getName());
-      }
-      return CONTINUE;
-    });
-
-    return files;
+    return await walker.async(dir, this.matcher.create(), this.createSearchOpts());
   }
 }
 
