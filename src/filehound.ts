@@ -615,7 +615,7 @@ class FileHound extends EventEmitter {
   }
 
   private async searchAsync(dir: string): Promise<string[]> {
-    return await walker.async(dir, this.matcher.create(), this.createSearchOpts());
+    return walker.async(dir, this.matcher.create(), this.createSearchOpts());
   }
 }
 
