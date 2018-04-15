@@ -8,9 +8,6 @@
 ![forks](https://img.shields.io/github/forks/nspragg/filehound.svg)
 > Flexible and fluent interface for searching the file system
 
-![nodei.co](https://nodei.co/npm/filehound.png?downloads=true&downloadRank=true&stars=true)
-
-
 ## Installation
 
 ```
