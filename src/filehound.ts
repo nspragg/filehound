@@ -52,8 +52,8 @@ class FileHound extends EventEmitter {
    * @memberOf FileHound
    * @method
    * create
-   * @example
    * @return FileHound instance
+   * @example
    * import FileHound from 'filehound';
    *
    * const filehound = FileHound.create();
@@ -552,8 +552,9 @@ class FileHound extends EventEmitter {
   public async find(): Promise<string[]> {
     const paths: string[] = this.getSearchPaths();
     const searches = [];
+    const matcher = this.matcher.create();
     for (const path of paths) {
-      searches.push(this.searchAsync(path));
+      searches.push(this.searchAsync(path, matcher));
     }
 
     try {
@@ -614,8 +615,8 @@ class FileHound extends EventEmitter {
     return walker.sync(dir, this.matcher.create(), this.createSearchOpts());
   }
 
-  private async searchAsync(dir: string): Promise<string[]> {
-    return walker.async(dir, this.matcher.create(), this.createSearchOpts());
+  private async searchAsync(dir: string, matcher: (args: any) => boolean): Promise<string[]> {
+    return walker.async(dir, matcher, this.createSearchOpts());
   }
 }
 

@@ -159,7 +159,7 @@ describe('FileHound', async () => {
   });
 
   describe('.depth', () => {
-    it('only returns files in the current directory', () => {
+    it.only('only returns files in the current directory', () => {
       const query = filehound.create()
         .paths(fixtureDir + '/deeplyNested')
         .depth(0)

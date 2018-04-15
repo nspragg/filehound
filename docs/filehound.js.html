@@ -50,28 +50,19 @@ var __awaiter = (this &amp;&amp; this.__awaiter) || function (thisArg, _argument
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
-const bluebird = require("bluebird");
 const path = require("path");
-const File = require("file-js");
-const functions_1 = require("./functions");
 const files_1 = require("./files");
 const arrays_1 = require("./arrays");
 const unit_compare_1 = require("unit-compare");
 const events_1 = require("events");
+const matcher_1 = require("./matcher");
+const walker = require("./walker/walk");
 const bind_1 = require("./bind");
 function isDefined(value) {
     return value !== undefined;
 }
 function flatten(a, b) {
     return a.concat(b);
-}
-function toFilename(file) {
-    return file.getName();
-}
-function isRegExpMatch(pattern) {
-    return (file) => {
-        return new RegExp(pattern).test(file.getName());
-    };
 }
 function cleanExtension(ext) {
     if (_.startsWith(ext, '.')) {
@@ -83,12 +74,10 @@ function cleanExtension(ext) {
 class FileHound extends events_1.EventEmitter {
     constructor() {
         super();
-        this.filters = [];
+        this.matcher = new matcher_1.Matcher();
         this.searchPaths = [];
         this.searchPaths.push(process.cwd());
         this.ignoreDirs = false;
-        this.isMatch = _.noop;
-        this.sync = false;
         this.directoriesOnly = false;
         bind_1.default(this);
     }
@@ -152,7 +141,8 @@ class FileHound extends events_1.EventEmitter {
     modified(pattern) {
         return this.addFilter((file) => {
             const modified = file.lastModifiedSync();
-            return unit_compare_1.isDate(modified).assert(pattern);
+            return unit_compare_1.isDate(modified)
+                .assert(pattern);
         });
     }
     // tslint:disable-next-line:valid-jsdoc
@@ -176,7 +166,8 @@ class FileHound extends events_1.EventEmitter {
     accessed(pattern) {
         return this.addFilter((file) => {
             const accessed = file.lastAccessedSync();
-            return unit_compare_1.isDate(accessed).assert(pattern);
+            return unit_compare_1.isDate(accessed)
+                .assert(pattern);
         });
     }
     // tslint:disable-next-line:valid-jsdoc
@@ -201,7 +192,8 @@ class FileHound extends events_1.EventEmitter {
     changed(pattern) {
         return this.addFilter((file) => {
             const changed = file.lastChangedSync();
-            return unit_compare_1.isDate(changed).assert(pattern);
+            return unit_compare_1.isDate(changed)
+                .assert(pattern);
         });
     }
     // tslint:disable-next-line:valid-jsdoc
@@ -223,7 +215,7 @@ class FileHound extends events_1.EventEmitter {
      *   .each(consoe.log);
      */
     addFilter(filter) {
-        this.filters.push(filter);
+        this.matcher.on(filter);
         return this;
     }
     // tslint:disable-next-line:valid-jsdoc
@@ -246,7 +238,8 @@ class FileHound extends events_1.EventEmitter {
      *   .each(console.log);
      */
     paths(...args) {
-        this.searchPaths = _.uniq(arrays_1.from(args)).map(path.normalize);
+        this.searchPaths = _.uniq(arrays_1.from(args))
+            .map(path.normalize);
         return this;
     }
     // tslint:disable-next-line:valid-jsdoc
@@ -293,7 +286,7 @@ class FileHound extends events_1.EventEmitter {
     discard(...args) {
         const patterns = arrays_1.from(args);
         patterns.forEach((pattern) => {
-            this.addFilter(functions_1.negate(isRegExpMatch(pattern)));
+            this.addFilter(matcher_1.Matcher.negate(matcher_1.Matcher.isMatch(pattern)));
         });
         return this;
     }
@@ -331,7 +324,8 @@ class FileHound extends events_1.EventEmitter {
      *   .each(console.log);
      */
     ext(...args) {
-        const extensions = arrays_1.from(args).map(cleanExtension);
+        const extensions = arrays_1.from(args)
+            .map(cleanExtension);
         return this.addFilter(file => _.includes(extensions, file.getPathExtension()));
     }
     // tslint:disable-next-line:valid-jsdoc
@@ -356,7 +350,8 @@ class FileHound extends events_1.EventEmitter {
     size(sizeExpression) {
         return this.addFilter((file) => {
             const size = file.sizeSync();
-            return unit_compare_1.isNumber(size).assert(sizeExpression);
+            return unit_compare_1.isNumber(size)
+                .assert(sizeExpression);
         });
     }
     // tslint:disable-next-line:valid-jsdoc
@@ -432,7 +427,7 @@ class FileHound extends events_1.EventEmitter {
      *   .each(console.log); // array of files names NOT containing 'tmp'
      */
     not() {
-        this.negateFilters = true;
+        this.matcher.negateAll();
         return this;
     }
     // tslint:disable-next-line:valid-jsdoc
@@ -572,18 +567,29 @@ class FileHound extends events_1.EventEmitter {
      *   });
      */
     find() {
-        this.initFilters();
-        const paths = this.getSearchPaths();
-        const searches = bluebird.map(paths, this.searchAsync);
-        const results = bluebird.all(searches)
-            .reduce(flatten)
-            .map(toFilename)
-            .catch((e) => {
-            this.emit('error', e);
-            throw e;
-        })
-            .finally(() => this.emit('end'));
-        return Promise.resolve(results);
+        return __awaiter(this, void 0, void 0, function* () {
+            const paths = this.getSearchPaths();
+            const searches = [];
+            const matcher = this.matcher.create();
+            for (const path of paths) {
+                searches.push(this.searchAsync(path, matcher));
+            }
+            try {
+                const results = yield Promise.all(searches);
+                return results
+                    .reduce(flatten)
+                    .map((file) => {
+                    this.emit('match', file);
+                    return file;
+                });
+            }
+            catch (e) {
+                this.emit('error', e);
+            }
+            finally {
+                this.emit('end');
+            }
+        });
     }
     // tslint:disable-next-line:valid-jsdoc
     /**
@@ -603,11 +609,9 @@ class FileHound extends events_1.EventEmitter {
      *
      */
     findSync() {
-        this.initFilters();
         return this.getSearchPaths()
             .map(this.searchSync)
-            .reduce(flatten)
-            .map(toFilename);
+            .reduce(flatten);
     }
     getSearchPaths() {
         const paths = isDefined(this.maxDepth)
@@ -615,64 +619,20 @@ class FileHound extends events_1.EventEmitter {
             : files_1.reducePaths(this.searchPaths);
         return arrays_1.copy(paths);
     }
-    atMaxDepth(root, dir) {
-        const depth = dir.getDepthSync() - root.getDepthSync();
-        return isDefined(this.maxDepth) &amp;&amp; depth > this.maxDepth;
-    }
-    shouldFilterDirectory(root, dir) {
-        return (this.atMaxDepth(root, dir) || (this.ignoreDirs &amp;&amp; dir.isHiddenSync()));
-    }
-    newMatcher() {
-        const isMatch = functions_1.compose(this.filters);
-        if (this.negateFilters) {
-            return functions_1.negate(isMatch);
-        }
-        return isMatch;
-    }
-    initFilters() {
-        this.isMatch = this.newMatcher();
+    createSearchOpts() {
+        return {
+            ignoreDirs: this.ignoreDirs,
+            maxDepth: this.maxDepth,
+            directoriesOnly: this.directoriesOnly
+        };
     }
     searchSync(dir) {
-        this.sync = true;
-        const root = File.create(dir);
-        const trackedPaths = [];
-        const files = this.search(root, root, trackedPaths);
-        return this.directoriesOnly ? trackedPaths.filter(this.isMatch) : files;
+        return walker.sync(dir, this.matcher.create(), this.createSearchOpts());
     }
-    searchAsync(dir) {
+    searchAsync(dir, matcher) {
         return __awaiter(this, void 0, void 0, function* () {
-            const root = File.create(dir);
-            const trackedPaths = [];
-            const pending = this.search(root, root, trackedPaths);
-            const files = yield pending;
-            if (this.directoriesOnly) {
-                return trackedPaths.filter(this.isMatch);
-            }
-            files.forEach((file) => {
-                this.emit('match', file.getName());
-            });
-            return files;
+            return walker.async(dir, matcher, this.createSearchOpts());
         });
-    }
-    search(root, path, trackedPaths) {
-        if (this.shouldFilterDirectory(root, path)) {
-            return Promise.resolve([]);
-        }
-        const getFiles = this.sync
-            ? path.getFilesSync.bind(path)
-            : path.getFiles.bind(path);
-        return getFiles()
-            .map((file) => {
-            if (file.isDirectorySync()) {
-                if (!this.shouldFilterDirectory(root, file)) {
-                    trackedPaths.push(file);
-                }
-                return this.search(root, file, trackedPaths);
-            }
-            return file;
-        })
-            .reduce(flatten, [])
-            .filter(this.isMatch);
     }
 }
 exports.default = FileHound;
@@ -688,7 +648,7 @@ exports.default = FileHound;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jan 05 2018 11:12:21 GMT+0000 (GMT) using the Minami theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Apr 14 2018 09:52:19 GMT+0100 (BST) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
