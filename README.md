@@ -1,6 +1,6 @@
 # Filehound
 
-[![NPM downloads](https://img.shields.io/npm/dm/map-files.svg?style=flat)](https://npmjs.org/package/map-files)
+[![NPM downloads](https://img.shields.io/npm/dm/filehound.svg?style=flat)](https://npmjs.org/package/map-files)
 [![Build Status](https://travis-ci.org/nspragg/filehound.svg)](https://travis-ci.org/nspragg/filehound) [![Coverage Status](https://coveralls.io/repos/github/nspragg/filehound/badge.svg?branch=master)](https://coveralls.io/github/nspragg/filehound?branch=master)
  ![license](https://img.shields.io/badge/license-MIT-blue.svg) 
 ![github-issues](https://img.shields.io/github/issues/nspragg/filehound.svg)
