@@ -50,3 +50,9 @@ npm run coverage
 ## Contributing
 
 See [contributing guide](./CONTRIBUTING.md)
+
+## Related modules
+
+- Finding files by content - [FileSniffer](https://github.com/nspragg/filesniffer)
+- Editing text files  - [FileSurgeon](https://github.com/nspragg/filesurgeon)
+- File object  - [File-js](https://github.com/nspragg/file-js)

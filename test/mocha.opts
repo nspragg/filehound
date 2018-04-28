@@ -1,4 +1,7 @@
 --recursive
 --require ts-node/register
---full-trace
+--require source-map-support/register
+--ui bdd
+--timeout 60000
 test/**/**/*.ts
+
