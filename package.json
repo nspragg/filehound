@@ -32,8 +32,7 @@
     "finder",
     "fs"
   ],
-  "author": "nspragg@gmail.com",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/nspragg/filehound/issues"
   },
@@ -45,12 +44,12 @@
     "babel-preset-es2015": "^6.9.0",
     "babel-preset-stage-2": "^6.11.0",
     "babel-register": "^6.11.6",
-    "coveralls": "^2.11.9",
+    "coveralls": "^3.0.0",
     "eslint": "^3.11.1",
     "istanbul": "^0.4.4",
     "jsdoc": "^3.4.3",
-    "mocha": "^3.0.1",
-    "sinon": "^2.1.0"
+    "mocha": "^5.1.1",
+    "sinon": "^5.0.2"
   },
   "eslintConfig": {
     "extends": "eslint:recommended",
@@ -85,11 +84,11 @@
     }
   },
   "dependencies": {
-    "bluebird": "^3.4.1",
+    "bluebird": "^3.5.1",
     "file-js": "0.3.0",
-    "lodash": "^4.13.1",
-    "minimatch": "^3.0.2",
-    "moment": "^2.14.1",
+    "lodash": "^4.17.10",
+    "minimatch": "^3.0.4",
+    "moment": "^2.22.1",
     "unit-compare": "^1.0.1"
   }
 }
