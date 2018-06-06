@@ -12,6 +12,7 @@ export function compose(args) {
   return (file) => {
     let match = true;
     for (let i = 0; i < functions.length; i++) {
+      if (!match) return false;
       match = match && functions[i](file);
     }
     return match;
