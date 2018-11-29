@@ -73,11 +73,9 @@
   },
   "dependencies": {
     "file-js": "0.3.0",
-    "highland": "^2.13.0",
     "lodash": "^4.17.10",
     "minimatch": "^3.0.4",
     "moment": "^2.22.1",
-    "npm": "^5.8.0",
     "unit-compare": "^1.0.1"
   }
 }
