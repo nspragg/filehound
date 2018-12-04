@@ -13,7 +13,7 @@ const textFiles = qualifyNames(['/justFiles/dummy.txt']);
 const mixedExtensions = qualifyNames(['/ext/dummy.json', '/ext/dummy.txt']);
 const matchFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json']);
 
-const sandbox = sinon.sandbox.create();
+const sandbox = sinon.createSandbox();
 
 function getAbsolutePath(file) {
   return path.join(__dirname + '/fixtures/', file);
@@ -924,7 +924,7 @@ describe('FileHound', () => {
   });
 
   describe('.changed', () => {
-    const sandbox = sinon.sandbox.create();
+    const sandbox = sinon.createSandbox();
     let statSync;
 
     before(() => {
@@ -1071,6 +1071,28 @@ describe('FileHound', () => {
       .catch((e) => {
         assert.ok(e);
         sinon.assert.callCount(spy, 1);
+      });
+  });
+
+  it('ignores errors thrown for invalid symlinks', () => {
+    const target = getAbsolutePath('broken.txt');
+    const path = getAbsolutePath('brokenLink');
+    fs.symlinkSync(target, path);
+
+    const pending = FileHound.create()
+      .paths(fixtureDir)
+      .ext('java')
+      .find();
+
+    return pending
+      .then((files) => {
+        assert.equal(files.length, 1);
+      })
+      .catch((err) => {
+        assert.fail(null, null, `Unexpected exception raised: ${err}`);
+      })
+      .finally(() => {
+        fs.unlinkSync(path);
       });
   });
 });

@@ -657,9 +657,13 @@ class FileHound extends EventEmitter {
     const getFiles = this._sync ? path.getFilesSync.bind(path) : path.getFiles.bind(path);
     return getFiles()
       .map((file) => {
-        if (file.isDirectorySync()) {
-          if (!this._shouldFilterDirectory(root, file)) trackedPaths.push(file);
+        let isDir = false;
+        try {
+          isDir = file.isDirectorySync();
+        } catch (e) { }
 
+        if (isDir) {
+          if (!this._shouldFilterDirectory(root, file)) trackedPaths.push(file);
           return this._search(root, file, trackedPaths);
         }
         return file;
