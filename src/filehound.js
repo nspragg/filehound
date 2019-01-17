@@ -192,7 +192,7 @@ class FileHound extends EventEmitter {
    * filehound
    *   .addFilter(customFilter)
    *   .find()
-   *   .each(consoe.log);
+   *   .each(console.log);
    */
   addFilter(filter) {
     this._filters.push(filter);
@@ -367,31 +367,43 @@ class FileHound extends EventEmitter {
    * @instance
    * @method
    * glob
-   * @param {string} glob - file glob
+   * @param {array} glob - file globs
    * @return a FileHound instance
    * @example
    * import FileHound from 'filehound';
    *
    * const filehound = FileHound.create();
    * filehound
-   *   .glob("*tmp*")
+   *   .glob(['*tmp*'])
    *   .find()
    *   .each(console.log); // array of files names all containing 'tmp'
    */
-  glob(globPattern) {
-    return this.match(globPattern);
+  // glob(globPatterns) {
+  //   const matches = globPatterns.map((globPattern) => this.match(globPattern));
+  //   console.log('matches', matches);
+  //   return matches;
+  // }
+  glob(globPatterns) {
+    return this.match(globPatterns);
   }
 
   /**
    * Same as glob
    * @see glob
    */
-  match(globPattern) {
+  match(globPatterns) {
     this.addFilter((file) => {
-      return file.isMatch(globPattern);
+      const isMatch = globPatterns.filter((globPattern) => file.isMatch(globPattern))[0];
+      return isMatch ? true : false;
     });
     return this;
   }
+  // match(globPattern) {
+  //   this.addFilter((file) => {
+  //     return file.isMatch(globPattern);
+  //   });
+  //   return this;
+  // }
 
   /**
    * Negates filters
@@ -617,6 +629,7 @@ class FileHound extends EventEmitter {
 
   _newMatcher() {
     const isMatch = compose(this._filters);
+		// console.log('​_newMatcher -> isMatch', isMatch);
     if (this.negateFilters) {
       return negate(isMatch);
     }
@@ -673,8 +686,7 @@ class FileHound extends EventEmitter {
   }
 
   getSearchPaths() {
-    const paths = isDefined(this.maxDepth) ?
-      this._searchPaths : reducePaths(this._searchPaths);
+    const paths = isDefined(this.maxDepth) ? this._searchPaths : reducePaths(this._searchPaths);
 
     return copy(paths);
   }

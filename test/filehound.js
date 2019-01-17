@@ -527,13 +527,26 @@ describe('FileHound', () => {
 
     it('returns files using glob method', () => {
       const query = FileHound.create()
-        .glob('*ab*.json')
+        .glob(['*ab*.json'])
         .paths(fixtureDir + '/mixed')
         .find();
 
       return query
         .then((files) => {
           assert.deepEqual(files.sort(), matchFiles);
+        });
+    });
+
+    it('returns files using glob method with multiple globs', () => {
+      const matchingFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json', '/mixed/acdc.json']);
+      const query = FileHound.create()
+        .glob(['*ab*.json', '*cd*.json'])
+        .paths(fixtureDir + '/mixed')
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files.sort(), matchingFiles);
         });
     });
 
