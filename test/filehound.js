@@ -383,12 +383,12 @@ describe('FileHound', () => {
     it('applies multiple discard filters as variable aruments', () => {
       const query = FileHound.create()
         .paths(fixtureDir + '/mixed')
-        .discard('a\.json', 'z\.json')
+        .discard(['a\.json', 'z\.json'])
         .find();
 
       return query
         .then((files) => {
-          assert.deepEqual(files, qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json']));
+          assert.deepEqual(files, qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json', '/mixed/acdc.json']));
         });
     });
 
@@ -400,7 +400,7 @@ describe('FileHound', () => {
 
       return query
         .then((files) => {
-          assert.deepEqual(files, qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json']));
+          assert.deepEqual(files, qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json', '/mixed/acdc.json']));
         });
     });
   });

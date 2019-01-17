@@ -378,11 +378,6 @@ class FileHound extends EventEmitter {
    *   .find()
    *   .each(console.log); // array of files names all containing 'tmp'
    */
-  // glob(globPatterns) {
-  //   const matches = globPatterns.map((globPattern) => this.match(globPattern));
-  //   console.log('matches', matches);
-  //   return matches;
-  // }
   glob(globPatterns) {
     return this.match(globPatterns);
   }
@@ -392,18 +387,18 @@ class FileHound extends EventEmitter {
    * @see glob
    */
   match(globPatterns) {
-    this.addFilter((file) => {
-      const isMatch = globPatterns.filter((globPattern) => file.isMatch(globPattern))[0];
-      return isMatch ? true : false;
-    });
+    if (_.isArray(globPatterns)) {
+      this.addFilter((file) => {
+        const isMatch = globPatterns.filter((globPattern) => file.isMatch(globPattern))[0];
+        return isMatch ? true : false;
+      });
+    } else {
+      this.addFilter((file) => {
+        return file.isMatch(globPatterns);
+      });
+    }
     return this;
   }
-  // match(globPattern) {
-  //   this.addFilter((file) => {
-  //     return file.isMatch(globPattern);
-  //   });
-  //   return this;
-  // }
 
   /**
    * Negates filters
@@ -629,7 +624,6 @@ class FileHound extends EventEmitter {
 
   _newMatcher() {
     const isMatch = compose(this._filters);
-		// console.log('​_newMatcher -> isMatch', isMatch);
     if (this.negateFilters) {
       return negate(isMatch);
     }
