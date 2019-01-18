@@ -288,7 +288,7 @@ class FileHound extends EventEmitter {
    *   .each(console.log);
    *
    * // supports var args
-   * filehound = FileHound.create();
+   * const filehound = FileHound.create();
    * filehound
    *   .ext(".json", ".txt")
    *   .find()
@@ -537,17 +537,10 @@ class FileHound extends EventEmitter {
    * import FileHound from 'filehound';
    *
    * const filehound = FileHound.create();
-   * filehound
-   *   .find()
-   *   .each(console.log);
+   * const files = await filehound.find();
    *
-   * // using a callback
-   * filehound
-   *   .find((err, files) => {
-   *      if (err) return console.error(err);
+   * console.log(files);
    *
-   *      console.log(files);
-   *   });
    */
   public async find(): Promise<string[]> {
     const paths: string[] = this.getSearchPaths();

@@ -5,7 +5,7 @@ async function getDirNames(dir) {
 
 export async function walkAsync(path, fn) {
     if (!await path.isDirectory()) {
-        return await fn(path);
+        return fn(path);
     }
 
     const cont = await fn(path);

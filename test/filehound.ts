@@ -49,7 +49,7 @@ function deleteFile(fname) {
 describe('FileHound', async () => {
   const fixtureDir = __dirname + '/fixtures';
 
-  describe('.socket', async () => {
+  describe.skip('.socket', async () => {
     const file = {
       isSocket: () => {
         return true;
@@ -82,8 +82,7 @@ describe('FileHound', async () => {
             });
         }
       };
-      sandbox.stub(File, 'create')
-        .returns(root);
+      sandbox.stub(fs, 'create').returns(root);
     });
 
     afterEach(() => {
