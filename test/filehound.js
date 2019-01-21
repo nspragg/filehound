@@ -525,44 +525,44 @@ describe('FileHound', () => {
         });
     });
 
-    it('returns files using glob method with a single glob', () => {
-      const query = FileHound.create()
-        .glob('*ab*.json')
-        .paths(fixtureDir + '/mixed')
-        .find();
-
-      return query
-        .then((files) => {
-          assert.deepEqual(files.sort(), matchFiles);
-        });
-    });
-
-    it('returns files using glob method with multiple globs', () => {
-      const matchingFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json', '/mixed/acdc.json']);
-      const query = FileHound.create()
-        .glob(['*ab*.json', '*cd*.json'])
-        .paths(fixtureDir + '/mixed')
-        .find();
-
-      return query
-        .then((files) => {
-          assert.deepEqual(files.sort(), matchingFiles);
-        });
-    });
-
-    it('returns files using glob method with variable args', () => {
-      const matchingFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json', '/mixed/acdc.json']);
-      const varArg1 = '*ab*.json';
-      const varArg2 = '*cd*.json';
-      const query = FileHound.create()
-        .glob([varArg1, varArg2])
-        .paths(fixtureDir + '/mixed')
-        .find();
-
-      return query
-        .then((files) => {
-          assert.deepEqual(files.sort(), matchingFiles);
-        });
+    describe('.glob', () => {
+      it('returns files using glob method with a single glob', () => {
+        const query = FileHound.create()
+          .glob('*ab*.json')
+          .paths(fixtureDir + '/mixed')
+          .find();
+  
+        return query
+          .then((files) => {
+            assert.deepEqual(files.sort(), matchFiles);
+          });
+      });
+  
+      it('returns files using glob method with multiple globs', () => {
+        const matchingFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json', '/mixed/acdc.json']);
+        const query = FileHound.create()
+          .glob(['*ab*.json', '*cd*.json'])
+          .paths(fixtureDir + '/mixed')
+          .find();
+  
+        return query
+          .then((files) => {
+            assert.deepEqual(files.sort(), matchingFiles);
+          });
+      });
+  
+      it('returns files using glob method with variable args', () => {
+        const matchingFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json', '/mixed/acdc.json', '/mixed/z.json']);
+        const query = FileHound.create()
+          .glob('*ab*.json', '*cd*.json', '*z*')
+          .paths(fixtureDir + '/mixed')
+          .find();
+  
+        return query
+          .then((files) => {
+            assert.deepEqual(files.sort(), matchingFiles);
+          });
+      });
     });
 
     it('performs recursive search using matching on a given pattern', () => {
