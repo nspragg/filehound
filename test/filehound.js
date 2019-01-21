@@ -383,7 +383,7 @@ describe('FileHound', () => {
     it('applies multiple discard filters as variable aruments', () => {
       const query = FileHound.create()
         .paths(fixtureDir + '/mixed')
-        .discard(['a\.json', 'z\.json'])
+        .discard('a\.json', 'z\.json')
         .find();
 
       return query
