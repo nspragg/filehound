@@ -1,6 +1,6 @@
 import * as File from 'file-js';
 import { walkSync } from './walkSync';
-import * as find from 'findit';
+import { FileEmitter } from './emitter';
 
 const TERMINATE = false;
 const CONTINUE = true;
@@ -18,25 +18,25 @@ function shouldFilterDirectory(dir: File, root: File, opts: any): boolean {
   return (atMaxDepth(dir, root, opts) || (opts.ignoreDirs && dir.isHiddenSync()));
 }
 
-export async function async(root: string, isMatch, opts): Promise<any> {
-  const finder = find(root);
+export async function async(root: string, isMatch: any, opts: any): Promise<any> {
+  const finder = new FileEmitter(root);
 
   return new Promise((resolve, reject) => {
     const files = [];
 
     finder.on('file', (file) => {
       if (opts.directoriesOnly) { return; }
-      if (isMatch(File.create(file))) { files.push(file); }
+      if (isMatch(file)) { files.push(file.getName()); }
     });
 
-    finder.on('directory', (dir, stat, stop) => {
-      if (shouldFilterDirectory(File.create(dir), File.create(root), opts)) {
+    finder.on('directory', (dir, stop) => {
+      if (shouldFilterDirectory(dir, File.create(root), opts)) {
         return stop();
       }
 
       if (opts.directoriesOnly) {
-        if (dir !== root && isMatch(File.create(dir))) {
-          files.push(dir);
+        if (dir !== root && isMatch(dir)) {
+          files.push(dir.getName());
         }
       }
     });
@@ -48,6 +48,8 @@ export async function async(root: string, isMatch, opts): Promise<any> {
     finder.on('stop', () => {
       resolve(files.sort());
     });
+
+    finder.start();
   });
 }
 
