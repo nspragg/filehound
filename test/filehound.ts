@@ -24,7 +24,7 @@ const matchFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json']);
 const sandbox = sinon.sandbox.create();
 
 function getAbsolutePath(file) {
-  return path.join(__dirname + '/fixtures/', file);
+  return path.join(`${__dirname}/fixtures/`, file);
 }
 
 function qualifyNames(names) {
@@ -46,7 +46,7 @@ function deleteFile(fname) {
 }
 
 describe('FileHound', async () => {
-  const fixtureDir = __dirname + '/fixtures';
+  const fixtureDir = `${__dirname}/fixtures`;
 
   describe.skip('.socket', async () => {
     const file = {
@@ -90,7 +90,7 @@ describe('FileHound', async () => {
 
     it('filters by socket type files', async () => {
       const sockets = await filehound.create()
-        .paths(fixtureDir + '/types')
+        .paths(`${fixtureDir}/types`)
         .socket()
         .find();
 
@@ -108,7 +108,7 @@ describe('FileHound', async () => {
       ]);
 
       const query = filehound.create()
-        .paths(fixtureDir + '/deeplyNested')
+        .paths(`${fixtureDir}/deeplyNested`)
         .directory()
         .find();
 
@@ -126,7 +126,7 @@ describe('FileHound', async () => {
       ]);
 
       const query = filehound.create()
-        .paths(fixtureDir + '/deeplyNestedWithHiddenDir')
+        .paths(`${fixtureDir}/deeplyNestedWithHiddenDir`)
         .directory()
         .ignoreHiddenDirectories()
         .find();
@@ -144,7 +144,7 @@ describe('FileHound', async () => {
       ]);
 
       const query = filehound.create()
-        .paths(fixtureDir + '/deeplyNested')
+        .paths(`${fixtureDir}/deeplyNested`)
         .directory()
         .match('*dir4*')
         .not()
@@ -159,7 +159,7 @@ describe('FileHound', async () => {
   describe('.depth', () => {
     it('only returns files in the current directory', () => {
       const query = filehound.create()
-        .paths(fixtureDir + '/deeplyNested')
+        .paths(`${fixtureDir}/deeplyNested`)
         .depth(0)
         .find();
 
@@ -173,7 +173,7 @@ describe('FileHound', async () => {
 
     it('only returns files one level deep', () => {
       const query = filehound.create()
-        .paths(fixtureDir + '/deeplyNested')
+        .paths(`${fixtureDir}/deeplyNested`)
         .depth(1)
         .find();
 
@@ -191,7 +191,7 @@ describe('FileHound', async () => {
 
     it('returns files n level deep', () => {
       const query = filehound.create()
-        .paths(fixtureDir + '/deeplyNested')
+        .paths(`${fixtureDir}/deeplyNested`)
         .depth(3)
         .find();
 
@@ -213,7 +213,7 @@ describe('FileHound', async () => {
 
     it('returns files n level deep relative to path', () => {
       const query = filehound.create()
-        .paths(fixtureDir + '/deeplyNested', fixtureDir + '/deeplyNested/mydir')
+        .paths(`${fixtureDir}/deeplyNested`, `${fixtureDir}//deeplyNested/mydir`)
         .depth(0)
         .find();
 
@@ -234,7 +234,7 @@ describe('FileHound', async () => {
   describe('.path', () => {
     it('returns all files in a given directory', () => {
       const query = filehound.create()
-        .path(fixtureDir + '/justFiles')
+        .path(`${fixtureDir}/justFiles`)
         .find();
 
       return query.then((files) => {
@@ -243,7 +243,7 @@ describe('FileHound', async () => {
     });
 
     it('ignores all paths except the first', () => {
-      const location1 = fixtureDir + '/justFiles';
+      const location1 = `${fixtureDir}/justFiles`;
 
       const query = filehound.create()
         .path(location1)
@@ -255,7 +255,7 @@ describe('FileHound', async () => {
     });
 
     it.skip('returns an error when a given path is invalid', () => {
-      const badLocation = fixtureDir + '/justBad';
+      const badLocation = `${fixtureDir}/justBad`;
 
       const query = filehound.create()
         .path(badLocation)
@@ -270,7 +270,7 @@ describe('FileHound', async () => {
   describe('.paths', () => {
     it('returns all files in a given directory', () => {
       const query = filehound.create()
-        .paths(fixtureDir + '/justFiles')
+        .paths(`${fixtureDir}/justFiles`)
         .find();
 
       return query.then((files) => {
@@ -280,7 +280,7 @@ describe('FileHound', async () => {
 
     it('returns files performing a recursive search', () => {
       const query = filehound.create()
-        .paths(fixtureDir + '/nested')
+        .paths(`${fixtureDir}/nested`)
         .find();
 
       return query.then((files) => {
@@ -289,8 +289,8 @@ describe('FileHound', async () => {
     });
 
     it('returns matching files from multiple search paths', () => {
-      const location1 = fixtureDir + '/nested';
-      const location2 = fixtureDir + '/justFiles';
+      const location1 = `${fixtureDir}/nested`;
+      const location2 = `${fixtureDir}/justFiles`;
 
       const query = filehound.create()
         .paths(location1, location2)
@@ -304,8 +304,8 @@ describe('FileHound', async () => {
     });
 
     it('returns matching files given a array of paths', () => {
-      const location1 = fixtureDir + '/nested';
-      const location2 = fixtureDir + '/justFiles';
+      const location1 = `${fixtureDir}/nested`;
+      const location2 = `${fixtureDir}/justFiles`;
 
       const query = filehound.create()
         .paths([location1, location2])
@@ -319,7 +319,7 @@ describe('FileHound', async () => {
     });
 
     it('removes duplicate paths', () => {
-      const location1 = fixtureDir + '/nested';
+      const location1 = `${fixtureDir}/nested`;
 
       const fh = filehound.create();
       fh.paths(location1, location1);
@@ -337,10 +337,10 @@ describe('FileHound', async () => {
     });
 
     it('normalises paths', () => {
-      const location1 = fixtureDir + '/nested';
-      const location2 = fixtureDir + '/nested/mydir';
-      const location3 = fixtureDir + '/justFiles/moreFiles';
-      const location4 = fixtureDir + '/justFiles';
+      const location1 = `${fixtureDir}/nested`;
+      const location2 = `${fixtureDir}/nested/mydir`;
+      const location3 = `${fixtureDir}/justFiles/moreFiles`;
+      const location4 = `${fixtureDir}/justFiles`;
 
       const fh = filehound.create();
       fh.paths(location2, location1, location4, location3);
@@ -352,7 +352,7 @@ describe('FileHound', async () => {
   describe('.discard', () => {
     it('ignores matching sub-directories', () => {
       const query = filehound.create()
-        .paths(fixtureDir + '/nested')
+        .paths(`${fixtureDir}/nested`)
         .discard('mydir')
         .find();
 
@@ -364,7 +364,7 @@ describe('FileHound', async () => {
 
     it('ignores files', () => {
       const query = filehound.create()
-        .paths(fixtureDir + '/nested')
+        .paths(`${fixtureDir}/nested`)
         .discard('c.json')
         .find();
 
@@ -376,7 +376,7 @@ describe('FileHound', async () => {
 
     it('ignores everything using a greedy match', () => {
       const query = filehound.create()
-        .paths(fixtureDir + '/nested')
+        .paths(`${fixtureDir}/nested`)
         .discard('.*')
         .find();
 
@@ -387,7 +387,7 @@ describe('FileHound', async () => {
 
     it('matches all files after being negated', () => {
       const query = filehound.create()
-        .paths(fixtureDir + '/nested')
+        .paths(`${fixtureDir}/nested`)
         .discard('.*')
         .not()
         .find();
@@ -399,7 +399,7 @@ describe('FileHound', async () => {
 
     it('applies multiple discard filters as variable aruments', () => {
       const query = filehound.create()
-        .paths(fixtureDir + '/mixed')
+        .paths(`${fixtureDir}/mixed`)
         .discard('a.json', 'z.json')
         .find();
 
@@ -413,7 +413,7 @@ describe('FileHound', async () => {
 
     it('applies an array of discard filters', () => {
       const query = filehound.create()
-        .paths(fixtureDir + '/mixed')
+        .paths(`${fixtureDir}/mixed`)
         .discard(['a.json', 'z.json'])
         .find();
 
@@ -429,7 +429,7 @@ describe('FileHound', async () => {
   describe('.findSync', () => {
     it('returns an array of matching files', () => {
       const files = filehound.create()
-        .paths(fixtureDir + '/justFiles')
+        .paths(`${fixtureDir}/justFiles`)
         .findSync();
 
       assert.deepEqual(files, justFiles);
@@ -443,7 +443,7 @@ describe('FileHound', async () => {
       ]);
 
       const directories = filehound.create()
-        .paths(fixtureDir + '/deeplyNested')
+        .paths(`${fixtureDir}/deeplyNested`)
         .directory()
         .match('*dir4*')
         .not()
@@ -454,7 +454,7 @@ describe('FileHound', async () => {
 
     it('filters matching files', () => {
       const files = filehound.create()
-        .paths(fixtureDir + '/justFiles')
+        .paths(`${fixtureDir}/justFiles`)
         .ext('txt')
         .findSync();
 
@@ -466,7 +466,7 @@ describe('FileHound', async () => {
     it('returns files for a given ext', () => {
       const query = filehound.create()
         .ext('txt')
-        .paths(fixtureDir + '/justFiles')
+        .paths(`${fixtureDir}/justFiles`)
         .find();
 
       return query.then((files) => {
@@ -477,7 +477,7 @@ describe('FileHound', async () => {
     it('returns files for a given ext including a period', () => {
       const query = filehound.create()
         .ext('.txt')
-        .paths(fixtureDir + '/justFiles')
+        .paths(`${fixtureDir}/justFiles`)
         .find();
 
       return query.then((files) => {
@@ -488,7 +488,7 @@ describe('FileHound', async () => {
     it('returns files for all matching extensions', () => {
       const query = filehound.create()
         .ext(['txt', '.json'])
-        .paths(fixtureDir + '/ext')
+        .paths(`${fixtureDir}/ext`)
         .find();
 
       return query.then((files) => {
@@ -499,7 +499,7 @@ describe('FileHound', async () => {
     it('supports var args', () => {
       const query = filehound.create()
         .ext('.txt', 'json')
-        .paths(fixtureDir + '/ext')
+        .paths(`${fixtureDir}/ext`)
         .find();
 
       return query.then((files) => {
@@ -512,7 +512,7 @@ describe('FileHound', async () => {
     it('returns files for given match name', () => {
       const query = filehound.create()
         .match('*ab*.json')
-        .paths(fixtureDir + '/mixed')
+        .paths(`${fixtureDir}/mixed`)
         .find();
 
       return query.then((files) => {
@@ -523,7 +523,7 @@ describe('FileHound', async () => {
     it('returns files using glob method', () => {
       const query = filehound.create()
         .glob('*ab*.json')
-        .paths(fixtureDir + '/mixed')
+        .paths(`${fixtureDir}/mixed`)
         .find();
 
       return query.then((files) => {
@@ -533,7 +533,7 @@ describe('FileHound', async () => {
 
     it('performs recursive search using matching on a given pattern', () => {
       const query = filehound.create()
-        .paths(fixtureDir + '/nested')
+        .paths(`${fixtureDir}/nested`)
         .match('*.json')
         .find();
 
@@ -549,7 +549,7 @@ describe('FileHound', async () => {
     it('returns files not matching the given query', () => {
       const notJsonStartingWithZ = filehound.create()
         .match('*.json')
-        .paths(fixtureDir + '/justFiles')
+        .paths(`${fixtureDir}/justFiles`)
         .not()
         .find();
 
@@ -563,12 +563,12 @@ describe('FileHound', async () => {
     it('returns matching files for any query', () => {
       const jsonStartingWithZ = filehound.create()
         .match('*.json')
-        .paths(fixtureDir + '/justFiles');
+        .paths(`${fixtureDir}/justFiles`);
       // .find();
 
       const onlyTextFles = filehound.create()
         .ext('txt')
-        .paths(fixtureDir + '/justFiles');
+        .paths(`${fixtureDir}/justFiles`);
       // .find();
 
       const results: Promise<string[]> = filehound.any(jsonStartingWithZ, onlyTextFles);
@@ -583,7 +583,7 @@ describe('FileHound', async () => {
     it('returns files matched using the equality operator by default', () => {
       const sizeFile10Bytes = filehound.create()
         .size(20)
-        .paths(fixtureDir + '/justFiles')
+        .paths(`${fixtureDir}/justFiles`)
         .find();
 
       return sizeFile10Bytes.then((files) => {
@@ -594,7 +594,7 @@ describe('FileHound', async () => {
     it('returns files that equal a given number of bytes', () => {
       const sizeFile10Bytes = filehound.create()
         .size('==20')
-        .paths(fixtureDir + '/justFiles')
+        .paths(`${fixtureDir}/justFiles`)
         .find();
 
       return sizeFile10Bytes.then((files) => {
@@ -605,7 +605,7 @@ describe('FileHound', async () => {
     it('returns files greater than a given size', () => {
       const sizeGreaterThan1k = filehound.create()
         .size('>1024')
-        .paths(fixtureDir + '/sizes')
+        .paths(`${fixtureDir}/sizes`)
         .find();
 
       return sizeGreaterThan1k.then((files) => {
@@ -616,7 +616,7 @@ describe('FileHound', async () => {
     it('returns files less than a given size', () => {
       const sizeLessThan1k = filehound.create()
         .size('<1024')
-        .paths(fixtureDir + '/sizes')
+        .paths(`${fixtureDir}/sizes`)
         .find();
 
       return sizeLessThan1k.then((files) => {
@@ -630,7 +630,7 @@ describe('FileHound', async () => {
     it('returns files using file size units', () => {
       const sizeLessThan15bytes = filehound.create()
         .size('<15b')
-        .paths(fixtureDir + '/sizes')
+        .paths(`${fixtureDir}/sizes`)
         .find();
 
       return sizeLessThan15bytes.then((files) => {
@@ -644,7 +644,7 @@ describe('FileHound', async () => {
     it('returns files less than or equal to a given size', () => {
       const lessThanOrEqualTo1k = filehound.create()
         .size('<=1024')
-        .paths(fixtureDir + '/sizes')
+        .paths(`${fixtureDir}/sizes`)
         .find();
 
       return lessThanOrEqualTo1k.then((files) => {
@@ -658,7 +658,7 @@ describe('FileHound', async () => {
     it('returns files greater than or equal to a given size', () => {
       const greaterThanOrEqualTo1k = filehound.create()
         .size('>=1024')
-        .paths(fixtureDir + '/sizes')
+        .paths(`${fixtureDir}/sizes`)
         .find();
 
       return greaterThanOrEqualTo1k.then((files) => {
@@ -673,7 +673,7 @@ describe('FileHound', async () => {
       const range = filehound.create()
         .size('>0')
         .size('<=1024')
-        .paths(fixtureDir + '/sizes')
+        .paths(`${fixtureDir}/sizes`)
         .find();
 
       return range.then((files) => {
@@ -689,7 +689,7 @@ describe('FileHound', async () => {
     it('returns zero length files', () => {
       const allEmpty = filehound.create()
         .isEmpty()
-        .paths(fixtureDir + '/justFiles')
+        .paths(`${fixtureDir}/justFiles`)
         .find();
 
       return allEmpty.then((files) => {
@@ -705,7 +705,7 @@ describe('FileHound', async () => {
     it('ignores hidden files', () => {
       const noHiddenFiles = filehound.create()
         .ignoreHiddenFiles()
-        .paths(fixtureDir + '/visibility')
+        .paths(`${fixtureDir}/visibility`)
         .find();
 
       noHiddenFiles.then((files) => {
@@ -724,7 +724,7 @@ describe('FileHound', async () => {
       const noHiddenFiles = filehound.create()
         .ignoreHiddenDirectories()
         .ignoreHiddenFiles()
-        .paths(fixtureDir + '/visibility')
+        .paths(`${fixtureDir}/visibility`)
         .find();
 
       noHiddenFiles.then((files) => {
@@ -740,7 +740,7 @@ describe('FileHound', async () => {
         .addFilter((file) => {
           return file.sizeSync() === 1024;
         })
-        .paths(fixtureDir + '/custom')
+        .paths(`${fixtureDir}/custom`)
         .find();
 
       return customFilter.then((files) => {
@@ -798,7 +798,7 @@ describe('FileHound', async () => {
 
     it('returns files modified exactly n days', () => {
       const modifiedNDaysAgo = filehound.create()
-        .paths(fixtureDir + '/dates')
+        .paths(`${fixtureDir}/dates`)
         .modified(10)
         .find();
 
@@ -809,7 +809,7 @@ describe('FileHound', async () => {
 
     it('returns files greater than n days', () => {
       const modifiedNDaysAgo = filehound.create()
-        .paths(fixtureDir + '/dates')
+        .paths(`${fixtureDir}/dates`)
         .modified('>2 days')
         .find();
 
@@ -820,7 +820,7 @@ describe('FileHound', async () => {
 
     it('returns files less than n days', () => {
       const modifiedNDaysAgo = filehound.create()
-        .paths(fixtureDir + '/dates')
+        .paths(`${fixtureDir}/dates`)
         .modified('<10 days')
         .find();
 
@@ -887,7 +887,7 @@ describe('FileHound', async () => {
 
     it('returns files accessed > 8 hours ago', () => {
       const accessedFiles = filehound.create()
-        .paths(fixtureDir + '/dates')
+        .paths(`${fixtureDir}/dates`)
         .accessed('>8h')
         .find();
 
@@ -898,7 +898,7 @@ describe('FileHound', async () => {
 
     it('returns files accessed < 3 hours ago', () => {
       const accessedFiles = filehound.create()
-        .paths(fixtureDir + '/dates')
+        .paths(`${fixtureDir}/dates`)
         .accessed('<3h')
         .find();
 
@@ -912,7 +912,7 @@ describe('FileHound', async () => {
 
     it('returns files accessed 1 hour ago', () => {
       const accessedFiles = filehound.create()
-        .paths(fixtureDir + '/dates')
+        .paths(`${fixtureDir}/dates`)
         .accessed('=1h')
         .find();
 
@@ -991,7 +991,7 @@ describe('FileHound', async () => {
 
     it('returns files changed > 8 hours ago', () => {
       const changedFiles = filehound.create()
-        .paths(fixtureDir + '/dates')
+        .paths(`${fixtureDir}/dates`)
         .changed('>8h')
         .find();
 
@@ -1002,7 +1002,7 @@ describe('FileHound', async () => {
 
     it('returns files changed < 3 hours ago', () => {
       const changedFiles = filehound.create()
-        .paths(fixtureDir + '/dates')
+        .paths(`${fixtureDir}/dates`)
         .changed('<3h')
         .find();
 
@@ -1016,7 +1016,7 @@ describe('FileHound', async () => {
 
     it('returns files changed 1 hour ago', () => {
       const changedFiles = filehound.create()
-        .paths(fixtureDir + '/dates')
+        .paths(`${fixtureDir}/dates`)
         .changed('=1h')
         .find();
 
@@ -1028,7 +1028,7 @@ describe('FileHound', async () => {
 
   it('emits a match event for each file matched', () => {
     const fh = filehound.create();
-    fh.path(fixtureDir + '/justFiles');
+    fh.path(`${fixtureDir}/justFiles`);
 
     const spy = sinon.spy();
     fh.on('match', spy);
@@ -1045,7 +1045,7 @@ describe('FileHound', async () => {
 
   it('emits an end event when the search is complete', () => {
     const fh = filehound.create();
-    fh.path(fixtureDir + '/justFiles');
+    fh.path(`${fixtureDir}/justFiles`);
 
     const spy = sinon.spy();
     fh.on('end', spy);
@@ -1059,7 +1059,7 @@ describe('FileHound', async () => {
 
   it.skip('emits an error event', () => {
     const fh = filehound.create();
-    fh.path(fixtureDir + '/justBad');
+    fh.path(`${fixtureDir}/justBad`);
 
     const spy = sinon.spy();
     fh.on('error', spy);
