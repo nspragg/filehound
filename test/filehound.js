@@ -248,6 +248,39 @@ describe('FileHound', () => {
     });
   });
 
+
+  describe('.includeFileStats', () => {
+    function includeFileStats(file) {
+      return {
+        path: file.path,
+        stats: fs.statSync(file.path)
+      }
+    }
+
+    it('returns a file object containing a path and file stats', () => {
+      const query = FileHound.create()
+        .path(fixtureDir + '/justFiles')
+        .includeFileStats()
+        .find();
+
+      return query
+        .then((files) => {
+          const expected = files.map(includeFileStats);
+          assert.deepEqual(files, expected);
+        });
+    });
+
+    it('returns file stats for `findSync`', () => {
+      const files = FileHound.create()
+        .path(fixtureDir + '/justFiles')
+        .includeFileStats()
+        .findSync();
+
+      const expected = files.map(includeFileStats);
+      assert.deepEqual(files, expected);
+    });
+  });
+
   describe('.paths', () => {
     it('returns all files in a given directory', () => {
       const query = FileHound.create()
@@ -531,33 +564,33 @@ describe('FileHound', () => {
           .glob('*ab*.json')
           .paths(fixtureDir + '/mixed')
           .find();
-  
+
         return query
           .then((files) => {
             assert.deepEqual(files.sort(), matchFiles);
           });
       });
-  
+
       it('returns files using glob method with multiple globs', () => {
         const matchingFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json', '/mixed/acdc.json']);
         const query = FileHound.create()
           .glob(['*ab*.json', '*cd*.json'])
           .paths(fixtureDir + '/mixed')
           .find();
-  
+
         return query
           .then((files) => {
             assert.deepEqual(files.sort(), matchingFiles);
           });
       });
-  
+
       it('returns files using glob method with variable args', () => {
         const matchingFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json', '/mixed/acdc.json', '/mixed/z.json']);
         const query = FileHound.create()
           .glob('*ab*.json', '*cd*.json', '*z*')
           .paths(fixtureDir + '/mixed')
           .find();
-  
+
         return query
           .then((files) => {
             assert.deepEqual(files.sort(), matchingFiles);

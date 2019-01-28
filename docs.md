@@ -140,6 +140,20 @@ FileHound.create()
   });
 ```
 
+#### Including file stats information
+
+Configure file objects, containing `path` and `stats`:
+
+```js
+const results = FileHound.create()
+  .paths('/tmp')
+  .ext('txt')
+  .includeFileStats()
+  .find();
+
+  console.log(results) // `results` is an array of file objects
+```
+
 #### Binding to match, error and end events
 
 Bind to a 'match' event to process each file on match:

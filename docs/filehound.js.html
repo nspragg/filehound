@@ -24,7 +24,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="FileHound.html">FileHound</a><ul class='methods'><li data-type='method'><a href="FileHound.html#.accessed">accessed</a></li><li data-type='method'><a href="FileHound.html#.any">any</a></li><li data-type='method'><a href="FileHound.html#.create">create</a></li><li data-type='method'><a href="FileHound.html#.modified">modified</a></li><li data-type='method'><a href="FileHound.html#addFilter">addFilter</a></li><li data-type='method'><a href="FileHound.html#changed">changed</a></li><li data-type='method'><a href="FileHound.html#depth">depth</a></li><li data-type='method'><a href="FileHound.html#directory">directory</a></li><li data-type='method'><a href="FileHound.html#discard">discard</a></li><li data-type='method'><a href="FileHound.html#ext">ext</a></li><li data-type='method'><a href="FileHound.html#find">find</a></li><li data-type='method'><a href="FileHound.html#findSync">findSync</a></li><li data-type='method'><a href="FileHound.html#glob">glob</a></li><li data-type='method'><a href="FileHound.html#ignoreHiddenDirectories">ignoreHiddenDirectories</a></li><li data-type='method'><a href="FileHound.html#ignoreHiddenFiles">ignoreHiddenFiles</a></li><li data-type='method'><a href="FileHound.html#isEmpty">isEmpty</a></li><li data-type='method'><a href="FileHound.html#match">match</a></li><li data-type='method'><a href="FileHound.html#not">not</a></li><li data-type='method'><a href="FileHound.html#path">path</a></li><li data-type='method'><a href="FileHound.html#paths">paths</a></li><li data-type='method'><a href="FileHound.html#size">size</a></li><li data-type='method'><a href="FileHound.html#socket">socket</a></li></ul></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="FileHound.html">FileHound</a><ul class='methods'><li data-type='method'><a href="FileHound.html#.accessed">accessed</a></li><li data-type='method'><a href="FileHound.html#.any">any</a></li><li data-type='method'><a href="FileHound.html#.create">create</a></li><li data-type='method'><a href="FileHound.html#.modified">modified</a></li><li data-type='method'><a href="FileHound.html#addFilter">addFilter</a></li><li data-type='method'><a href="FileHound.html#changed">changed</a></li><li data-type='method'><a href="FileHound.html#depth">depth</a></li><li data-type='method'><a href="FileHound.html#directory">directory</a></li><li data-type='method'><a href="FileHound.html#discard">discard</a></li><li data-type='method'><a href="FileHound.html#ext">ext</a></li><li data-type='method'><a href="FileHound.html#find">find</a></li><li data-type='method'><a href="FileHound.html#findSync">findSync</a></li><li data-type='method'><a href="FileHound.html#glob">glob</a></li><li data-type='method'><a href="FileHound.html#ignoreHiddenDirectories">ignoreHiddenDirectories</a></li><li data-type='method'><a href="FileHound.html#ignoreHiddenFiles">ignoreHiddenFiles</a></li><li data-type='method'><a href="FileHound.html#includeFileStats">includeFileStats</a></li><li data-type='method'><a href="FileHound.html#isEmpty">isEmpty</a></li><li data-type='method'><a href="FileHound.html#match">match</a></li><li data-type='method'><a href="FileHound.html#not">not</a></li><li data-type='method'><a href="FileHound.html#path">path</a></li><li data-type='method'><a href="FileHound.html#paths">paths</a></li><li data-type='method'><a href="FileHound.html#size">size</a></li><li data-type='method'><a href="FileHound.html#socket">socket</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -76,10 +76,6 @@ function flatten(a, b) {
   return a.concat(b);
 }
 
-function getFilename(file) {
-  return file.getName();
-}
-
 function isRegExpMatch(pattern) {
   return (file) => {
     return new RegExp(pattern).test(file.getName());
@@ -104,6 +100,7 @@ class FileHound extends EventEmitter {
     this._isMatch = _.noop;
     this._sync = false;
     this._directoriesOnly = false;
+    this._includeStats = false;
   }
 
   /**
@@ -512,6 +509,28 @@ class FileHound extends EventEmitter {
   }
 
   /**
+   * Include file stats 
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * includeFileStats
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .includeFileStats()
+   *   .find()
+   *   .each(console.log); // array of file objects containing `path` and `stats` properties
+   */
+  includeFileStats() {
+    this._includeStats = true;
+    return this;
+  }
+
+  /**
    * Find sub-directories
    *
    * @memberOf FileHound
@@ -615,7 +634,7 @@ class FileHound extends EventEmitter {
     return Promise
       .all(searches)
       .reduce(flatten)
-      .map(getFilename)
+      .map(this.formatResult.bind(this))
       .catch((e) => {
         this.emit('error', e);
         throw e;
@@ -650,7 +669,7 @@ class FileHound extends EventEmitter {
     return this.getSearchPaths()
       .map(searchSync)
       .reduce(flatten)
-      .map(getFilename);
+      .map(this.formatResult.bind(this));
   }
 
   _atMaxDepth(root, dir) {
@@ -720,6 +739,16 @@ class FileHound extends EventEmitter {
       .filter(this._isMatch);
   }
 
+  formatResult(file) {
+    if (this._includeStats) {
+      return {
+        path: file.getName(),
+        stats: file._getStatsSync()
+      }
+    }
+    return file.getName();
+  }
+
   getSearchPaths() {
     const paths = isDefined(this.maxDepth) ? this._searchPaths : reducePaths(this._searchPaths);
 
@@ -740,7 +769,7 @@ export default FileHound;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Jan 21 2019 17:24:06 GMT+0000 (GMT) using the Minami theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Jan 28 2019 16:48:23 GMT+0000 (GMT) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
