@@ -35,10 +35,6 @@ function flatten(a, b) {
   return a.concat(b);
 }
 
-function getFilename(file) {
-  return file.getName();
-}
-
 function isRegExpMatch(pattern) {
   return (file) => {
     return new RegExp(pattern).test(file.getName());
@@ -63,6 +59,7 @@ class FileHound extends EventEmitter {
     this._isMatch = _.noop;
     this._sync = false;
     this._directoriesOnly = false;
+    this._includeStats = false;
   }
 
   /**
@@ -471,6 +468,28 @@ class FileHound extends EventEmitter {
   }
 
   /**
+   * Include file stats 
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * includeFileStats
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .includeFileStats()
+   *   .find()
+   *   .each(console.log); // array of file objects containing `path` and `stats` properties
+   */
+  includeFileStats() {
+    this._includeStats = true;
+    return this;
+  }
+
+  /**
    * Find sub-directories
    *
    * @memberOf FileHound
@@ -574,7 +593,7 @@ class FileHound extends EventEmitter {
     return Promise
       .all(searches)
       .reduce(flatten)
-      .map(getFilename)
+      .map(this.formatResult.bind(this))
       .catch((e) => {
         this.emit('error', e);
         throw e;
@@ -609,7 +628,7 @@ class FileHound extends EventEmitter {
     return this.getSearchPaths()
       .map(searchSync)
       .reduce(flatten)
-      .map(getFilename);
+      .map(this.formatResult.bind(this));
   }
 
   _atMaxDepth(root, dir) {
@@ -677,6 +696,16 @@ class FileHound extends EventEmitter {
       })
       .reduce(flatten, [])
       .filter(this._isMatch);
+  }
+
+  formatResult(file) {
+    if (this._includeStats) {
+      return {
+        path: file.getName(),
+        stats: file._getStatsSync()
+      }
+    }
+    return file.getName();
   }
 
   getSearchPaths() {
