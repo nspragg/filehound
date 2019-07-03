@@ -3,8 +3,7 @@ import { EventEmitter } from "events";
 declare module "filehound" {
    export default class FileHound extends EventEmitter {
       constructor();
-      // UC = UNCLEAR
-
+      
       /**
        * Static factory method to create an instance of FileHound
        *
@@ -17,12 +16,8 @@ declare module "filehound" {
        *
        * const filehound = FileHound.create();
        */
-      public static create() : FileHound;
-      
-      /*
-      UC; Original:
-      public static any() : any[];
-      */
+      public static create(): FileHound;
+
       /**
        * Returns all matches from one of more FileHound instances
        *
@@ -36,7 +31,7 @@ declare module "filehound" {
        *
        * const filehound = FileHound.any(fh1, fh2);
        */
-      public static any(...filehounds: FileHound[]): Promise<any[]>;
+      public static any(...filehounds: FileHound[]): Promise<string[]>;
 
       /**
        * Filters by modifiction time
@@ -54,7 +49,7 @@ declare module "filehound" {
        *   .find()
        *   .each(console.log);
        */
-      public modified(pattern : string): FileHound;
+      public modified(pattern: string): FileHound;
       
       /**
        * Filters by file access time
@@ -72,7 +67,7 @@ declare module "filehound" {
        *   .find()
        *   .each(console.log);
        */
-      public accesssed(pattern : string): FileHound;
+      public accesssed(pattern: string): FileHound;
       
       /**
        * Filters change time
@@ -91,7 +86,7 @@ declare module "filehound" {
        *   .find()
        *   .each(console.log);
        */
-      public changed(pattern : string): FileHound;
+      public changed(pattern: string): FileHound;
       
       /**
        *
@@ -166,7 +161,7 @@ declare module "filehound" {
        *   .find()
        *   .each(console.log);
        */
-      public discard(regex : string | string[]): FileHound;
+      public discard(regex: string | string[]): FileHound;
       
       /**
        * Filter on file extension
@@ -199,7 +194,7 @@ declare module "filehound" {
        *   .find()
        *   .each(console.log);
        */
-      public ext(extensions : string | string[]): FileHound;
+      public ext(extensions: string | string[]): FileHound;
       
       /**
        * Filter by file size
@@ -218,7 +213,7 @@ declare module "filehound" {
        *   .find()
        *   .each(console.log);
        */
-      public size(sizeExpression : string): FileHound;
+      public size(sizeExpression: string): FileHound;
       
       /**
        * Filter by zero length files
@@ -264,7 +259,7 @@ declare module "filehound" {
        * Same as glob
        * @see glob
        */
-      public match(...globPatterns : string[]): FileHound;
+      public match(...globPatterns: string[]): FileHound;
       
       /**
        * Negates filters
@@ -420,7 +415,7 @@ declare module "filehound" {
        *      console.log(files);
        *   });
        */
-      public find(callback ?: (err: Error, files: string[]) => void): Promise<string[]>;
+      public find(callback?: (err: Error, files: string[]) => void): Promise<string[]>;
       
       /**
        * Synchronously executes a file search.
@@ -437,6 +432,25 @@ declare module "filehound" {
        * console.log(files);
        *
        */
-      public findSync() : string[];
+      public findSync(): string[];
+
+      /**
+       * @memberof _ (lodash)
+       * @method each
+       * @returns a promise containing all matches. If the Promise fulfils,
+       * the fulfilment value is an array of all matching files.
+       * @param { function } eachFunction - function that takes 3 params: the found file location, the index of the file in the array and the number of all files found
+       * @example
+       * import FileHound from "filehound"
+       * 
+       * const filehound = FileHound.create();
+       * filehound
+       *   .depth(0)
+       *   .find()
+       *   .each(console.log); // -> array of file names from the current directory
+       */
+      public each(fn: eachFunction): void;
    }
+
+   type eachFunction = (value : string, index: number, lengthOfArr: number) => void;
 }
