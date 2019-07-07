@@ -123,7 +123,7 @@ declare module "filehound" {
      *  .find()
      *  .each(console.log);
      */
-    public paths(...paths: string[]): FileHound
+    public paths(...paths: string[]): FileHound;
     
     /**
      * Define the search path
@@ -233,7 +233,7 @@ declare module "filehound" {
      *  .find()
      *  .each(console.log);
      */
-    public isEmpty(path: string): FileHound;
+    public isEmpty(path?: string): FileHound;
     
     /**
      * Filter by a file glob
@@ -279,7 +279,7 @@ declare module "filehound" {
      *  .find()
      *  .each(console.log); // array of files names NOT containing 'tmp'
      */
-    public not(glob: string): FileHound;
+    public not(glob?: string): FileHound;
     
     /**
      * Filter to ignore hidden files
