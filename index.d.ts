@@ -1,4 +1,5 @@
 import { EventEmitter } from "events";
+import Bluebird from "bluebird";
 
 declare module "filehound" {
   export default class FileHound extends EventEmitter {
@@ -31,7 +32,7 @@ declare module "filehound" {
      *
      * const filehound = FileHound.any(fh1, fh2);
      */
-    public static any(...filehounds: FileHound[]): Promise<string[]>;
+    public static any(...filehounds: FileHound[]): Bluebird<string[]>;
     
     /**
      * Filters by modifiction time
@@ -414,8 +415,8 @@ declare module "filehound" {
      *     console.log(files);
      *  });
      */
-    public find(callback?: (err: Error, files: string[]) => void): Promise<string[]>;
-      
+    public find(callback?: (err: Error, files: string[]) => void): Bluebird<string[]>;
+
     /**
     * Synchronously executes a file search.
     *
@@ -431,24 +432,5 @@ declare module "filehound" {
     * console.log(files);
     */
     public findSync(): string[];
-    
-    /**
-    * @memberof _ (lodash)
-    * @method each
-    * @returns a promise containing all matches. If the Promise fulfils,
-    * the fulfilment value is an array of all matching files.
-    * @param { function } eachFunction - function that takes 3 params: the found file location, the index of the file in the array and the number of all files found
-    * @example
-    * import FileHound from "filehound"
-    *
-    * const filehound = FileHound.create();
-    * filehound
-    *  .depth(0)
-    *  .find()
-    *  .each(console.log); // -> array of file names from the current directory
-    */
-    public each(fn: eachFunction): void;
   }
-    
-  type eachFunction = (value : string, index: number, lengthOfArr: number) => void;
 }
