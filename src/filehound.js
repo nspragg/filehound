@@ -686,6 +686,7 @@ class FileHound extends EventEmitter {
         let isDir = false;
         try {
           isDir = file.isDirectorySync();
+          // eslint-disable-next-line no-empty
         } catch (e) { }
 
         if (isDir) {
@@ -703,7 +704,7 @@ class FileHound extends EventEmitter {
       return {
         path: file.getName(),
         stats: file._getStatsSync()
-      }
+      };
     }
     return file.getName();
   }

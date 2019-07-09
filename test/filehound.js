@@ -254,7 +254,7 @@ describe('FileHound', () => {
       return {
         path: file.path,
         stats: fs.statSync(file.path)
-      }
+      };
     }
 
     it('returns a file object containing a path and file stats', () => {
