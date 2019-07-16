@@ -1,10 +1,10 @@
 import { EventEmitter } from "events";
 import Bluebird from "bluebird";
 
-declare module "filehound" {
-  export default class FileHound extends EventEmitter {
+declare module 'filehound' {
+  class FileHound extends EventEmitter {
     constructor();
-    
+
     /**
      * Static factory method to create an instance of FileHound
      *
@@ -18,7 +18,7 @@ declare module "filehound" {
      * const filehound = FileHound.create();
      */
     public static create(): FileHound;
-    
+
     /**
      * Returns all matches from one of more FileHound instances
      *
@@ -33,7 +33,7 @@ declare module "filehound" {
      * const filehound = FileHound.any(fh1, fh2);
      */
     public static any(...filehounds: FileHound[]): Bluebird<string[]>;
-    
+
     /**
      * Filters by modifiction time
      *
@@ -51,7 +51,7 @@ declare module "filehound" {
      *  .each(console.log);
      */
     public modified(pattern: string): FileHound;
-    
+
     /**
      * Filters by file access time
      *
@@ -69,7 +69,7 @@ declare module "filehound" {
      *  .each(console.log);
      */
     public accesssed(pattern: string): FileHound;
-    
+
     /**
      * Filters change time
      *
@@ -88,7 +88,7 @@ declare module "filehound" {
      *  .each(console.log);
      */
     public changed(pattern: string): FileHound;
-    
+
     /**
      *
      * @memberof FileHound
@@ -106,7 +106,7 @@ declare module "filehound" {
      *  .each(console.log);
      */
     public addFilter(filter: () => boolean): FileHound;
-    
+
     /**
      * Defines the search paths
      *
@@ -125,7 +125,7 @@ declare module "filehound" {
      *  .each(console.log);
      */
     public paths(...paths: string[]): FileHound;
-    
+
     /**
      * Define the search path
      *
@@ -144,7 +144,7 @@ declare module "filehound" {
      *  .each(console.log);
      */
     public path(path: string): FileHound;
-    
+
     /**
      * Ignores files or sub-directories matching pattern
      *
@@ -163,7 +163,7 @@ declare module "filehound" {
      *  .each(console.log);
      */
     public discard(regex: string | string[]): FileHound;
-    
+
     /**
      * Filter on file extension
      *
@@ -196,7 +196,7 @@ declare module "filehound" {
      *  .each(console.log);
      */
     public ext(extensions: string | string[]): FileHound;
-    
+
     /**
      * Filter by file size
      *
@@ -215,7 +215,7 @@ declare module "filehound" {
      *  .each(console.log);
      */
     public size(sizeExpression: string): FileHound;
-    
+
     /**
      * Filter by zero length files
      *
@@ -235,7 +235,7 @@ declare module "filehound" {
      *  .each(console.log);
      */
     public isEmpty(path?: string): FileHound;
-    
+
     /**
      * Filter by a file glob
      *
@@ -254,14 +254,14 @@ declare module "filehound" {
      *  .each(console.log); // array of files names all containing 'tmp'
      */
     public glob(...glob: string[]): FileHound;
-    
-    
+
+
     /**
      * Same as glob
      * @see glob
      */
     public match(...globPatterns: string[]): FileHound;
-    
+
     /**
      * Negates filters
      *
@@ -281,7 +281,7 @@ declare module "filehound" {
      *  .each(console.log); // array of files names NOT containing 'tmp'
      */
     public not(glob?: string): FileHound;
-    
+
     /**
      * Filter to ignore hidden files
      *
@@ -299,7 +299,7 @@ declare module "filehound" {
      *  .each(console.log); // array of files names that are not hidden files
      */
     public ignoreHiddenFiles(): FileHound;
-    
+
     /**
      * Ignore hidden directories
      *
@@ -317,7 +317,7 @@ declare module "filehound" {
      *  .each(console.log); // array of files names that are not hidden directories
      */
     public ignoreHiddenDirectories(): FileHound;
-    
+
     /**
      * Include file stats
      *
@@ -335,7 +335,7 @@ declare module "filehound" {
      *  .each(console.log); // array of file objects containing `path` and `stats` properties
      */
     public includeFileStats(): FileHound;
-    
+
     /**
      * Find sub-directories
      *
@@ -353,7 +353,7 @@ declare module "filehound" {
      *  .each(console.log); // array of matching sub-directories
      */
     public directory(): FileHound;
-    
+
     /**
      * Find sockets
      *
@@ -371,7 +371,7 @@ declare module "filehound" {
      *  .each(console.log); // array of matching sockets
      */
     public socket(): FileHound;
-    
+
     /**
      * Specify the directory search depth. If set to zero, recursive searching
      * will be disabled
@@ -390,7 +390,7 @@ declare module "filehound" {
      *  .each(console.log); // array of files names only in the current directory
      */
     public depth(depth: number): FileHound;
-    
+
     /**
      * Asynchronously executes a file search.
      *
@@ -432,5 +432,7 @@ declare module "filehound" {
     * console.log(files);
     */
     public findSync(): string[];
+
   }
+  export function create(): FileHound;
 }
