@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import Bluebird from "bluebird";
+import * as Bluebird from "bluebird";
 
 declare module 'filehound' {
   class FileHound extends EventEmitter {
