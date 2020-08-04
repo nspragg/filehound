@@ -10,6 +10,7 @@
     "compile": "babel --presets es2015,stage-2 -d lib/ src/",
     "clean": "rm lib/*",
     "prepublish": "npm run compile",
+    "preinstall": "npm run compile",
     "test": "npm run compile && mocha --compilers js:babel-core/register"
   },
   "repository": {
