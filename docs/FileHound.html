@@ -102,7 +102,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line52">line 52</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line53">line 53</a>
     </li></ul></dd>
     
 
@@ -288,13 +288,7 @@
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .accessed("&lt; 10 minutes")
-  .find()
-  .each(console.log);</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .accessed("&lt; 10 minutes")  .find()  .each(console.log);</code></pre>
 
 
 
@@ -392,9 +386,7 @@ the fulfilment value is an array of all matching files.</p>
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.any(fh1, fh2);</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.any(fh1, fh2);</code></pre>
 
 
 
@@ -491,9 +483,7 @@ const filehound = FileHound.any(fh1, fh2);</code></pre>
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();</code></pre>
 
 
 
@@ -639,13 +629,7 @@ const filehound = FileHound.create();</code></pre>
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .modified("&lt; 2 days")
-  .find()
-  .each(console.log);</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .modified("&lt; 2 days")  .find()  .each(console.log);</code></pre>
 
 
 
@@ -787,13 +771,7 @@ filehound
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .addFilter(customFilter)
-  .find()
-  .each(console.log);</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .addFilter(customFilter)  .find()  .each(console.log);</code></pre>
 
 
 
@@ -939,13 +917,7 @@ filehound
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .changed("&lt; 10 minutes")
-  .find()
-  .each(console.log);</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .changed("&lt; 10 minutes")  .find()  .each(console.log);</code></pre>
 
 
 
@@ -1006,7 +978,7 @@ will be disabled</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line538">line 538</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line552">line 552</a>
     </li></ul></dd>
     
 
@@ -1043,13 +1015,7 @@ will be disabled</p>
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .depth(0)
-  .find()
-  .each(console.log); // array of files names only in the current directory</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .depth(0)  .find()  .each(console.log); // array of files names only in the current directory</code></pre>
 
 
 
@@ -1109,7 +1075,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line492">line 492</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line506">line 506</a>
     </li></ul></dd>
     
 
@@ -1146,13 +1112,7 @@ filehound
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .directory()
-  .find()
-  .each(console.log); // array of matching sub-directories</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .directory()  .find()  .each(console.log); // array of matching sub-directories</code></pre>
 
 
 
@@ -1301,13 +1261,7 @@ filehound
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .discard("*.tmp*")
-  .find()
-  .each(console.log);</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .discard("*.tmp*")  .find()  .each(console.log);</code></pre>
 
 
 
@@ -1456,27 +1410,7 @@ filehound
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-let filehound = FileHound.create();
-filehound
-  .ext(".json")
-  .find()
-  .each(console.log);
-
-// array of extensions to filter by
-filehound = FileHound.create();
-filehound
-  .ext([".json", ".txt"])
-  .find()
-  .each(console.log);
-
-// supports var args
-filehound = FileHound.create();
-filehound
-  .ext(".json", ".txt")
-  .find()
-  .each(console.log);</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';let filehound = FileHound.create();filehound  .ext(".json")  .find()  .each(console.log);// array of extensions to filter byfilehound = FileHound.create();filehound  .ext([".json", ".txt"])  .find()  .each(console.log);// supports var argsfilehound = FileHound.create();filehound  .ext(".json", ".txt")  .find()  .each(console.log);</code></pre>
 
 
 
@@ -1585,7 +1519,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line561">line 561</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line575">line 575</a>
     </li></ul></dd>
     
 
@@ -1623,20 +1557,7 @@ the fulfilment value is an array of all matching files</p>
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .find()
-  .each(console.log);
-
-// using a callback
-filehound
-  .find((err, files) => {
-     if (err) return console.error(err);
-
-     console.log(files);
-  });</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .find()  .each(console.log);// using a callbackfilehound  .find((err, files) => {     if (err) return console.error(err);     console.log(files);  });</code></pre>
 
 
 
@@ -1696,7 +1617,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line607">line 607</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line621">line 621</a>
     </li></ul></dd>
     
 
@@ -1733,11 +1654,7 @@ filehound
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-const files = filehound.findSync();
-console.log(files);</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();const files = filehound.findSync();console.log(files);</code></pre>
 
 
 
@@ -1883,13 +1800,7 @@ console.log(files);</code></pre>
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .glob(['*tmp*']) // .glob('*tmp*') || .glob('*tmp1*','*tmp2*')
-  .find()
-  .each(console.log); // array of files names all containing 'tmp'</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .glob(['*tmp*']) // .glob('*tmp*') || .glob('*tmp1*','*tmp2*')  .find()  .each(console.log); // array of files names all containing 'tmp'</code></pre>
 
 
 
@@ -1949,7 +1860,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line448">line 448</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line462">line 462</a>
     </li></ul></dd>
     
 
@@ -1986,13 +1897,7 @@ filehound
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .ignoreHiddenDirectories()
-  .find()
-  .each(console.log); // array of files names that are not hidden directories</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .ignoreHiddenDirectories()  .find()  .each(console.log); // array of files names that are not hidden directories</code></pre>
 
 
 
@@ -2052,7 +1957,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line424">line 424</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line438">line 438</a>
     </li></ul></dd>
     
 
@@ -2089,13 +1994,7 @@ filehound
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .ignoreHiddenFiles()
-  .find()
-  .each(console.log); // array of files names that are not hidden files</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .ignoreHiddenFiles()  .find()  .each(console.log); // array of files names that are not hidden files</code></pre>
 
 
 
@@ -2155,7 +2054,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line470">line 470</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line484">line 484</a>
     </li></ul></dd>
     
 
@@ -2192,13 +2091,7 @@ filehound
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .includeFileStats()
-  .find()
-  .each(console.log); // array of file objects containing `path` and `stats` properties</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .includeFileStats()  .find()  .each(console.log); // array of file objects containing `path` and `stats` properties</code></pre>
 
 
 
@@ -2344,13 +2237,7 @@ filehound
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .size("&lt;10kb")
-  .find()
-  .each(console.log);</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .size("&lt;10kb")  .find()  .each(console.log);</code></pre>
 
 
 
@@ -2359,14 +2246,14 @@ filehound
 
     
 
-    <h4 class="name" id="match"><span class="type-signature"></span>match<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="match"><span class="type-signature"></span>match<span class="signature">(glob)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Same as glob</p>
+    <p>Filter by a file glob</p>
 </div>
 
 
@@ -2375,6 +2262,55 @@ filehound
 
 
 
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>glob</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>array of globs</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -2410,19 +2346,12 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line386">line 386</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line382">line 382</a>
     </li></ul></dd>
     
 
     
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li>glob</li>
-        </ul>
-    </dd>
     
 
     
@@ -2440,6 +2369,21 @@ filehound
 
 
 
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>a FileHound instance</p>
+</div>
+
+
+
+    
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .match(['*tmp*']) // .match('*tmp*')  .find()  .each(console.log); // array of files names all containing 'tmp'</code></pre>
 
 
 
@@ -2548,7 +2492,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line400">line 400</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line414">line 414</a>
     </li></ul></dd>
     
 
@@ -2585,14 +2529,7 @@ filehound
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .not()
-  .glob("*tmp*")
-  .find()
-  .each(console.log); // array of files names NOT containing 'tmp'</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .not()  .glob("*tmp*")  .find()  .each(console.log); // array of files names NOT containing 'tmp'</code></pre>
 
 
 
@@ -2738,13 +2675,7 @@ filehound
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .path("/tmp")
-  .find()
-  .each(console.log);</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .path("/tmp")  .find()  .each(console.log);</code></pre>
 
 
 
@@ -2890,13 +2821,7 @@ filehound
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .paths("/tmp", "/etc") // or ["/tmp", "/etc"]
-  .find()
-  .each(console.log);</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .paths("/tmp", "/etc") // or ["/tmp", "/etc"]  .find()  .each(console.log);</code></pre>
 
 
 
@@ -3042,13 +2967,7 @@ filehound
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .size("&lt;10kb")
-  .find()
-  .each(console.log);</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .size("&lt;10kb")  .find()  .each(console.log);</code></pre>
 
 
 
@@ -3108,7 +3027,7 @@ filehound
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line514">line 514</a>
+        <a href="filehound.js.html">filehound.js</a>, <a href="filehound.js.html#line528">line 528</a>
     </li></ul></dd>
     
 
@@ -3145,13 +3064,7 @@ filehound
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>import FileHound from 'filehound';
-
-const filehound = FileHound.create();
-filehound
-  .socket()
-  .find()
-  .each(console.log); // array of matching sockets</code></pre>
+    <pre class="prettyprint"><code>import FileHound from 'filehound';const filehound = FileHound.create();filehound  .socket()  .find()  .each(console.log); // array of matching sockets</code></pre>
 
 
 
@@ -3173,7 +3086,7 @@ filehound
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Jan 28 2019 16:48:23 GMT+0000 (GMT) using the Minami theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Wed Aug 05 2020 13:26:06 GMT+0200 (Central European Summer Time) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
