@@ -558,6 +558,18 @@ describe('FileHound', () => {
         });
     });
 
+    it('returns files for given match names', () => {
+      const query = FileHound.create()
+        .match(['*b.json', '*bcc.json'])
+        .paths(fixtureDir + '/mixed')
+        .find();
+
+      return query
+        .then((files) => {
+          assert.deepEqual(files.sort(), matchFiles);
+        });
+    });
+
     describe('.glob', () => {
       it('returns files using glob method with a single glob', () => {
         const query = FileHound.create()
