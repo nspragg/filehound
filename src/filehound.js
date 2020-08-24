@@ -380,8 +380,22 @@ class FileHound extends EventEmitter {
   }
 
   /**
-   * Same as glob
-   * @see glob
+   * Filter by a file glob
+   *
+   * @memberOf FileHound
+   * @instance
+   * @method
+   * match
+   * @param {array} glob - array of globs
+   * @return a FileHound instance
+   * @example
+   * import FileHound from 'filehound';
+   *
+   * const filehound = FileHound.create();
+   * filehound
+   *   .match(['*tmp*']) // .match('*tmp*')
+   *   .find()
+   *   .each(console.log); // array of files names all containing 'tmp'
    */
   match(globPatterns) {
     if (_.isArray(globPatterns)) {
