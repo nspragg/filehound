@@ -124,7 +124,7 @@ declare module 'filehound' {
      *  .find()
      *  .each(console.log);
      */
-    public paths(...paths: string[]): FileHound;
+    public paths(...paths: string[] | [string[]]): FileHound;
 
     /**
      * Define the search path
