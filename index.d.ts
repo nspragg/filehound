@@ -105,7 +105,7 @@ declare module 'filehound' {
      *  .find()
      *  .each(console.log);
      */
-    public addFilter(filter: (...any) => boolean): FileHound;
+    public addFilter(filter: (...args: any) => boolean): FileHound;
 
     /**
      * Defines the search paths
