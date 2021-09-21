@@ -84,11 +84,11 @@
     }
   },
   "dependencies": {
-    "bluebird": "^3.5.1",
+    "bluebird": "^3.7.2",
     "file-js": "0.3.0",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.21",
     "minimatch": "^3.0.4",
-    "moment": "^2.22.1",
+    "moment": "^2.29.1",
     "unit-compare": "^1.0.1"
   }
 }
