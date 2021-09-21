@@ -2,7 +2,7 @@
   "name": "filehound",
   "version": "2.0.0",
   "description": "Find files the easy way",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "jsdoc": "jsdoc -c ./docconfig/jsdoc.json",
     "build": "tsc",
@@ -41,23 +41,6 @@
     "url": "https://github.com/nspragg/filehound/issues"
   },
   "homepage": "https://github.com/nspragg/filehound",
-  "devDependencies": {
-    "@types/mocha": "^2.2.43",
-    "@types/node": "^8.0.33",
-    "@types/typescript": "^2.0.0",
-    "chai": "^4.1.2",
-    "eslint": "^3.11.1",
-    "eslint-config-iplayer-base": "^1.0.0",
-    "istanbul": "1.1.0-alpha.1",
-    "jsdoc": "^3.4.3",
-    "mocha": "^5.0.5",
-    "sinon": "^4.5.0",
-    "ts-node": "^3.3.0",
-    "tslint": "^5.8.0",
-    "tslint-config-airbnb": "^5.3.1",
-    "tslint-eslint-rules": "^4.1.1",
-    "typescript": "^2.6.1"
-  },
   "nyc": {
     "include": [
       "src/**/*.ts"
@@ -72,10 +55,24 @@
     "instrument": true
   },
   "dependencies": {
-    "file-js": "0.3.0",
+    "file-js": "^1.2.0",
     "lodash": "^4.17.10",
-    "minimatch": "^3.0.4",
-    "moment": "^2.22.1",
     "unit-compare": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/mocha": "ts2.6",
+    "@types/node": "^14.0.1",
+    "chai": "^4.1.2",
+    "eslint": "^3.11.1",
+    "eslint-config-iplayer-base": "^1.0.0",
+    "istanbul": "1.1.0-alpha.1",
+    "jsdoc": "^3.4.3",
+    "mocha": "^5.0.5",
+    "moment": "^2.25.3",
+    "sinon": "^4.5.0",
+    "ts-node": "^8.10.1",
+    "tslint": "^5.8.0",
+    "tslint-microsoft-contrib": "^6.2.0",
+    "typescript": "^3.9.2"
   }
 }

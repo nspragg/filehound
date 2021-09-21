@@ -1,16 +1,18 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es2017",
     "module": "commonjs",
     "outDir": "dist",
-    "sourceMap": true,
-    "moduleResolution": "node"
+    "sourceMap": false,
+    "moduleResolution": "node",
+    "allowJs": false,
+    "declaration": true
   },
   "include": [
-    "src/**/*.ts",
-    "test/*.ts"
+    "src/**/*"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist"
   ]
 }

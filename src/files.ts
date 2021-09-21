@@ -1,6 +1,7 @@
+import {File} from 'file-js';
 import * as _ from 'lodash';
-import * as path from 'path';
 import * as os from 'os';
+import * as path from 'path';
 
 function flatten(a, b) {
   return a.concat(b);
@@ -15,25 +16,25 @@ function getParent(dir: string) {
   return path.dirname(dir);
 }
 
+export function newFile(name: string): File {
+  return new File(name);
+}
+
 export function getRoot(dir: string): string {
   return os.platform() === 'win32'
     ? dir.split(path.sep)[0] + path.sep
     : path.sep;
 }
 
-function getSubDirectories(
-  base: string,
-  allPaths: string[]
-): string[] {
+function getSubDirectories(base: string, allPaths: string[]): string[] {
   return allPaths.filter((candidate) => {
     return base !== candidate && isSubDirectory(base, candidate);
   });
 }
 
 export function findSubDirectories(paths: string[]): string[] {
-  return paths
-    .map((path) => {
-      return getSubDirectories(path, paths);
+  return paths.map((p) => {
+      return getSubDirectories(p, paths);
     })
     .reduce(flatten, []);
 }

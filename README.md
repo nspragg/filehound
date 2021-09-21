@@ -25,7 +25,7 @@ The example below prints all of the files in a directory that have the `.json` f
 ```js
 const FileHound = require('filehound');
 
-const files = FileHound.create()
+const files = FileHound.newQuery()
   .paths('/some/dir')
   .ext('json')
   .find();

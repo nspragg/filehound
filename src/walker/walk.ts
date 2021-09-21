@@ -1,6 +1,5 @@
-import * as File from 'file-js';
-import { walkSync } from './walkSync';
-import { FileEmitter } from './emitter';
+import {File} from 'file-js';
+import {FileEmitter} from './emitter';
 
 const TERMINATE = false;
 const CONTINUE = true;
@@ -23,29 +22,31 @@ export async function async(root: string, isMatch: any, opts: any): Promise<any>
 
   return new Promise((resolve, reject) => {
     const files = [];
+    const directories = [];
 
     finder.on('file', (file) => {
-      if (opts.directoriesOnly) { return; }
-      if (isMatch(file)) { files.push(file.getName()); }
+      if (!opts.directoriesOnly && isMatch(file)) {
+        files.push(file.getName());
+      }
     });
 
-    finder.on('directory', (dir, stop) => {
-      if (shouldFilterDirectory(dir, File.create(root), opts)) {
-        return stop();
+    finder.on('directory', (dir, skip) => {
+      // @ts-ignore
+      if (shouldFilterDirectory(dir, new File(root), opts)) {
+        return skip();
       }
 
-      if (opts.directoriesOnly) {
-        if (dir !== root && isMatch(dir)) {
-          files.push(dir.getName());
-        }
+      if (dir !== root && isMatch(dir)) {
+        directories.push(dir.getName());
       }
     });
 
     finder.on('error', reject);
-    finder.on('end', () => {
-      resolve(files.sort());
-    });
+
     finder.on('stop', () => {
+      if (opts.directoriesOnly) {
+        return resolve(directories);
+      }
       resolve(files.sort());
     });
 
@@ -53,8 +54,8 @@ export async function async(root: string, isMatch: any, opts: any): Promise<any>
   });
 }
 
-export function sync(dir: string, isMatch, opts) {
-  const root = File.create(dir);
+export function sync(dir: string, isMatch: any, opts: any): any {
+  const root = new File(dir);
   const files = [];
 
   walkSync(root, (path) => {
@@ -74,4 +75,23 @@ export function sync(dir: string, isMatch, opts) {
   });
 
   return files;
+}
+
+function getDirNames(dir: File): File[] {
+  const names = dir.getFilesSync();
+  return names.sort();
+}
+
+export function walkSync(path: File, fn: any): any {
+  if (!path.isDirectorySync()) {
+    return fn(path);
+  }
+
+  const cont = fn(path);
+  if (!cont) { return; }
+
+  const names = getDirNames(path);
+  for (const name of names) {
+    walkSync(name, fn);
+  }
 }

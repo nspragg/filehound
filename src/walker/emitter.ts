@@ -1,17 +1,25 @@
-import { EventEmitter } from 'events';
-import * as File from 'file-js';
+import {EventEmitter} from 'events';
+import {File} from 'file-js';
+import * as fs from 'fs';
 import bind from '../bind';
+import {newFile} from '../files';
+
+function createPathError(name: string): Error {
+  return new Error(`'${name}' is not a valid path`);
+}
 
 export class FileEmitter extends EventEmitter {
-  private root: File;
+  private readonly root: File;
   private stopped: boolean;
   private pending: number;
+  private readonly abortOnError: boolean;
 
-  constructor(root) {
+  constructor(root: string) {
     super();
-    this.root = File.create(root);
+    this.root = newFile(root);
     this.stopped = true;
     this.pending = 0;
+    this.abortOnError = false;
     bind(this);
   }
 
@@ -20,55 +28,54 @@ export class FileEmitter extends EventEmitter {
     this.emit('stop');
   }
 
-  public start(): void {
+  public start(): Promise<void> {
     this.stopped = false;
-    this.walk(this.root);
+    return this.walk(this.root);
   }
 
-  private readDir(dir): any {
-    return dir.getFiles()
-      .catch((e) => {
-        this.emit('error', e);
-        throw e;
-      })
-      .finally(() => {
-        // tslint:disable:no-increment-decrement
-        this.pending--;
-      });
-  }
+  // TODO: depth?
+  public async walk(directory: File): Promise<void> {
+    if (this.stopped) {
+      return this.stop();
+    }
 
-  public async walk(dir): Promise<void> {
-    if (this.stopped) { return; }
+    if (!fs.existsSync(directory.getName())) {
+      this.emit('error', createPathError(directory.getName()));
+      return;
+    }
 
-    this.pending++;
-    this.readDir(dir)
-      .each((file) => {
-        if (this.stopped) { return; }
+    try {
+      this.pending += 1;
 
-        let isDir = false;
-        try {
-          isDir = file.isDirectorySync();
-        } catch (e) {
-          this.emit('error', e);
+      const files = await directory.getFiles();
+      for (const file of files) {
+        if (!fs.existsSync(file.getName())) {
+          if (this.abortOnError) {
+             this.stop();
+          }
+          this.emit('error', createPathError(file.getName()));
         }
 
-        if (isDir) {
+        if (await file.isFile()) {
+          this.emit('file', file);
+        } else if (await file.isDirectory()) {
           let skip = false;
           this.emit('directory', file, () => {
             skip = true;
           });
+
           if (!skip) {
-            this.walk(file);
+            await this.walk(file);
           }
-        } else {
-          this.emit('file', file);
         }
-      })
-      .then(() => {
-        if (this.pending === 0) {
-          this.emit('end');
-        }
-      })
-      .catch(() => { });
+      }
+    } catch (e) {
+        this.emit('error', e);
+    } finally {
+      this.pending -= 1;
+      if (this.pending === 0) {
+        this.stop();
+      }
+    }
   }
 }

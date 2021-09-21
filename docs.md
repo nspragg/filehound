@@ -11,7 +11,7 @@ The example below prints all of the files in a directory that have the `.json` f
 ```js
 const FileHound = require('filehound');
 
-const files = FileHound.create()
+const files = FileHound.newQuery()
   .paths('/some/dir')
   .ext('json')
   .find();
@@ -24,7 +24,7 @@ files.then(console.log);
 Find all the files that start with `dev`:
 
 ```js
-const files = FileHound.create()
+const files = FileHound.new()
   .paths('/etc/pki/')
   .match('dev*')
   .find();
@@ -35,12 +35,12 @@ const files = FileHound.create()
 Find all of the files in a directory that are larger than 1024 bytes:
 
 ```js
-const files = FileHound.create()
+const files = FileHound.new()
   .paths('/some/dir')
   .size('>1024')
   .find();
 
-const files = FileHound.create()
+const files = FileHound.new()
   .paths('/some/dir')
   .size('<=1mb')
   .find();
@@ -51,7 +51,7 @@ const files = FileHound.create()
 Find all the `.txt` files that are larger than 1024 bytes _and_ start with `note`:
 
 ```js
-const files = FileHound.create()
+const files = FileHound.new()
   .paths('/etc/pki/')
   .match('note*')
   .ext('txt')
@@ -64,7 +64,7 @@ const files = FileHound.create()
 Find all of the files that _don't_ have the `.json` extension:
 
 ```js
-const files = FileHound.create()
+const files = FileHound.new()
   .ext('json')
   .not()
   .find();
@@ -75,7 +75,7 @@ const files = FileHound.create()
 Find all files but _only_ in the current directory (recursion off):
 
 ```js
-const files = FileHound.create()
+const files = FileHound.new()
   .depth(0)
   .find();
 ```
@@ -85,12 +85,12 @@ const files = FileHound.create()
 Find all the files that are _either_ over 1K _or_ have the `.json` file extension:
 
 ```js
-const filesOverOneK = FileHound.create()
+const filesOverOneK = FileHound.new()
   .paths('/some/dir')
   .size('>1k')
   .find();
 
-const jsonFiles = FileHound.create()
+const jsonFiles = FileHound.new()
   .paths('/some/dir')
   .ext('json')
   .find();
@@ -103,13 +103,13 @@ const files = FileHound.any(filesOverOneK, jsonFiles);
 Find all JSON files in '/some/dir1' and '/some/dir2'
 
 ```js
-const jsonFiles = FileHound.create()
+const jsonFiles = FileHound.new()
   .paths('/some/dir1', '/some/dir2')
   .ext('json')
   .find();
 
 const myPaths = ['/some/dir1', '/some/dir2'];
-const jsonFiles = FileHound.create()
+const jsonFiles = FileHound.new()
   .paths(myPaths)
   .ext('json')
   .find();
@@ -120,7 +120,7 @@ const jsonFiles = FileHound.create()
 Find all JSON files in '/tmp' synchronously
 
 ```js
-const jsonFiles = FileHound.create()
+const jsonFiles = FileHound.new()
   .paths('/tmp')
   .ext('json')
   .findSync();
@@ -131,7 +131,7 @@ const jsonFiles = FileHound.create()
 Find all empty text files in /tmp:
 
 ```js
-FileHound.create()
+FileHound.new()
   .paths('/tmp')
   .ext('txt')
   .isEmpty()
@@ -144,7 +144,7 @@ FileHound.create()
 
 Bind to a 'match' event to process each file on match:
 ```js
-const filehound = FileHound.create();
+const filehound = FileHound.new();
   filehound.find();
 
   filehound.on('match', (file) => {

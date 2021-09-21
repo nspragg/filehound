@@ -145,7 +145,7 @@ function addSignatureReturns(f) {
     var returnTypes = [];
     var returnTypesString = '';
 
-    // jam all the return-type attributes into an array. this could create odd results (for example,
+    // jam all the return-type attributes into an array. this could newQuery odd results (for example,
     // if there are both nullable and non-nullable return types), but let's assume that most people
     // who use multiple @return tags aren't using Closure Compiler type annotations, and vice-versa.
     if (f.returns) {
@@ -352,7 +352,7 @@ function linktoExternal(longName, name) {
 
 /**
  * Create the navigation sidebar.
- * @param {object} members The members that will be used to create the sidebar.
+ * @param {object} members The members that will be used to newQuery the sidebar.
  * @param {array<object>} members.classes
  * @param {array<object>} members.externals
  * @param {array<object>} members.globals
@@ -475,7 +475,7 @@ exports.publish = function(taffyData, opts, tutorials) {
         }
     });
 
-    // update outdir if necessary, then create outdir
+    // update outdir if necessary, then newQuery outdir
     var packageInfo = ( find({kind: 'package'}) || [] ) [0];
     if (packageInfo && packageInfo.name) {
         outdir = path.join( outdir, packageInfo.name, (packageInfo.version || '') );
