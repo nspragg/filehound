@@ -4,3 +4,4 @@ coverage
 lib/
 .vscode
 package-lock.json
+.idea
