@@ -48,7 +48,7 @@
     "eslint": "^4.18.2",
     "istanbul": "^0.4.4",
     "jsdoc": "^3.4.3",
-    "mocha": "^5.1.1",
+    "mocha": "^5.0.0",
     "sinon": "^5.0.2"
   },
   "eslintConfig": {
@@ -87,7 +87,7 @@
     "bluebird": "^3.7.2",
     "file-js": "0.3.0",
     "lodash": "^4.17.21",
-    "minimatch": "^3.0.4",
+    "minimatch": "^5.0.0",
     "moment": "^2.29.1",
     "unit-compare": "^1.0.1"
   }
