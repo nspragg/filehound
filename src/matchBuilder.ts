@@ -6,12 +6,10 @@ import {
 } from './matchers';
 
 export class MatchBuilder {
-  private predicates: Predicate[];
   private readonly fp: FilePredicate[];
   private ft: FileType;
 
   public constructor() {
-    this.predicates = [];
     this.fp = [];
     this.ft = FileType.S_IFREG;
     bind(this);
@@ -28,6 +26,7 @@ export class MatchBuilder {
       }
       this.fp.push(fp);
     }
+    
     return this;
   }
 

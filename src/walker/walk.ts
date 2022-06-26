@@ -1,4 +1,4 @@
-import {File} from 'file-js';
+import {File} from '../file';
 import {FileEmitter} from './emitter';
 
 const TERMINATE = false;
@@ -20,7 +20,7 @@ function shouldFilterDirectory(dir: File, root: File, opts: any): boolean {
 export async function async(root: string, isMatch: any, opts: any): Promise<any> {
   const finder = new FileEmitter(root);
 
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const files = [];
     const directories = [];
 
@@ -45,12 +45,12 @@ export async function async(root: string, isMatch: any, opts: any): Promise<any>
 
     finder.on('stop', () => {
       if (opts.directoriesOnly) {
-        return resolve(directories);
+        resolve(directories);
       }
       resolve(files.sort());
     });
 
-    finder.start();
+    return finder.start();
   });
 }
 

@@ -1,4 +1,4 @@
-import {File} from 'file-js';
+import {File} from './file';
 import * as _ from 'lodash';
 import * as path from 'path';
 

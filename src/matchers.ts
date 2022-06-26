@@ -1,4 +1,4 @@
-import {File} from 'file-js';
+import {File} from './file';
 import * as _ from 'lodash';
 import * as path from 'path';
 import {isDate, isNumber} from 'unit-compare';
@@ -54,7 +54,7 @@ export class And extends AbstractFilePredicate {
   private right: FilePredicate;
 
   constructor(left: FilePredicate, right: FilePredicate) {
-    super();
+    super(left.fileType);
     this.left = left;
     this.right = right;
   }

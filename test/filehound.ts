@@ -116,7 +116,10 @@ describe('FileHound', async () => {
 
         const results = await FileHound.newQuery()
           .paths(`${fixtureDir}/deeplyNested`)
-          .match(directories().and(glob('*mydir4*')))
+          .match(
+            directories()
+              .and(glob('*mydir*'))
+            )
           .find();
 
         assert.deepEqual(results, expectedDirectories);
@@ -961,7 +964,7 @@ describe('FileHound', async () => {
     });
   });
 
-  it('emits a _match event for each file matched', async () => {
+  it('emits a match event for each file matched', async () => {
     const spy = sinon.spy();
     const fh = FileHound.newQuery();
 
