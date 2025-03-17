@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import * as os from 'os';
 import * as path from 'path';
 
-function flatten(a, b) {
+function flatten(a: string[], b: string[]): string[] {
   return a.concat(b);
 }
 
@@ -40,12 +40,10 @@ export function findSubDirectories(paths: string[]): string[] {
 }
 
 export function notSubDirectory(subDirs: string[]): (s: string) => boolean {
-  return (path) => {
-    return !_.includes(subDirs, path);
-  };
+  return (p) => !_.includes(subDirs, p);
 }
 
-export function isSubDirectory(base, candidate: string): boolean {
+export function isSubDirectory(base: string, candidate: string): boolean {
   let parent = candidate;
   while (hasParent(parent)) {
     if (base === parent) {

@@ -1,15 +1,15 @@
-import {File} from './file';
+import { File } from './file';
 import * as _ from 'lodash';
 import * as path from 'path';
 
-import {EventEmitter} from 'events';
-import {FilePredicate, FileType, Predicate} from '../src/matchers';
-import {copy, from} from './arrays';
-import {reducePaths} from './files';
-import * as walker2 from './walker/walk';
+import { EventEmitter } from 'events';
+import { FilePredicate, FileType, Predicate } from './matchers';
+import { copy, from } from './arrays';
+import { reducePaths } from './files';
+import * as walker from './walker/walk';
 
 import bind from './bind';
-import {MatchBuilder} from './matchBuilder';
+import { MatchBuilder } from './matchBuilder';
 
 function isDefined(value: any): any {
   return value !== undefined;
@@ -24,7 +24,7 @@ export class FileHound extends EventEmitter {
   private readonly ignoreDirs: boolean;
   private directoriesOnly: boolean;
   private maxDepth: number;
-  private matchBuilder: MatchBuilder;
+  private readonly matchBuilder: MatchBuilder;
 
   public constructor() {
     super();
@@ -167,8 +167,10 @@ export class FileHound extends EventEmitter {
   public async find(): Promise<string[]> {
     const searches = [];
     const paths = this.getSearchPaths();
+    const matcher = this.matchBuilder.build();
+
     for (const currentPath of paths) {
-      searches.push(this.searchAsync2(currentPath));
+      searches.push(this.searchAsync(currentPath, matcher));
     }
 
     // const searches = paths.map(this.searchAsync2);
@@ -219,15 +221,15 @@ export class FileHound extends EventEmitter {
   }
 
   private searchSync(dir: string): File[] {
-    return walker2.sync(dir, this.matchBuilder.build(), {
+    return walker.sync(dir, this.matchBuilder.build(), {
       ignoreDirs: this.ignoreDirs,
       maxDepth: this.maxDepth,
       directoriesOnly: this.matchBuilder.fileType === FileType.S_IFDIR
     });
   }
 
-  private async searchAsync2(dir: string): Promise<string[]> {
-    return walker2.async(dir, this.matchBuilder.build(), {
+  private async searchAsync(dir: string, matcher: Predicate): Promise<string[]> {
+    return walker.async(dir, matcher, {
       ignoreDirs: this.ignoreDirs,
       maxDepth: this.maxDepth,
       directoriesOnly: this.matchBuilder.fileType === FileType.S_IFDIR

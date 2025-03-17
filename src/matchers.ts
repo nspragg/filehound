@@ -50,8 +50,8 @@ export abstract class AbstractFilePredicate implements FilePredicate {
 }
 
 export class And extends AbstractFilePredicate {
-  private left: FilePredicate;
-  private right: FilePredicate;
+  private readonly left: FilePredicate;
+  private readonly right: FilePredicate;
 
   constructor(left: FilePredicate, right: FilePredicate) {
     super(left.fileType);
@@ -65,7 +65,7 @@ export class And extends AbstractFilePredicate {
 }
 
 export class Not extends AbstractFilePredicate {
-  private filePredicate: FilePredicate;
+  private readonly filePredicate: FilePredicate;
 
   constructor(filePredicate: FilePredicate) {
     super();
@@ -78,8 +78,8 @@ export class Not extends AbstractFilePredicate {
 }
 
 export class Or extends AbstractFilePredicate {
-  private left: FilePredicate;
-  private right: FilePredicate;
+  private readonly left: FilePredicate;
+  private readonly right: FilePredicate;
 
   constructor(left: FilePredicate, right: FilePredicate) {
     super();
@@ -113,11 +113,11 @@ export class Directory extends AbstractFilePredicate {
     this.excludeHidden = options.excludeHidden;
   }
 
-  test(path: File): boolean {
-    if (this.excludeHidden && path.isHiddenSync()) {
+  test(file: File): boolean {
+    if (this.excludeHidden && file.isHiddenSync()) {
       return false;
     }
-    return path.isDirectorySync();
+    return file.isDirectorySync();
   }
 }
 
@@ -129,8 +129,8 @@ export class Glob extends AbstractFilePredicate {
     this.globPattern = globPattern;
   }
 
-  test(path: File): boolean {
-    return path.isMatch(this.globPattern);
+  test(file: File): boolean {
+    return file.isMatch(this.globPattern);
   }
 }
 
@@ -161,8 +161,8 @@ export class TextMatch extends AbstractFilePredicate {
     this.flags = flags;
   }
 
-  test(path: File): boolean {
-    return new RegExp(this.pattern, this.flags).test(path.getName());
+  test(file: File): boolean {
+    return new RegExp(this.pattern, this.flags).test(file.getName());
   }
 }
 
@@ -174,8 +174,8 @@ export class CustomFilter extends AbstractFilePredicate {
     this.fn = fn;
   }
 
-  test(path: File): boolean {
-    return this.fn(path);
+  test(file: File): boolean {
+    return this.fn(file);
   }
 }
 
@@ -187,8 +187,8 @@ export class Size extends AbstractFilePredicate {
     this.size = pattern;
   }
 
-  test(path: File): boolean {
-    const actualSize = path.sizeSync();
+  test(file: File): boolean {
+    const actualSize = file.sizeSync();
     return isNumber(actualSize).assert(this.size);
   }
 }
@@ -202,8 +202,8 @@ export class Modified extends AbstractFilePredicate {
   }
 
   test(file: File): boolean {
-    const modified = file.lastModifiedSync();
-    return isDate(modified)
+    const lastModified = file.lastModifiedSync();
+    return isDate(lastModified)
       .assert(this.days);
   }
 }
@@ -217,8 +217,8 @@ export class Accessed extends AbstractFilePredicate {
   }
 
   test(file: File): boolean {
-    const accessed = file.lastAccessedSync();
-    return isDate(accessed)
+    const lastAccessed = file.lastAccessedSync();
+    return isDate(lastAccessed)
       .assert(this.days);
   }
 }
@@ -243,8 +243,8 @@ export class Socket extends AbstractFilePredicate {
     super();
   }
 
-  test(path: File): boolean {
-    return path.isSocketSync();
+  test(file: File): boolean {
+    return file.isSocketSync();
   }
 }
 

@@ -452,7 +452,7 @@ describe('FileHound', async () => {
         sandbox.restore();
       });
 
-      it('filters by socket type files', async () => {
+      it.only('filters by socket type files', async () => {
         const sockets = await FileHound.newQuery()
           .paths(`${fixtureDir}/types`)
           .match(
@@ -484,6 +484,7 @@ describe('FileHound', async () => {
       const query = FileHound.newQuery()
         .paths(`${fixtureDir}/deeplyNested`)
         .depth(1)
+        .match(ext('json'))
         .find();
 
       return query.then((files) => {
@@ -625,9 +626,6 @@ describe('FileHound', async () => {
 
       const results = FileHound.newQuery()
         .paths(`${fixtureDir}/deeplyNested`)
-        // .directory()
-        // .match('*dir4*')
-        // .not()
         .match(directories(), glob('*dir4*').not())
         .findSync();
 

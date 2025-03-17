@@ -26,7 +26,7 @@ export class MatchBuilder {
       }
       this.fp.push(fp);
     }
-    
+
     return this;
   }
 
@@ -35,6 +35,7 @@ export class MatchBuilder {
       let match = true;
       for (const item of this.fp) {
         match = match && item.test(file);
+        if (!match) return false;
       }
       return match;
     };

@@ -47,27 +47,23 @@ export async function async(root: string, isMatch: any, opts: any): Promise<any>
       if (opts.directoriesOnly) {
         resolve(directories);
       }
-      resolve(files.sort());
+      resolve(files);
     });
 
     return finder.start();
   });
 }
 
-export function sync(dir: string, isMatch: any, opts: any): any {
+export function sync(dir: string, matcher: any, options: any): any[] {
   const root = new File(dir);
   const files = [];
 
   walkSync(root, (path) => {
-    if (path.isDirectorySync() && shouldFilterDirectory(path, root, opts)) {
+    if (path.isDirectorySync() && shouldFilterDirectory(path, root, options)) {
       return TERMINATE;
     }
 
-    if (opts.directoriesOnly) {
-      if (path !== root && path.isDirectorySync() && isMatch(path)) {
-        files.push(path.getName());
-      }
-    } else if (!path.isDirectorySync() && isMatch(path)) {
+    if (options.directoriesOnly && isMatchingDirectory(root, path, matcher) || isMatchingFile(path, matcher)) {
       files.push(path.getName());
     }
 
@@ -95,3 +91,12 @@ export function walkSync(path: File, fn: any): any {
     walkSync(name, fn);
   }
 }
+
+function isMatchingDirectory(root: File, path: File, isMatch: any) {
+  return path !== root && path.isDirectorySync() && isMatch(path)
+}
+
+function isMatchingFile(path: any, isMatch: any) {
+  return !path.isDirectorySync() && isMatch(path)
+}
+

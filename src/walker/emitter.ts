@@ -1,8 +1,7 @@
-import {EventEmitter} from 'events';
-import {File} from 'file-js';
 import * as fs from 'fs';
 import bind from '../bind';
-import {newFile} from '../files';
+import {EventEmitter} from 'events';
+import {File} from '../file';
 
 function createPathError(name: string): Error {
   return new Error(`'${name}' is not a valid path`);
@@ -16,7 +15,7 @@ export class FileEmitter extends EventEmitter {
 
   constructor(root: string) {
     super();
-    this.root = newFile(root);
+    this.root = new File(root);
     this.stopped = true;
     this.pending = 0;
     this.abortOnError = false;
@@ -28,15 +27,16 @@ export class FileEmitter extends EventEmitter {
     this.emit('stop');
   }
 
-  public start(): Promise<void> {
+  public async start(): Promise<void> {
     this.stopped = false;
     return this.walk(this.root);
   }
 
+
   // TODO: depth?
   public async walk(directory: File): Promise<void> {
     if (this.stopped) {
-      return this.stop();
+      this.stop();
     }
 
     if (!fs.existsSync(directory.getName())) {
