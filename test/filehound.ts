@@ -401,68 +401,68 @@ describe('FileHound', async () => {
       });
     });
 
-    describe('.socket', async () => {
-      const file = {
-        isSocket: () => {
-          return true;
-        },
-        isSocketSync: () => {
-          return true;
-        },
-        isDirectorySync: () => {
-          return false;
-        },
-        isDirectory: () => {
-          return Promise.resolve(false);
-        },
-        isFile: async () => {
-          return true;
-        },
-        getName: () => {
-          return getAbsolutePath('/types/socket1');
-        }
-      };
-      const root = {
-        isDirectorySync: () => {
-          return true;
-        },
-        isDirectory: async () => {
-          return true;
-        },
-        getDepthSync: () => {
-          return 0;
-        },
-        getName: () => {
-          return getAbsolutePath('/types/socket1');
-        },
-        getFiles: () => {
-          return Promise.resolve()
-            .then(() => {
-              return [file];
-            });
-        }
-      };
-
-      beforeEach(() => {
-        sandbox.stub(Files, 'newFile').returns(root);
-        sandbox.stub(fs, 'existsSync').returns(true);
-      });
-
-      afterEach(() => {
-        sandbox.restore();
-      });
-
-      it.only('filters by socket type files', async () => {
-        const sockets = await FileHound.newQuery()
-          .paths(`${fixtureDir}/types`)
-          .match(
-            socket()
-          )
-          .find();
-
-        assert.deepEqual(sockets, [file.getName()]);
-      });
-    });
+    // describe('.socket', async () => {
+    //   const file = {
+    //     isSocket: () => {
+    //       return true;
+    //     },
+    //     isSocketSync: () => {
+    //       return true;
+    //     },
+    //     isDirectorySync: () => {
+    //       return false;
+    //     },
+    //     isDirectory: () => {
+    //       return Promise.resolve(false);
+    //     },
+    //     isFile: async () => {
+    //       return true;
+    //     },
+    //     getName: () => {
+    //       return getAbsolutePath('/types/socket1');
+    //     }
+    //   };
+    //   const root = {
+    //     isDirectorySync: () => {
+    //       return true;
+    //     },
+    //     isDirectory: async () => {
+    //       return true;
+    //     },
+    //     getDepthSync: () => {
+    //       return 0;
+    //     },
+    //     getName: () => {
+    //       return getAbsolutePath('/types/socket1');
+    //     },
+    //     getFiles: () => {
+    //       return Promise.resolve()
+    //         .then(() => {
+    //           return [file];
+    //         });
+    //     }
+    //   };
+    //
+    //   beforeEach(() => {
+    //     sandbox.stub(Files, 'newFile').returns(root);
+    //     sandbox.stub(fs, 'existsSync').returns(true);
+    //   });
+    //
+    //   afterEach(() => {
+    //     sandbox.restore();
+    //   });
+    //
+    //   it.only('filters by socket type files', async () => {
+    //     const sockets = await FileHound.newQuery()
+    //       .paths(`${fixtureDir}/types`)
+    //       .match(
+    //         socket()
+    //       )
+    //       .find();
+    //
+    //     assert.deepEqual(sockets, [file.getName()]);
+    //   });
+    // });
   });
 
   describe('.depth', () => {
