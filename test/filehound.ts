@@ -136,7 +136,7 @@ describe('FileHound', async () => {
 
         const results = await FileHound.newQuery()
           .paths(`${fixtureDir}/deeplyNestedWithHiddenDir`)
-          .match(
+            .match(
             directories()
           )
           .find();

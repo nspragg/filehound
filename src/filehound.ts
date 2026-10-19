@@ -1,4 +1,4 @@
-import { File } from './file';
+// import { File } from './file';
 import * as _ from 'lodash';
 import * as path from 'path';
 
@@ -22,7 +22,6 @@ function flatten(a: File[], b: File[]): File[] {
 export class FileHound extends EventEmitter {
   private searchPaths: string[];
   private readonly ignoreDirs: boolean;
-  private directoriesOnly: boolean;
   private maxDepth: number;
   private readonly matchBuilder: MatchBuilder;
 
@@ -31,7 +30,6 @@ export class FileHound extends EventEmitter {
     this.matchBuilder = new MatchBuilder();
     this.searchPaths = [process.cwd()];
     this.ignoreDirs = false;
-    this.directoriesOnly = false;
     bind(this);
   }
 
@@ -52,6 +50,7 @@ export class FileHound extends EventEmitter {
   public static newQuery(): FileHound {
     return new FileHound();
   }
+
   // tslint:disable-next-line:valid-jsdoc
   /**
    * Returns all matches from one of more FileHound instances
@@ -100,27 +99,6 @@ export class FileHound extends EventEmitter {
 
   public match(...predicates: FilePredicate[]): FileHound {
     this.matchBuilder.add(...predicates);
-    return this;
-  }
-
-  /**
-   * Find sub-directories
-   *
-   * @memberOf FileHound
-   * @method
-   * directory
-   * @return a FileHound instance
-   * @example
-   * import FileHound from 'filehound';
-   *
-   * const filehound = FileHound.newQuery();
-   * filehound
-   *   .directory()
-   *   .find()
-   *   .each(console.log); // array of matching sub-directories
-   */
-  public directory(): FileHound {
-    this.directoriesOnly = true;
     return this;
   }
 

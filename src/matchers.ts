@@ -244,6 +244,9 @@ export class Socket extends AbstractFilePredicate {
   }
 
   test(file: File): boolean {
+    console.log('HERE ' + file.isFileSync())
+    console.log('HERE ' + file.getName())
+    console.log('HERE ' + file.isSocketSync())
     return file.isSocketSync();
   }
 }
