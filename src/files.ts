@@ -1,4 +1,3 @@
-import {File} from './file';
 import * as _ from 'lodash';
 import * as os from 'os';
 import * as path from 'path';
@@ -15,11 +14,6 @@ function hasParent(parent: string): boolean {
 function getParent(dir: string) {
   return path.dirname(dir);
 }
-
-export function newFile(name: string): File {
-  return new File(name);
-}
-
 export function getRoot(dir: string): string {
   return os.platform() === 'win32'
     ? dir.split(path.sep)[0] + path.sep

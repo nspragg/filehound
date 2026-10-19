@@ -244,9 +244,6 @@ export class Socket extends AbstractFilePredicate {
   }
 
   test(file: File): boolean {
-    console.log('HERE ' + file.isFileSync())
-    console.log('HERE ' + file.getName())
-    console.log('HERE ' + file.isSocketSync())
     return file.isSocketSync();
   }
 }
@@ -292,7 +289,7 @@ export function like(pattern: string): FilePredicate {
   return new TextMatch(pattern);
 }
 
-export function discard2(...patterns: string[]): FilePredicate {
+export function discard(...patterns: string[]): FilePredicate {
   if (patterns.length === 1) {
     return new TextMatch(patterns[0]).not();
   }
@@ -322,4 +319,8 @@ export function accessed(days: number | string): FilePredicate {
 
 export function changed(days: number | string): FilePredicate {
   return new Changed(days);
+}
+
+export function not(fn: FilePredicate): FilePredicate {
+  return new Not(fn);
 }

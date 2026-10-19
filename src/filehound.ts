@@ -47,7 +47,7 @@ export class FileHound extends EventEmitter {
    * const filehound = FileHound.newQuery();
    */
   // tslint:disable-next-line:function-name
-  public static newQuery(): FileHound {
+  public static create(): FileHound {
     return new FileHound();
   }
 
@@ -150,8 +150,6 @@ export class FileHound extends EventEmitter {
     for (const currentPath of paths) {
       searches.push(this.searchAsync(currentPath, matcher));
     }
-
-    // const searches = paths.map(this.searchAsync2);
 
     try {
       const results = await Promise.all(searches);
