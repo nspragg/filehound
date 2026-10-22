@@ -242,7 +242,7 @@ export function glob(globPattern: string): FilePredicate {
   return new Glob(globPattern);
 }
 
-export function customFilter(fn: (path: File) => boolean): FilePredicate {
+export function applyFilter(fn: (path: File) => boolean): FilePredicate {
   return new CustomFilter(fn);
 }
 

@@ -91,12 +91,11 @@ export function sync(dir: string, matcher: FilePredicate, options: WalkOptions):
       return TERMINATE;
     }
 
-
-    if (fileTypeEnabled(FileType.DIRECTORY) && isMatchingDirectory(root, path, matcher)) {
+    if (fileTypeEnabled(FileType.REGULAR) && isMatchingFile(path, matcher)) {
       files.push(path.getName());
     }
 
-    if (fileTypeEnabled(FileType.REGULAR) && isMatchingFile(path, matcher)) {
+    if (fileTypeEnabled(FileType.DIRECTORY) && isMatchingDirectory(root, path, matcher)) {
       files.push(path.getName());
     }
 

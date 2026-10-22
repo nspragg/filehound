@@ -124,17 +124,33 @@ export class FileHound extends EventEmitter {
    *   .each(console.log); // array of files names only in the current directory
    */
   public depth(depth: number): FileHound {
+    if (depth < 0 || !Number.isSafeInteger(depth)) {
+      throw new RangeError('Depth must be a positive integer');
+    }
+
     this.maxDepth = depth;
     return this;
   }
 
 
   public type(...types: FileType[]): FileHound {
-    if (types.length > 0) {
-      this.types = types;
-    }
+    this.validateTypeArguments(types);
+
+    this.types = types;
 
     return this;
+  }
+
+  private validateTypeArguments(types: FileType[]) {
+    if (types.length === 0) {
+      throw new RangeError('At least one file type must be specified');
+    }
+
+    types.forEach((type) => {
+      if (!Object.values(FileType).includes(type)) {
+        throw new TypeError(`Invalid file type: ${type}.`);
+      }
+    });
   }
 
   public ignoreHiddenFiles(): FileHound {
@@ -225,6 +241,7 @@ export class FileHound extends EventEmitter {
   private searchSync(dir: string): string[] {
     return walker.sync(dir, this.getMatchExpression(), {
       ignoreHiddenDirectories: this._ignoreHiddenDirectories,
+      ignoreHiddenFiles: this._ignoreHiddenFiles,
       maxDepth: this.maxDepth,
       fileTypes: this.types
     });
