@@ -25,7 +25,7 @@ export async function async(root: string, isMatch: any, opts: any): Promise<any>
     const directories = [];
 
     finder.on('file', (file) => {
-      if (!opts.directoriesOnly && isMatch(file)) {
+      if (!opts.directoriesOnly && isMatch.test(file)) {
         files.push(file.getName());
       }
     });
@@ -36,7 +36,7 @@ export async function async(root: string, isMatch: any, opts: any): Promise<any>
         return skip();
       }
 
-      if (dir !== root && isMatch(dir)) {
+      if (dir !== root && isMatch.test(dir)) {
         directories.push(dir.getName());
       }
     });
@@ -63,7 +63,10 @@ export function sync(dir: string, matcher: any, options: any): any[] {
       return TERMINATE;
     }
 
-    if (options.directoriesOnly && isMatchingDirectory(root, path, matcher) || isMatchingFile(path, matcher)) {
+
+    if (options.directoriesOnly && isMatchingDirectory(root, path, matcher)) {
+      files.push(path.getName());
+    } else if (!options.directoriesOnly && isMatchingFile(path, matcher)) {
       files.push(path.getName());
     }
 
@@ -93,10 +96,10 @@ export function walkSync(path: File, fn: any): any {
 }
 
 function isMatchingDirectory(root: File, path: File, isMatch: any) {
-  return path !== root && path.isDirectorySync() && isMatch(path)
+  return path !== root && path.isDirectorySync() && isMatch.test(path)
 }
 
 function isMatchingFile(path: any, isMatch: any) {
-  return !path.isDirectorySync() && isMatch(path)
+  return !path.isDirectorySync() && isMatch.test(path)
 }
 

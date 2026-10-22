@@ -1,15 +1,13 @@
-// import { File } from './file';
 import * as _ from 'lodash';
 import * as path from 'path';
 
 import { EventEmitter } from 'events';
-import { FilePredicate, FileType, Predicate } from './matchers';
+import {FilePredicate, matchAll} from './matchers';
 import { copy, from } from './arrays';
 import { reducePaths } from './files';
 import * as walker from './walker/walk';
 
 import bind from './bind';
-import { MatchBuilder } from './matchBuilder';
 
 function isDefined(value: any): any {
   return value !== undefined;
@@ -19,17 +17,23 @@ function flatten(a: File[], b: File[]): File[] {
   return a.concat(b);
 }
 
+export enum FileType {
+  REGULAR,
+  DIRECTORY
+}
+
 export class FileHound extends EventEmitter {
   private searchPaths: string[];
   private readonly ignoreDirs: boolean;
   private maxDepth: number;
-  private readonly matchBuilder: MatchBuilder;
+  private types: FileType[];
+  private matchExpression: FilePredicate;
 
   public constructor() {
     super();
-    this.matchBuilder = new MatchBuilder();
     this.searchPaths = [process.cwd()];
     this.ignoreDirs = false;
+    this.types = [FileType.REGULAR];
     bind(this);
   }
 
@@ -97,8 +101,8 @@ export class FileHound extends EventEmitter {
     return this;
   }
 
-  public match(...predicates: FilePredicate[]): FileHound {
-    this.matchBuilder.add(...predicates);
+  public match(query: FilePredicate): FileHound {
+    this.matchExpression = query;
     return this;
   }
 
@@ -124,6 +128,15 @@ export class FileHound extends EventEmitter {
     return this;
   }
 
+
+  public type(...types: FileType[]): FileHound {
+    if (types.length > 0) {
+      this.types = types;
+    }
+
+    return this;
+  }
+
   /**
    * Asynchronously executes a file search.
    *
@@ -144,11 +157,10 @@ export class FileHound extends EventEmitter {
    */
   public async find(): Promise<string[]> {
     const searches = [];
-    const paths = this.getSearchPaths();
-    const matcher = this.matchBuilder.build();
+    const paths = this.getPaths();
 
     for (const currentPath of paths) {
-      searches.push(this.searchAsync(currentPath, matcher));
+      searches.push(this.searchAsync(currentPath, this.getMatchExpression()));
     }
 
     try {
@@ -167,6 +179,10 @@ export class FileHound extends EventEmitter {
     }
   }
 
+  private getMatchExpression() {
+    return this.matchExpression == null ? matchAll() : this.matchExpression;
+  }
+
   /**
    * Synchronously executes a file search.
    *
@@ -183,12 +199,12 @@ export class FileHound extends EventEmitter {
    *
    */
   public findSync(): any[] {
-    return this.getSearchPaths()
+    return this.getPaths()
       .map(this.searchSync)
       .reduce(flatten);
   }
 
-  public getSearchPaths(): string[] {
+  public getPaths(): string[] {
     const paths = isDefined(this.maxDepth)
       ? this.searchPaths
       : reducePaths(this.searchPaths);
@@ -197,18 +213,18 @@ export class FileHound extends EventEmitter {
   }
 
   private searchSync(dir: string): File[] {
-    return walker.sync(dir, this.matchBuilder.build(), {
+    return walker.sync(dir, this.getMatchExpression(), {
       ignoreDirs: this.ignoreDirs,
       maxDepth: this.maxDepth,
-      directoriesOnly: this.matchBuilder.fileType === FileType.S_IFDIR
+      directoriesOnly: this.types.includes(FileType.DIRECTORY)
     });
   }
 
-  private async searchAsync(dir: string, matcher: Predicate): Promise<string[]> {
+  private async searchAsync(dir: string, matcher: FilePredicate): Promise<string[]> {
     return walker.async(dir, matcher, {
       ignoreDirs: this.ignoreDirs,
       maxDepth: this.maxDepth,
-      directoriesOnly: this.matchBuilder.fileType === FileType.S_IFDIR
+      directoriesOnly: this.types.includes(FileType.DIRECTORY)
     });
   }
 }

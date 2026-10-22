@@ -6,14 +6,7 @@ import {from} from './arrays';
 
 export type Predicate = (...args: any[]) => boolean;
 
-export enum FileType {
-  S_IFDIR,
-  S_IFREG
-}
-
 export interface FilePredicate {
-  readonly fileType: FileType;
-
   not(): FilePredicate;
 
   or(predicate: FilePredicate): FilePredicate;
@@ -22,17 +15,7 @@ export interface FilePredicate {
 
   test(file: File): boolean;
 }
-
-interface DirectoryOptions {
-  excludeHidden: boolean;
-}
-
 export abstract class AbstractFilePredicate implements FilePredicate {
-  readonly fileType: FileType;
-
-  protected constructor(fileType: FileType = FileType.S_IFREG) {
-    this.fileType = fileType;
-  }
 
   abstract test(file: File): boolean;
 
@@ -54,7 +37,7 @@ export class And extends AbstractFilePredicate {
   private readonly right: FilePredicate;
 
   constructor(left: FilePredicate, right: FilePredicate) {
-    super(left.fileType);
+    super();
     this.left = left;
     this.right = right;
   }
@@ -102,22 +85,6 @@ export class Extension extends AbstractFilePredicate {
 
   test(file: File): boolean {
     return _.includes(this.extensions, file.getPathExtension());
-  }
-}
-
-export class Directory extends AbstractFilePredicate {
-  private readonly excludeHidden: boolean;
-
-  constructor(options: DirectoryOptions = {excludeHidden: false}) {
-    super(FileType.S_IFDIR);
-    this.excludeHidden = options.excludeHidden;
-  }
-
-  test(file: File): boolean {
-    if (this.excludeHidden && file.isHiddenSync()) {
-      return false;
-    }
-    return file.isDirectorySync();
   }
 }
 
@@ -238,6 +205,12 @@ export class Changed extends AbstractFilePredicate {
   }
 }
 
+export class MatchAll extends AbstractFilePredicate {
+  test(_file: File): boolean {
+    return true;
+  }
+}
+
 export class Socket extends AbstractFilePredicate {
   constructor() {
     super();
@@ -253,6 +226,10 @@ export function ext(...args: any[]): FilePredicate {
   return new Extension(extensions);
 }
 
+export function matchAll(): FilePredicate {
+  return new MatchAll();
+}
+
 export function size(s:  number | string): FilePredicate {
   return new Size(s);
 }
@@ -263,10 +240,6 @@ export function isEmpty(): FilePredicate {
 
 export function socket(): FilePredicate {
   return new Socket();
-}
-
-export function directories(options?: DirectoryOptions): FilePredicate {
-  return new Directory(options);
 }
 
 export function glob(globPattern: string): FilePredicate {
