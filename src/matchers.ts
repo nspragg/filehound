@@ -102,16 +102,12 @@ export class Glob extends AbstractFilePredicate {
 }
 
 export class IgnoreHiddenFile extends AbstractFilePredicate {
-  constructor() { super(); }
-
   test(file: File): boolean {
     return !file.isHiddenSync();
   }
 }
 
 export class IgnoreHiddenPath extends AbstractFilePredicate {
-  constructor() { super(); }
-
   test(file: File): boolean {
     const name = file.getName();
     return !(/(^|\/)\.[^\/\.]/g).test(name) && !(/^\./).test(path.basename(name));
@@ -244,14 +240,6 @@ export function socket(): FilePredicate {
 
 export function glob(globPattern: string): FilePredicate {
   return new Glob(globPattern);
-}
-
-export function ignoreHiddenFiles(): FilePredicate {
-  return new IgnoreHiddenFile();
-}
-
-export function ignoreHiddenPath(): FilePredicate {
-  return new IgnoreHiddenPath();
 }
 
 export function customFilter(fn: (path: File) => boolean): FilePredicate {

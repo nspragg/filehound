@@ -1,5 +1,7 @@
 import {File} from '../file';
 import {FileEmitter} from './emitter';
+import {FileType} from "../filehound";
+import {FilePredicate} from "../matchers";
 
 const TERMINATE = false;
 const CONTINUE = true;
@@ -14,18 +16,39 @@ function atMaxDepth(dir: File, root: File, opts: any): boolean {
 }
 
 function shouldFilterDirectory(dir: File, root: File, opts: any): boolean {
-  return (atMaxDepth(dir, root, opts) || (opts.ignoreDirs && dir.isHiddenSync()));
+  return (atMaxDepth(dir, root, opts) || (opts.ignoreHiddenDirectories && dir.isHiddenSync()));
 }
 
-export async function async(root: string, isMatch: any, opts: any): Promise<any> {
+type WalkOptions = {
+    maxDepth?: number;
+    ignoreHiddenFiles?: boolean;
+    ignoreHiddenDirectories?: boolean;
+    fileTypes: FileType[];
+}
+
+type WalkPredicate = (path: File) => boolean;
+
+export async function async(root: string, isMatch: any, opts: WalkOptions): Promise<string[]> {
   const finder = new FileEmitter(root);
 
   return new Promise(async (resolve, reject) => {
-    const files = [];
-    const directories = [];
+    const files: string[] = [];
+    const directories: string[] = [];
+
+    function fileTypeEnabled(type: FileType) {
+      return opts.fileTypes.includes(type);
+    }
 
     finder.on('file', (file) => {
-      if (!opts.directoriesOnly && isMatch.test(file)) {
+      function shouldSkipFile(file: File) {
+        return file.isHiddenSync() && opts.ignoreHiddenFiles;
+      }
+
+      function isFileMatch() {
+        return !shouldSkipFile(file) && isMatch.test(file);
+      }
+
+      if (fileTypeEnabled(FileType.REGULAR) && isFileMatch()) {
         files.push(file.getName());
       }
     });
@@ -36,7 +59,11 @@ export async function async(root: string, isMatch: any, opts: any): Promise<any>
         return skip();
       }
 
-      if (dir !== root && isMatch.test(dir)) {
+      function isDirectoryMatch() {
+        return dir !== root && isMatch.test(dir);
+      }
+
+      if (fileTypeEnabled(FileType.DIRECTORY) && isDirectoryMatch()) {
         directories.push(dir.getName());
       }
     });
@@ -44,19 +71,20 @@ export async function async(root: string, isMatch: any, opts: any): Promise<any>
     finder.on('error', reject);
 
     finder.on('stop', () => {
-      if (opts.directoriesOnly) {
-        resolve(directories);
-      }
-      resolve(files);
+      resolve(files.concat(directories));
     });
 
     return finder.start();
   });
 }
 
-export function sync(dir: string, matcher: any, options: any): any[] {
+export function sync(dir: string, matcher: FilePredicate, options: WalkOptions): string[] {
   const root = new File(dir);
   const files = [];
+
+  function fileTypeEnabled(type: FileType) {
+    return options.fileTypes.includes(type);
+  }
 
   walkSync(root, (path) => {
     if (path.isDirectorySync() && shouldFilterDirectory(path, root, options)) {
@@ -64,9 +92,11 @@ export function sync(dir: string, matcher: any, options: any): any[] {
     }
 
 
-    if (options.directoriesOnly && isMatchingDirectory(root, path, matcher)) {
+    if (fileTypeEnabled(FileType.DIRECTORY) && isMatchingDirectory(root, path, matcher)) {
       files.push(path.getName());
-    } else if (!options.directoriesOnly && isMatchingFile(path, matcher)) {
+    }
+
+    if (fileTypeEnabled(FileType.REGULAR) && isMatchingFile(path, matcher)) {
       files.push(path.getName());
     }
 
@@ -76,12 +106,13 @@ export function sync(dir: string, matcher: any, options: any): any[] {
   return files;
 }
 
+
 function getDirNames(dir: File): File[] {
   const names = dir.getFilesSync();
   return names.sort();
 }
 
-export function walkSync(path: File, fn: any): any {
+export function walkSync(path: File, fn: WalkPredicate): boolean {
   if (!path.isDirectorySync()) {
     return fn(path);
   }
@@ -95,11 +126,11 @@ export function walkSync(path: File, fn: any): any {
   }
 }
 
-function isMatchingDirectory(root: File, path: File, isMatch: any) {
+function isMatchingDirectory(root: File, path: File, isMatch: FilePredicate) {
   return path !== root && path.isDirectorySync() && isMatch.test(path)
 }
 
-function isMatchingFile(path: any, isMatch: any) {
+function isMatchingFile(path: File, isMatch: FilePredicate) {
   return !path.isDirectorySync() && isMatch.test(path)
 }
 

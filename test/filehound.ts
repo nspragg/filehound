@@ -12,10 +12,8 @@ import {
     discard,
     ext,
     glob,
-    ignoreHiddenFiles,
-    ignoreHiddenPath,
     isEmpty,
-    like,
+    like, matchAll,
     modified,
     not,
     size
@@ -208,24 +206,22 @@ describe('FileHound', async () => {
                 assert.deepEqual(results, expectedDirectories);
             });
 
-            // it('ignores hidden directories', async () => {
-            //     const expectedDirectories = qualifyNames([
-            //         '/deeplyNestedWithHiddenDir/mydir',
-            //         '/deeplyNestedWithHiddenDir/mydir/mydir2',
-            //         '/deeplyNestedWithHiddenDir/mydir/mydir2/mydir3',
-            //         '/deeplyNestedWithHiddenDir/mydir/mydir2/mydir3/mydir4'
-            //     ]);
-            //
-            //     const results = await FileHound.create()
-            //         .paths(`${fixtureDir}/deeplyNestedWithHiddenDir`)
-            //         .type(FileType.DIRECTORY)
-            //         // .match(
-            //             // directories({excludeHidden: true})
-            //         // )
-            //         .find();
-            //
-            //     assert.deepEqual(results, expectedDirectories);
-            // });
+            it('ignores hidden directories', async () => {
+                const expectedDirectories = qualifyNames([
+                    '/deeplyNestedWithHiddenDir/mydir',
+                    '/deeplyNestedWithHiddenDir/mydir/mydir2',
+                    '/deeplyNestedWithHiddenDir/mydir/mydir2/mydir3',
+                    '/deeplyNestedWithHiddenDir/mydir/mydir2/mydir3/mydir4'
+                ]);
+
+                const results = await FileHound.create()
+                    .paths(`${fixtureDir}/deeplyNestedWithHiddenDir`)
+                    .type(FileType.DIRECTORY)
+                    .ignoreHiddenDirectories()
+                    .find();
+
+                assert.deepEqual(results, expectedDirectories);
+            });
 
             it('filters matching directories', async () => {
                 const expectedDirectories = qualifyNames([
@@ -479,68 +475,93 @@ describe('FileHound', async () => {
             });
         });
 
-        // describe('.socket', async () => {
-        //   const file = {
-        //     isSocket: () => {
-        //       return true;
-        //     },
-        //     isSocketSync: () => {
-        //       return true;
-        //     },
-        //     isDirectorySync: () => {
-        //       return false;
-        //     },
-        //     isDirectory: () => {
-        //       return Promise.resolve(false);
-        //     },
-        //     isFile: async () => {
-        //       return true;
-        //     },
-        //     getName: () => {
-        //       return getAbsolutePath('/types/socket1');
-        //     }
-        //   };
-        //   const root = {
-        //     isDirectorySync: () => {
-        //       return true;
-        //     },
-        //     isDirectory: async () => {
-        //       return true;
-        //     },
-        //     getDepthSync: () => {
-        //       return 0;
-        //     },
-        //     getName: () => {
-        //       return getAbsolutePath('/types/socket1');
-        //     },
-        //     getFiles: () => {
-        //       return Promise.resolve()
-        //         .then(() => {
-        //           return [file];
-        //         });
-        //     }
-        //   };
-        //
-        //   beforeEach(() => {
-        //     sandbox.stub(Files, 'newFile').returns(root);
-        //     sandbox.stub(fs, 'existsSync').returns(true);
-        //   });
-        //
-        //   afterEach(() => {
-        //     sandbox.restore();
-        //   });
-        //
-        //   it.only('filters by socket type files', async () => {
-        //     const sockets = await FileHound.newQuery()
-        //       .paths(`${fixtureDir}/types`)
-        //       .match(
-        //         socket()
-        //       )
-        //       .find();
-        //
-        //     assert.deepEqual(sockets, [file.getName()]);
-        //   });
-        // });
+        describe('.matchAll()', () => {
+            it('returns all files in a given directory', async () => {
+                const allFiles = await FileHound.create()
+                    .paths(`${fixtureDir}/justFiles`)
+                    .match(
+                        matchAll()
+                    )
+                    .find();
+
+                assert.deepEqual(allFiles, justFiles);
+            });
+
+            it('returns all files by default', async () => {
+                const allFiles = await FileHound.create()
+                    .paths(`${fixtureDir}/justFiles`)
+                    .find();
+
+                assert.deepEqual(allFiles, justFiles);
+            });
+        });
+    });
+
+    describe('.type', () => {
+        it('returns only files', async () => {
+            const files = await FileHound.create()
+                .paths(`${fixtureDir}/deeplyNested`)
+                .type(FileType.REGULAR)
+                .find();
+
+            assert.deepEqual(
+                files,
+                qualifyNames([
+                    '/deeplyNested/c.json',
+                    'deeplyNested/d.json',
+                    'deeplyNested/mydir/e.json',
+                    'deeplyNested/mydir/mydir2/f.json',
+                    'deeplyNested/mydir/mydir2/mydir3/mydir4/failed.json',
+                    'deeplyNested/mydir/mydir2/mydir3/z.json',
+                    'deeplyNested/mydir/mydir2/y.json'
+
+                ])
+            );
+        });
+
+        it('returns only directories', async () => {
+            const directories = await FileHound.create()
+                .paths(`${fixtureDir}/deeplyNested`)
+                .type(FileType.DIRECTORY)
+                .find();
+
+            assert.deepEqual(
+                directories,
+                qualifyNames([
+                    '/deeplyNested/mydir',
+                    '/deeplyNested/mydir/mydir2',
+                    '/deeplyNested/mydir/mydir2/mydir3',
+                    '/deeplyNested/mydir/mydir2/mydir3/mydir4'
+                ])
+            );
+        });
+
+        it('returns files and directories', async () => {
+            const filesAndDirectories = await FileHound.create()
+                .paths(`${fixtureDir}/deeplyNested`)
+                .type(
+                    FileType.REGULAR,
+                    FileType.DIRECTORY
+                )
+                .find();
+
+            assert.deepEqual(
+                filesAndDirectories,
+                qualifyNames([
+                    '/deeplyNested/c.json',
+                    'deeplyNested/d.json',
+                    'deeplyNested/mydir/e.json',
+                    'deeplyNested/mydir/mydir2/f.json',
+                    'deeplyNested/mydir/mydir2/mydir3/mydir4/failed.json',
+                    'deeplyNested/mydir/mydir2/mydir3/z.json',
+                    'deeplyNested/mydir/mydir2/y.json',
+                    '/deeplyNested/mydir',
+                    '/deeplyNested/mydir/mydir2',
+                    '/deeplyNested/mydir/mydir2/mydir3',
+                    '/deeplyNested/mydir/mydir2/mydir3/mydir4'
+                ])
+            );
+        });
     });
 
     describe('.depth', () => {
@@ -744,7 +765,7 @@ describe('FileHound', async () => {
         it('ignores hidden files', async () => {
             const noHiddenFiles = await FileHound.create()
                 .paths(`${fixtureDir}/visibility`)
-                .match(ignoreHiddenFiles())
+                .ignoreHiddenFiles()
                 .find();
 
             assert.equal(noHiddenFiles.length, 2);
@@ -760,9 +781,8 @@ describe('FileHound', async () => {
         it('ignores files within hidden directories', async () => {
             const noHiddenFiles = await FileHound.create()
                 .paths(`${fixtureDir}/visibility`)
-                .match(
-                    ignoreHiddenPath()
-                )
+                .ignoreHiddenFiles()
+                .ignoreHiddenDirectories()
                 .find();
 
             assert.equal(noHiddenFiles.length, 1);

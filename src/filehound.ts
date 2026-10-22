@@ -13,7 +13,7 @@ function isDefined(value: any): any {
   return value !== undefined;
 }
 
-function flatten(a: File[], b: File[]): File[] {
+function flatten(a: string[], b: string[]): string[] {
   return a.concat(b);
 }
 
@@ -24,15 +24,15 @@ export enum FileType {
 
 export class FileHound extends EventEmitter {
   private searchPaths: string[];
-  private readonly ignoreDirs: boolean;
   private maxDepth: number;
   private types: FileType[];
   private matchExpression: FilePredicate;
+  private _ignoreHiddenFiles: boolean;
+  private _ignoreHiddenDirectories: boolean;
 
   public constructor() {
     super();
     this.searchPaths = [process.cwd()];
-    this.ignoreDirs = false;
     this.types = [FileType.REGULAR];
     bind(this);
   }
@@ -137,6 +137,16 @@ export class FileHound extends EventEmitter {
     return this;
   }
 
+  public ignoreHiddenFiles(): FileHound {
+    this._ignoreHiddenFiles = true;
+    return this;
+  }
+
+  public ignoreHiddenDirectories(): FileHound {
+    this._ignoreHiddenDirectories = true;
+    return this;
+  }
+
   /**
    * Asynchronously executes a file search.
    *
@@ -212,19 +222,20 @@ export class FileHound extends EventEmitter {
     return copy<string[]>(paths);
   }
 
-  private searchSync(dir: string): File[] {
+  private searchSync(dir: string): string[] {
     return walker.sync(dir, this.getMatchExpression(), {
-      ignoreDirs: this.ignoreDirs,
+      ignoreHiddenDirectories: this._ignoreHiddenDirectories,
       maxDepth: this.maxDepth,
-      directoriesOnly: this.types.includes(FileType.DIRECTORY)
+      fileTypes: this.types
     });
   }
 
   private async searchAsync(dir: string, matcher: FilePredicate): Promise<string[]> {
     return walker.async(dir, matcher, {
-      ignoreDirs: this.ignoreDirs,
+      ignoreHiddenDirectories: this._ignoreHiddenDirectories,
+      ignoreHiddenFiles: this._ignoreHiddenFiles,
       maxDepth: this.maxDepth,
-      directoriesOnly: this.types.includes(FileType.DIRECTORY)
+      fileTypes: this.types
     });
   }
 }
