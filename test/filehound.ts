@@ -7,13 +7,14 @@ import {FileHound, FileType} from '../src/filehound';
 
 import {
     accessed,
-    changed,
     applyFilter,
+    changed,
     discard,
     ext,
     glob,
     isEmpty,
-    like, matchAll,
+    like,
+    matchAll,
     modified,
     not,
     size
@@ -60,7 +61,23 @@ function deleteFile(fname: fs.PathLike): void {
 describe('FileHound', async () => {
     const fixtureDir = `${__dirname}/fixtures`;
 
+    function assertMatchError(value: any) {
+        assert.throws(() => {
+            FileHound.create()
+                .paths(`${fixtureDir}/justFiles`)
+                .match(value);
+        }, TypeError, 'Match expression must be a valid matcher');
+    }
+
     describe('Matchers', async () => {
+        it('throws when a match expression is null', () => {
+            assertMatchError(null);
+        });
+
+        it('throws when a match expression is undefined', () => {
+            assertMatchError(undefined);
+        });
+
         describe('.or', () => {
             it('returns files matching either of two matchers', async () => {
                 const results = await FileHound.create()
@@ -1187,5 +1204,99 @@ describe('FileHound', async () => {
         });
     });
 
-    it('filehound instance should be immutable after calling find');
+    describe('Query immutability', () => {
+        it('Throws when calling .match after query started', () => {
+            assert.throws( () => {
+                const fh = FileHound.create()
+                    .paths(`${fixtureDir}/ext`)
+                    .match(
+                        ext('.txt')
+                            .or(ext('.json'))
+                    );
+
+                fh.findSync();
+                fh.match(ext('.java'));
+
+            }, Error, 'Cannot modify query after search has started');
+        });
+
+        it('Throws when calling .paths after query started', () => {
+            assert.throws( () => {
+                const fh = FileHound.create()
+                    .paths(`${fixtureDir}/ext`)
+                    .match(
+                        ext('.txt')
+                            .or(ext('.json'))
+                    );
+
+                fh.findSync();
+                fh.paths(`${fixtureDir}/justFiles`);
+
+            }, Error, 'Cannot modify query after search has started');
+        });
+
+        it('Throws when calling .type after query started', () => {
+            assert.throws( () => {
+                const fh = FileHound.create()
+                    .paths(`${fixtureDir}/ext`)
+                    .type(FileType.REGULAR)
+                    .match(
+                        ext('.txt')
+                            .or(ext('.json'))
+                    );
+
+                fh.findSync();
+                fh.type(FileType.DIRECTORY);
+
+            }, Error, 'Cannot modify query after search has started');
+        });
+
+        it('Throws when calling .depth after query started', () => {
+            assert.throws( () => {
+                const fh = FileHound.create()
+                    .paths(`${fixtureDir}/ext`)
+                    .depth(1)
+                    .match(
+                        ext('.txt')
+                            .or(ext('.json'))
+                    );
+
+                fh.findSync();
+                fh.depth(2);
+
+            }, Error, 'Cannot modify query after search has started');
+        });
+
+        it('Throws when calling .ignoreHiddenFiles after query started', () => {
+            assert.throws( () => {
+                const fh = FileHound.create()
+                    .paths(`${fixtureDir}/ext`)
+                    .ignoreHiddenFiles()
+                    .match(
+                        ext('.txt')
+                            .or(ext('.json'))
+                    );
+
+                fh.findSync();
+                fh.ignoreHiddenFiles();
+
+            }, Error, 'Cannot modify query after search has started');
+        });
+
+        it('Throws when calling .ignoreHiddenDirectories after query started', () => {
+            assert.throws( () => {
+                const fh = FileHound.create()
+                    .paths(`${fixtureDir}/ext`)
+                    .ignoreHiddenDirectories()
+                    .match(
+                        ext('.txt')
+                            .or(ext('.json'))
+                    );
+
+                fh.findSync();
+                fh.ignoreHiddenDirectories();
+
+            }, Error, 'Cannot modify query after search has started');
+        });
+    });
 });

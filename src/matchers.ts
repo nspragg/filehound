@@ -1,11 +1,7 @@
 import {File} from './file';
 import * as _ from 'lodash';
-import * as path from 'path';
 import {isDate, isNumber} from 'unit-compare';
 import {from} from './arrays';
-
-export type Predicate = (...args: any[]) => boolean;
-
 export interface FilePredicate {
   not(): FilePredicate;
 
@@ -100,20 +96,6 @@ export class Glob extends AbstractFilePredicate {
     return file.isMatch(this.globPattern);
   }
 }
-
-export class IgnoreHiddenFile extends AbstractFilePredicate {
-  test(file: File): boolean {
-    return !file.isHiddenSync();
-  }
-}
-
-export class IgnoreHiddenPath extends AbstractFilePredicate {
-  test(file: File): boolean {
-    const name = file.getName();
-    return !(/(^|\/)\.[^\/\.]/g).test(name) && !(/^\./).test(path.basename(name));
-  }
-}
-
 export class TextMatch extends AbstractFilePredicate {
   private readonly pattern: string;
   private readonly flags: string;
@@ -145,9 +127,9 @@ export class CustomFilter extends AbstractFilePredicate {
 export class Size extends AbstractFilePredicate {
   private readonly size: string | number;
 
-  constructor(pattern: string | number) {
+  constructor(size: string | number) {
     super();
-    this.size = pattern;
+    this.size = size;
   }
 
   test(file: File): boolean {
@@ -208,10 +190,6 @@ export class MatchAll extends AbstractFilePredicate {
 }
 
 export class Socket extends AbstractFilePredicate {
-  constructor() {
-    super();
-  }
-
   test(file: File): boolean {
     return file.isSocketSync();
   }

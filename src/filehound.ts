@@ -29,6 +29,7 @@ export class FileHound extends EventEmitter {
   private matchExpression: FilePredicate;
   private _ignoreHiddenFiles: boolean;
   private _ignoreHiddenDirectories: boolean;
+  private queryLocked: boolean;
 
   public constructor() {
     super();
@@ -77,8 +78,6 @@ export class FileHound extends EventEmitter {
     // @ts-ignore
     return files.reduce(flatten, []);
   }
-
-  // tslint:disable-next-line:valid-jsdoc
   /**
    * Defines the search paths
    *
@@ -97,13 +96,25 @@ export class FileHound extends EventEmitter {
    *   .each(console.log);
    */
   public paths(...args: string[]): FileHound {
+    this.throwIfQueryLocked();
     this.searchPaths = _.uniq(from(args)).map(path.normalize);
     return this;
   }
 
   public match(query: FilePredicate): FileHound {
+    if (_.isNil(query) || typeof query !== 'object' || typeof query.test !== 'function') {
+      throw new TypeError('Match expression must be a valid matcher');
+    }
+    this.throwIfQueryLocked();
+
     this.matchExpression = query;
     return this;
+  }
+
+  private throwIfQueryLocked() {
+    if (this.queryLocked) {
+      throw new Error('Cannot modify query after search has started');
+    }
   }
 
   /**
@@ -127,17 +138,18 @@ export class FileHound extends EventEmitter {
     if (depth < 0 || !Number.isSafeInteger(depth)) {
       throw new RangeError('Depth must be a positive integer');
     }
+    this.throwIfQueryLocked();
 
     this.maxDepth = depth;
+
     return this;
   }
 
 
   public type(...types: FileType[]): FileHound {
     this.validateTypeArguments(types);
-
+    this.throwIfQueryLocked();
     this.types = types;
-
     return this;
   }
 
@@ -154,11 +166,13 @@ export class FileHound extends EventEmitter {
   }
 
   public ignoreHiddenFiles(): FileHound {
+    this.throwIfQueryLocked();
     this._ignoreHiddenFiles = true;
     return this;
   }
 
   public ignoreHiddenDirectories(): FileHound {
+    this.throwIfQueryLocked();
     this._ignoreHiddenDirectories = true;
     return this;
   }
@@ -186,7 +200,7 @@ export class FileHound extends EventEmitter {
     const paths = this.getPaths();
 
     for (const currentPath of paths) {
-      searches.push(this.searchAsync(currentPath, this.getMatchExpression()));
+      searches.push(this.searchAsync(currentPath));
     }
 
     try {
@@ -197,9 +211,9 @@ export class FileHound extends EventEmitter {
           this.emit('match', file);
           return file;
         });
-    } catch (e) {
-      this.emit('error', e);
-      throw e;
+    } catch (error) {
+      this.emit('error', error);
+      throw error;
     } finally {
       this.emit('end');
     }
@@ -225,6 +239,8 @@ export class FileHound extends EventEmitter {
    *
    */
   public findSync(): any[] {
+    this.queryLocked = true;
+
     return this.getPaths()
       .map(this.searchSync)
       .reduce(flatten);
@@ -239,20 +255,19 @@ export class FileHound extends EventEmitter {
   }
 
   private searchSync(dir: string): string[] {
-    return walker.sync(dir, this.getMatchExpression(), {
-      ignoreHiddenDirectories: this._ignoreHiddenDirectories,
-      ignoreHiddenFiles: this._ignoreHiddenFiles,
-      maxDepth: this.maxDepth,
-      fileTypes: this.types
-    });
+    return walker.sync(dir, this.getMatchExpression(), this.getOptions());
   }
 
-  private async searchAsync(dir: string, matcher: FilePredicate): Promise<string[]> {
-    return walker.async(dir, matcher, {
+  private async searchAsync(dir: string): Promise<string[]> {
+    return walker.async(dir, this.getMatchExpression(), this.getOptions());
+  }
+
+  private getOptions() {
+    return {
       ignoreHiddenDirectories: this._ignoreHiddenDirectories,
       ignoreHiddenFiles: this._ignoreHiddenFiles,
       maxDepth: this.maxDepth,
       fileTypes: this.types
-    });
+    };
   }
 }
