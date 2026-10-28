@@ -40,6 +40,7 @@ export class FileHound extends EventEmitter {
   private matchExpression: FilePredicate;
   private _ignoreHiddenFiles: boolean;
   private _ignoreHiddenDirectories: boolean;
+  private _ignoreSymlinks: boolean;
   private queryLocked: boolean;
 
   public constructor() {
@@ -247,6 +248,33 @@ export class FileHound extends EventEmitter {
   }
 
   /**
+   * Excludes symbolic links from the search. Linked files are not matched
+   * and linked directories are not searched.
+   *
+   * @remarks
+   * By default, symbolic links are followed: a linked file is matched as its
+   * target and a linked directory is searched. Broken links, and links back to
+   * a directory already being searched, are always skipped.
+   *
+   * @returns the FileHound instance
+   * @throws `Error`
+   * Thrown if the query is locked because a search has started.
+   * @example
+   * ```ts
+   * import { FileHound } from 'filehound';
+   *
+   * const files = await FileHound.create()
+   *   .ignoreSymlinks()
+   *   .find();
+   * ```
+   */
+  public ignoreSymlinks(): FileHound {
+    this.throwIfQueryLocked();
+    this._ignoreSymlinks = true;
+    return this;
+  }
+
+  /**
    * Asynchronously executes a file search. Once called, the query is
    * locked and can no longer be modified.
    *
@@ -364,6 +392,7 @@ export class FileHound extends EventEmitter {
     return {
       ignoreHiddenDirectories: this._ignoreHiddenDirectories,
       ignoreHiddenFiles: this._ignoreHiddenFiles,
+      ignoreSymlinks: this._ignoreSymlinks,
       maxDepth: this.maxDepth,
       fileTypes: this.types
     };

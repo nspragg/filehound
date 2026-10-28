@@ -1,5 +1,6 @@
 import {assert} from 'chai';
 import fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import * as sinon from 'sinon';
 import {FileHound, FileType} from '../src/filehound';
@@ -1381,6 +1382,86 @@ describe('FileHound', async () => {
                 fh.findSync();
                 fh.ignoreHiddenDirectories();
 
+            }, Error, 'Cannot modify query after search has started');
+        });
+    });
+
+    describe('symlinks', () => {
+        let tmpDir: string;
+
+        function inTmp(...names: string[]): string {
+            return path.join(tmpDir, ...names);
+        }
+
+        async function findBoth(fh: () => FileHound): Promise<string[][]> {
+            return [(await fh().find()).toSorted(), fh().findSync().toSorted()];
+        }
+
+        beforeEach(() => {
+            tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'filehound-'));
+            fs.mkdirSync(inTmp('real'));
+            fs.writeFileSync(inTmp('real', 'a.txt'), '');
+        });
+
+        afterEach(() => {
+            fs.rmSync(tmpDir, {recursive: true, force: true});
+        });
+
+        it('follows symlinks by default', async () => {
+            fs.symlinkSync(inTmp('real'), inTmp('linkdir'), 'dir');
+            fs.symlinkSync(inTmp('real', 'a.txt'), inTmp('link.txt'));
+
+            const expected = [inTmp('link.txt'), inTmp('linkdir', 'a.txt'), inTmp('real', 'a.txt')];
+            const [results, syncResults] = await findBoth(() => FileHound.create().paths(tmpDir));
+
+            assert.deepEqual(results, expected);
+            assert.deepEqual(syncResults, expected);
+        });
+
+        it('excludes symlinks when ignoreSymlinks is set', async () => {
+            fs.symlinkSync(inTmp('real'), inTmp('linkdir'), 'dir');
+            fs.symlinkSync(inTmp('real', 'a.txt'), inTmp('link.txt'));
+
+            const expected = [inTmp('real', 'a.txt')];
+            const [results, syncResults] = await findBoth(() => FileHound.create().paths(tmpDir).ignoreSymlinks());
+
+            assert.deepEqual(results, expected);
+            assert.deepEqual(syncResults, expected);
+        });
+
+        it('excludes linked directories from directory searches when ignoreSymlinks is set', async () => {
+            fs.symlinkSync(inTmp('real'), inTmp('linkdir'), 'dir');
+
+            const query = (): FileHound => FileHound.create().paths(tmpDir).type(FileType.DIRECTORY).ignoreSymlinks();
+            const [results, syncResults] = await findBoth(query);
+
+            assert.deepEqual(results, [inTmp('real')]);
+            assert.deepEqual(syncResults, [inTmp('real')]);
+        });
+
+        it('skips broken symlinks', async () => {
+            fs.symlinkSync(inTmp('missing'), inTmp('dead'));
+
+            const [results, syncResults] = await findBoth(() => FileHound.create().paths(tmpDir));
+
+            assert.deepEqual(results, [inTmp('real', 'a.txt')]);
+            assert.deepEqual(syncResults, [inTmp('real', 'a.txt')]);
+        });
+
+        it('does not follow a symlink back to an ancestor directory', async () => {
+            fs.symlinkSync(tmpDir, inTmp('real', 'loop'), 'dir');
+
+            const [results, syncResults] = await findBoth(() => FileHound.create().paths(tmpDir));
+
+            assert.deepEqual(results, [inTmp('real', 'a.txt')]);
+            assert.deepEqual(syncResults, [inTmp('real', 'a.txt')]);
+        });
+
+        it('throws when calling .ignoreSymlinks after query started', () => {
+            assert.throws(() => {
+                const fh = FileHound.create().paths(tmpDir);
+                fh.findSync();
+                fh.ignoreSymlinks();
             }, Error, 'Cannot modify query after search has started');
         });
     });

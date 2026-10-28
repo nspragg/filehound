@@ -6,18 +6,20 @@ function createPathError(name: string): Error {
   return new Error(`'${name}' is not a valid path`);
 }
 
+export type EntryFilter = (file: File) => boolean;
+
 export class FileEmitter extends EventEmitter {
   private readonly root: File;
   private stopped: boolean;
   private pending: number;
-  private readonly abortOnError: boolean;
+  private readonly accept: EntryFilter;
 
-  constructor(root: string) {
+  constructor(root: string, accept: EntryFilter = () => true) {
     super();
     this.root = new File(root);
+    this.accept = accept;
     this.stopped = true;
     this.pending = 0;
-    this.abortOnError = false;
   }
 
   public stop(): void {
@@ -27,6 +29,10 @@ export class FileEmitter extends EventEmitter {
 
   public async start(): Promise<void> {
     this.stopped = false;
+    if (!fs.existsSync(this.root.getName())) {
+      this.emit('error', createPathError(this.root.getName()));
+      return;
+    }
     return this.walk(this.root);
   }
 
@@ -35,21 +41,13 @@ export class FileEmitter extends EventEmitter {
       this.stop();
     }
 
-    if (!fs.existsSync(directory.getName())) {
-      this.emit('error', createPathError(directory.getName()));
-      return;
-    }
-
     try {
       this.pending += 1;
 
       const files = await directory.getFiles();
       for (const file of files) {
-        if (!fs.existsSync(file.getName())) {
-          if (this.abortOnError) {
-             this.stop();
-          }
-          this.emit('error', createPathError(file.getName()));
+        if (!this.accept(file)) {
+          continue;
         }
 
         if (await file.isFile()) {

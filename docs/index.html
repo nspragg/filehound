@@ -75,6 +75,11 @@
 <pre><code class="js"><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">files</span><span class="hl-1"> = </span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-6">FileHound</span><span class="hl-1">.</span><span class="hl-3">create</span><span class="hl-1">()</span><br/><span class="hl-1">  .</span><span class="hl-3">paths</span><span class="hl-1">(</span><span class="hl-4">&#39;/some/dir&#39;</span><span class="hl-1">)</span><br/><span class="hl-1">  .</span><span class="hl-3">ignoreHiddenFiles</span><span class="hl-1">()</span><br/><span class="hl-1">  .</span><span class="hl-3">ignoreHiddenDirectories</span><span class="hl-1">()</span><br/><span class="hl-1">  .</span><span class="hl-3">find</span><span class="hl-1">();</span>
 </code><button type="button">Copy</button></pre>
 
+<h4 id="ignoring-symbolic-links" class="tsd-anchor-link">Ignoring symbolic links<a href="#ignoring-symbolic-links" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h4>
+<p>Symbolic links are followed by default: a linked file is matched as its target and a linked directory is searched. Broken links, and links back to a directory already being searched, are skipped. To leave links out of the search entirely:</p>
+<pre><code class="js"><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">files</span><span class="hl-1"> = </span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-6">FileHound</span><span class="hl-1">.</span><span class="hl-3">create</span><span class="hl-1">()</span><br/><span class="hl-1">  .</span><span class="hl-3">paths</span><span class="hl-1">(</span><span class="hl-4">&#39;/some/dir&#39;</span><span class="hl-1">)</span><br/><span class="hl-1">  .</span><span class="hl-3">ignoreSymlinks</span><span class="hl-1">()</span><br/><span class="hl-1">  .</span><span class="hl-3">find</span><span class="hl-1">();</span>
+</code><button type="button">Copy</button></pre>
+
 <h4 id="limiting-the-depth-of-a-recursive-search" class="tsd-anchor-link">Limiting the depth of a recursive search<a href="#limiting-the-depth-of-a-recursive-search" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h4>
 <p>Find all files but <em>only</em> in the current directory (recursion off):</p>
 <pre><code class="js"><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">files</span><span class="hl-1"> = </span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-6">FileHound</span><span class="hl-1">.</span><span class="hl-3">create</span><span class="hl-1">()</span><br/><span class="hl-1">  .</span><span class="hl-3">depth</span><span class="hl-1">(</span><span class="hl-7">0</span><span class="hl-1">)</span><br/><span class="hl-1">  .</span><span class="hl-3">find</span><span class="hl-1">();</span>
@@ -138,6 +143,7 @@
 <li><a href="#custom-filters"><span>Custom filters</span></a></li>
 <li><a href="#finding-directories"><span>Finding directories</span></a></li>
 <li><a href="#ignoring-hidden-files-and-directories"><span>Ignoring hidden files and directories</span></a></li>
+<li><a href="#ignoring-symbolic-links"><span>Ignoring symbolic links</span></a></li>
 <li><a href="#limiting-the-depth-of-a-recursive-search"><span>Limiting the depth of a recursive search</span></a></li>
 <li><a href="#combining-multiple-searches"><span>Combining multiple searches</span></a></li>
 <li><a href="#defining-multiple-search-locations"><span>Defining multiple search locations</span></a></li>

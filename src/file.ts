@@ -2,6 +2,8 @@ import {
   constants,
   createReadStream,
   createWriteStream,
+  Dirent,
+  lstatSync,
   readdirSync,
   Stats,
   statSync
@@ -10,43 +12,50 @@ import { Minimatch } from 'minimatch';
 import * as path from 'path';
 import * as fsp from 'fs/promises';
 
-function joinWith(dir: string): (s: string) => string {
-  return (file) => {
-    return path.join(dir, file);
-  };
-}
+type FileKind = Pick<Stats, 'isDirectory' | 'isFile' | 'isSocket'>;
 
 export class File {
   private readonly dir: string;
   private readonly pathname: string;
+  // Type info from readdir, saving a stat call
+  private readonly dirent?: Dirent;
 
-  constructor(pathname: string) {
+  constructor(pathname: string, dirent?: Dirent) {
     this.dir = process.cwd();
     this.pathname = pathname;
+    this.dirent = dirent;
   }
 
   public isDirectorySync(): boolean {
-    return this.getStatsSync().isDirectory();
+    return this.getKindSync().isDirectory();
   }
 
   public isSocketSync(): boolean {
-    return this.getStatsSync().isSocket();
+    return this.getKindSync().isSocket();
   }
 
   public isFileSync(): boolean {
-    return this.getStatsSync().isFile();
+    return this.getKindSync().isFile();
   }
 
   public async isDirectory(): Promise<boolean> {
-    return this.checkAsyncStats('isDirectory');
+    return (await this.getKind()).isDirectory();
   }
 
   public async isSocket(): Promise<boolean> {
-    return this.checkAsyncStats('isSocket');
+    return (await this.getKind()).isSocket();
   }
 
   public async isFile(): Promise<boolean> {
-    return this.checkAsyncStats('isFile');
+    return (await this.getKind()).isFile();
+  }
+
+  public isSymbolicLinkSync(): boolean {
+    return this.dirent?.isSymbolicLink() ?? lstatSync(this.pathname).isSymbolicLink();
+  }
+
+  public async isSymbolicLink(): Promise<boolean> {
+    return this.dirent?.isSymbolicLink() ?? (await fsp.lstat(this.pathname)).isSymbolicLink();
   }
 
   public isHiddenSync(): boolean {
@@ -84,10 +93,8 @@ export class File {
   public async getFiles(glob?: string): Promise<File[]> {
     if (!await this.isDirectory()) { return []; }
 
-    const files = await fsp.readdir(this.pathname);
-    const results = files
-      .map(joinWith(this.pathname))
-      .map(pathname => new File(pathname));
+    const entries = await fsp.readdir(this.pathname, {withFileTypes: true});
+    const results = entries.map(entry => this.child(entry));
 
     if (results.length === 0) { return []; }
     if (glob) { return results.filter(file => file.isMatch(glob)); }
@@ -97,10 +104,8 @@ export class File {
 
   public getFilesSync(glob?: string): File[] {
     if (this.isDirectorySync()) {
-      const files = this.getListSync()
-        .map((pathname) => {
-          return new File(pathname);
-        });
+      const files = readdirSync(this.pathname, {withFileTypes: true})
+        .map(entry => this.child(entry));
 
       if (glob) { return files.filter(file => file.isMatch(glob)); }
 
@@ -178,6 +183,23 @@ export class File {
     return glob.match(this.pathname);
   }
 
+  private child(entry: Dirent): File {
+    return new File(path.join(this.pathname, entry.name), entry);
+  }
+
+  // Symlinks are left to stat so their targets are reported
+  private getKnownKind(): FileKind | undefined {
+    return this.dirent?.isSymbolicLink() ? undefined : this.dirent;
+  }
+
+  private getKindSync(): FileKind {
+    return this.getKnownKind() ?? this.getStatsSync();
+  }
+
+  private async getKind(): Promise<FileKind> {
+    return this.getKnownKind() ?? this.getStats();
+  }
+
   private getStatsSync(): Stats {
     return statSync(this.pathname);
   }
@@ -205,11 +227,6 @@ export class File {
       return false;
     }
     return true;
-  }
-
-  private async checkAsyncStats(type: string): Promise<boolean> {
-    const stats = await this.getStats();
-    return stats[type]();
   }
 
   private copy(src: string, dest: string, files: string): void {

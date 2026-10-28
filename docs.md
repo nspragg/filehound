@@ -150,6 +150,17 @@ const files = await FileHound.create()
   .find();
 ```
 
+#### Ignoring symbolic links
+
+Symbolic links are followed by default: a linked file is matched as its target and a linked directory is searched. Broken links, and links back to a directory already being searched, are skipped. To leave links out of the search entirely:
+
+```js
+const files = await FileHound.create()
+  .paths('/some/dir')
+  .ignoreSymlinks()
+  .find();
+```
+
 #### Limiting the depth of a recursive search
 
 Find all files but _only_ in the current directory (recursion off):

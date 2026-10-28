@@ -1,7 +1,9 @@
+import * as fs from 'fs';
+import {dirname, resolve} from 'path';
 import {File} from '../file';
 import {FileType} from '../filehound';
 import {FilePredicate} from '../matchers';
-import {FileEmitter} from './emitter';
+import {EntryFilter, FileEmitter} from './emitter';
 
 const TERMINATE = false;
 const CONTINUE = true;
@@ -15,19 +17,48 @@ function shouldFilterDirectory(dir: File, root: File, opts: WalkOptions): boolea
   return (atMaxDepth(dir, root, opts) || (opts.ignoreHiddenDirectories && dir.isHiddenSync()));
 }
 
+// A linked directory that resolves to one of its own ancestors would be walked forever
+function isCyclicLink(link: File): boolean {
+  const target = fs.realpathSync(link.getName());
+  let ancestor = dirname(resolve(link.getName()));
+  while (true) {
+    if (fs.realpathSync(ancestor) === target) {
+      return true;
+    }
+    const parent = dirname(ancestor);
+    if (parent === ancestor) {
+      return false;
+    }
+    ancestor = parent;
+  }
+}
+
+// Broken links are skipped, as are all links when ignoreSymlinks is set
+function isVisitable(file: File, opts: WalkOptions): boolean {
+  if (!file.isSymbolicLinkSync()) {
+    return true;
+  }
+  if (opts.ignoreSymlinks || !fs.existsSync(file.getName())) {
+    return false;
+  }
+  return !(file.isDirectorySync() && isCyclicLink(file));
+}
+
 export type WalkOptions = {
     maxDepth?: number;
     ignoreHiddenFiles?: boolean;
     ignoreHiddenDirectories?: boolean;
+    ignoreSymlinks?: boolean;
     fileTypes: FileType[];
 };
 
 type WalkPredicate = (path: File) => boolean;
 
 export async function async(root: string, isMatch: FilePredicate, opts: WalkOptions): Promise<string[]> {
-  const finder = new FileEmitter(root);
+  const finder = new FileEmitter(root, file => isVisitable(file, opts));
+  const rootDir = new File(root);
 
-  return new Promise((resolve, reject) => {
+  return new Promise((_resolve, reject) => {
     const files: string[] = [];
     const directories: string[] = [];
 
@@ -50,7 +81,7 @@ export async function async(root: string, isMatch: FilePredicate, opts: WalkOpti
     });
 
     finder.on('directory', (dir, skip) => {
-      if (shouldFilterDirectory(dir, new File(root), opts)) {
+      if (shouldFilterDirectory(dir, rootDir, opts)) {
         return skip();
       }
 
@@ -66,7 +97,7 @@ export async function async(root: string, isMatch: FilePredicate, opts: WalkOpti
     finder.on('error', reject);
 
     finder.on('stop', () => {
-      resolve(files.concat(directories));
+      _resolve(files.concat(directories));
     });
 
     finder.start().catch(reject);
@@ -81,7 +112,7 @@ export function sync(dir: string, matcher: FilePredicate, options: WalkOptions):
     return options.fileTypes.includes(type);
   }
 
-  walkSync(root, (path) => {
+  walkSync(root, file => isVisitable(file, options), (path) => {
     if (path.isDirectorySync() && shouldFilterDirectory(path, root, options)) {
       return TERMINATE;
     }
@@ -100,12 +131,12 @@ export function sync(dir: string, matcher: FilePredicate, options: WalkOptions):
   return files;
 }
 
-function getDirNames(dir: File): File[] {
-  const names = dir.getFilesSync();
+function getDirNames(dir: File, accept: EntryFilter): File[] {
+  const names = dir.getFilesSync().filter(accept);
   return names.sort();
 }
 
-export function walkSync(path: File, fn: WalkPredicate): boolean {
+export function walkSync(path: File, accept: EntryFilter, fn: WalkPredicate): boolean {
   if (!path.isDirectorySync()) {
     return fn(path);
   }
@@ -113,9 +144,9 @@ export function walkSync(path: File, fn: WalkPredicate): boolean {
   const cont = fn(path);
   if (!cont) { return; }
 
-  const names = getDirNames(path);
+  const names = getDirNames(path, accept);
   for (const name of names) {
-    walkSync(name, fn);
+    walkSync(name, accept, fn);
   }
 }
 
