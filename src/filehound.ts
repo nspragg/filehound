@@ -102,10 +102,12 @@ export class FileHound extends EventEmitter {
   }
 
   public match(query: FilePredicate): FileHound {
+    this.throwIfQueryLocked();
+
     if (_.isNil(query) || typeof query !== 'object' || typeof query.test !== 'function') {
       throw new TypeError('Match expression must be a valid matcher');
     }
-    this.throwIfQueryLocked();
+
 
     this.matchExpression = query;
     return this;
@@ -135,10 +137,11 @@ export class FileHound extends EventEmitter {
    *   .each(console.log); // array of files names only in the current directory
    */
   public depth(depth: number): FileHound {
+    this.throwIfQueryLocked();
+
     if (depth < 0 || !Number.isSafeInteger(depth)) {
       throw new RangeError('Depth must be a positive integer');
     }
-    this.throwIfQueryLocked();
 
     this.maxDepth = depth;
 
@@ -147,8 +150,9 @@ export class FileHound extends EventEmitter {
 
 
   public type(...types: FileType[]): FileHound {
-    this.validateTypeArguments(types);
     this.throwIfQueryLocked();
+    this.validateTypeArguments(types);
+
     this.types = types;
     return this;
   }
@@ -196,6 +200,8 @@ export class FileHound extends EventEmitter {
    *
    */
   public async find(): Promise<string[]> {
+    this.queryLocked = true;
+
     const searches = [];
     const paths = this.getPaths();
 
