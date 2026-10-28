@@ -31,7 +31,7 @@ type WalkPredicate = (path: File) => boolean;
 export async function async(root: string, isMatch: any, opts: WalkOptions): Promise<string[]> {
   const finder = new FileEmitter(root);
 
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const files: string[] = [];
     const directories: string[] = [];
 
@@ -54,7 +54,6 @@ export async function async(root: string, isMatch: any, opts: WalkOptions): Prom
     });
 
     finder.on('directory', (dir, skip) => {
-      // @ts-ignore
       if (shouldFilterDirectory(dir, new File(root), opts)) {
         return skip();
       }
@@ -74,7 +73,7 @@ export async function async(root: string, isMatch: any, opts: WalkOptions): Prom
       resolve(files.concat(directories));
     });
 
-    return finder.start();
+    finder.start().catch(reject);
   });
 }
 

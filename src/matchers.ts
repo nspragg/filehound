@@ -38,9 +38,6 @@ export interface FilePredicate {
   test(file: File): boolean;
 }
 export abstract class AbstractFilePredicate implements FilePredicate {
-
-  abstract test(file: File): boolean;
-
   or(f: FilePredicate): FilePredicate {
     return new Or(this, f);
   }
@@ -52,6 +49,8 @@ export abstract class AbstractFilePredicate implements FilePredicate {
   not(): FilePredicate {
     return new Not(this);
   }
+
+  abstract test(file: File): boolean;
 }
 
 export class And extends AbstractFilePredicate {

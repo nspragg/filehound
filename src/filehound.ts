@@ -71,7 +71,6 @@ export class FileHound extends EventEmitter {
    * const filehound = FileHound.create();
    * ```
    */
-  // tslint:disable-next-line:function-name
   public static create(): FileHound {
     return new FileHound();
   }
@@ -89,12 +88,10 @@ export class FileHound extends EventEmitter {
    * const files = await FileHound.any(fh1, fh2);
    * ```
    */
-  // tslint:disable-next-line:function-name
   public static async any(...args: FileHound[]): Promise<string[]> {
     const pending = args.map(fh => fh.find());
     const files = await Promise.all(pending);
 
-    // @ts-ignore
     return files.reduce(flatten, []);
   }
   /**

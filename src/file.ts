@@ -191,7 +191,7 @@ export class File {
   }
 
   private isHiddenDirectory(): boolean {
-    return (/(^|\/)\.[^\/\.]/g).test(this.pathname);
+    return (/(^|\/)\.[^/.]/g).test(this.pathname);
   }
 
   private depth(pathname: string): number {
@@ -201,7 +201,7 @@ export class File {
   private async access(permission: number): Promise<boolean> {
     try {
       await fsp.access(this.pathname, permission);
-    } catch (err) {
+    } catch {
       return false;
     }
     return true;

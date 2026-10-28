@@ -1,10 +1,13 @@
 {
   "compilerOptions": {
     "target": "es2017",
-    "module": "commonjs",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "rootDir": "src",
     "outDir": "dist",
+    "strict": false,
+    "types": ["node", "mocha"],
     "sourceMap": false,
-    "moduleResolution": "node",
     "allowJs": false,
     "declaration": true
   },

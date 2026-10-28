@@ -1,6 +1,6 @@
 import {assert} from 'chai';
-import * as fs from 'fs';
-import * as moment from 'moment';
+import fs from 'fs';
+import moment from 'moment';
 import * as path from 'path';
 import * as sinon from 'sinon';
 import {FileHound, FileType} from '../src/filehound';
