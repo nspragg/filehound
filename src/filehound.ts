@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import * as path from 'path';
 
 import { EventEmitter } from 'events';
@@ -113,7 +112,7 @@ export class FileHound extends EventEmitter {
    */
   public paths(...args: string[]): FileHound {
     this.throwIfQueryLocked();
-    this.searchPaths = _.uniq(from(args)).map(path.normalize);
+    this.searchPaths = [...new Set<string>(from(args))].map(path.normalize);
     return this;
   }
 
@@ -139,7 +138,7 @@ export class FileHound extends EventEmitter {
   public match(query: FilePredicate): FileHound {
     this.throwIfQueryLocked();
 
-    if (_.isNil(query) || typeof query !== 'object' || typeof query.test !== 'function') {
+    if (query === null || query === undefined || typeof query !== 'object' || typeof query.test !== 'function') {
       throw new TypeError('Match expression must be a valid matcher');
     }
 

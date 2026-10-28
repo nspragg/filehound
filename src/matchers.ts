@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import {isDate, isNumber} from 'unit-compare';
 import {from} from './arrays';
 import {File} from './file';
@@ -105,7 +104,7 @@ export class Extension extends AbstractFilePredicate {
   }
 
   test(file: File): boolean {
-    return _.includes(this.extensions, file.getPathExtension());
+    return this.extensions.includes(file.getPathExtension());
   }
 }
 
@@ -339,7 +338,7 @@ export function discard(...patterns: string[]): FilePredicate {
 }
 
 function cleanExtension(fileExtension: string): string {
-  if (_.startsWith(fileExtension, '.')) {
+  if (fileExtension.startsWith('.')) {
     return fileExtension.slice(1);
   }
   return fileExtension;

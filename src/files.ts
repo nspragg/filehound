@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import * as os from 'os';
 import * as path from 'path';
 
@@ -34,7 +33,7 @@ export function findSubDirectories(paths: string[]): string[] {
 }
 
 export function notSubDirectory(subDirs: string[]): (s: string) => boolean {
-  return (p) => !_.includes(subDirs, p);
+  return (p) => !subDirs.includes(p);
 }
 
 export function isSubDirectory(base: string, candidate: string): boolean {

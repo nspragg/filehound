@@ -49,7 +49,6 @@
   },
   "homepage": "https://github.com/nspragg/filehound",
   "dependencies": {
-    "lodash": "^4.18.1",
     "minimatch": "^11.0.2",
     "unit-compare": "^1.0.1"
   },
