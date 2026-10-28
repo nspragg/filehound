@@ -17,11 +17,33 @@ function flatten(a: string[], b: string[]): string[] {
   return a.concat(b);
 }
 
+/**
+ * The types of file system entry that a search can return.
+ */
 export enum FileType {
   REGULAR,
   DIRECTORY
 }
 
+/**
+ * A fluent query for searching the file system.
+ *
+ * @remarks
+ * Configure a query by chaining methods, then run it with {@link FileHound.find}
+ * or {@link FileHound.findSync}. Once a search has started the query is locked
+ * and can no longer be modified.
+ *
+ * @example
+ * ```ts
+ * import { FileHound, ext } from 'filehound';
+ *
+ * const files = await FileHound.create()
+ *   .paths('/tmp')
+ *   .match(ext('json'))
+ *   .depth(1)
+ *   .find();
+ * ```
+ */
 export class FileHound extends EventEmitter {
   private searchPaths: string[];
   private maxDepth: number;
@@ -38,37 +60,34 @@ export class FileHound extends EventEmitter {
     bind(this);
   }
 
-  // tslint:disable-next-line:valid-jsdoc
   /**
-   * Static factory method to newQuery an instance of FileHound
+   * Static factory method to create an instance of FileHound
    *
-   * @memberOf FileHound
-   * @method
-   * newQuery
-   * @return FileHound instance
+   * @returns a new FileHound instance
    * @example
-   * import FileHound from 'filehound';
+   * ```ts
+   * import { FileHound } from 'filehound';
    *
-   * const filehound = FileHound.newQuery();
+   * const filehound = FileHound.create();
+   * ```
    */
   // tslint:disable-next-line:function-name
   public static create(): FileHound {
     return new FileHound();
   }
 
-  // tslint:disable-next-line:valid-jsdoc
   /**
-   * Returns all matches from one of more FileHound instances
+   * Executes one or more FileHound queries and combines their results
    *
-   * @memberOf FileHound
-   * @method
-   * any
-   * @return a promise containing all matches. If the Promise fulfils,
-   * the fulfilment value is an array of all matching files.
+   * @param args - the FileHound instances to execute
+   * @returns a Promise of all matches. If the Promise fulfils,
+   * the fulfilment value is an array of all files matched by any of the queries
    * @example
-   * import FileHound from 'filehound';
+   * ```ts
+   * import { FileHound } from 'filehound';
    *
-   * const filehound = FileHound.any(fh1, fh2);
+   * const files = await FileHound.any(fh1, fh2);
+   * ```
    */
   // tslint:disable-next-line:function-name
   public static async any(...args: FileHound[]): Promise<string[]> {
@@ -79,21 +98,21 @@ export class FileHound extends EventEmitter {
     return files.reduce(flatten, []);
   }
   /**
-   * Defines the search paths
+   * Defines the search paths. Duplicate paths are removed and each path
+   * is normalised. Defaults to the current working directory.
    *
-   * @memberOf FileHound
-   * @method
-   * paths
-   * @param {array} path - array of paths
-   * @return a FileHound instance
+   * @param args - one or more paths, or an array of paths
+   * @returns the FileHound instance
+   * @throws `Error`
+   * Thrown if the query is locked because a search has started.
    * @example
-   * import FileHound from 'filehound';
+   * ```ts
+   * import { FileHound } from 'filehound';
    *
-   * const filehound = FileHound.newQuery();
-   * filehound
-   *   .paths("/tmp", "/etc") // or ["/tmp", "/etc"]
-   *   .find()
-   *   .each(console.log);
+   * const files = await FileHound.create()
+   *   .paths('/tmp', '/etc') // or ['/tmp', '/etc']
+   *   .find();
+   * ```
    */
   public paths(...args: string[]): FileHound {
     this.throwIfQueryLocked();
@@ -101,6 +120,25 @@ export class FileHound extends EventEmitter {
     return this;
   }
 
+  /**
+   * Specifies the criteria that files must satisfy to be included in the
+   * results. Defaults to matching all files.
+   *
+   * @param query - the predicate used to test each file
+   * @returns the FileHound instance
+   * @throws `Error`
+   * Thrown if the query is locked because a search has started.
+   * @throws `TypeError`
+   * Thrown if the query is not a valid matcher.
+   * @example
+   * ```ts
+   * import { FileHound, ext } from 'filehound';
+   *
+   * const files = await FileHound.create()
+   *   .match(ext('json'))
+   *   .find();
+   * ```
+   */
   public match(query: FilePredicate): FileHound {
     this.throwIfQueryLocked();
 
@@ -123,18 +161,20 @@ export class FileHound extends EventEmitter {
    * Specify the directory search depth. If set to zero, recursive searching
    * will be disabled
    *
-   * @memberOf FileHound
-   * @method
-   * depth
-   * @return a FileHound instance
+   * @param depth - the maximum search depth (a non-negative integer)
+   * @returns the FileHound instance
+   * @throws `Error`
+   * Thrown if the query is locked because a search has started.
+   * @throws `RangeError`
+   * Thrown if depth is negative or not an integer.
    * @example
-   * import FileHound from 'filehound';
+   * ```ts
+   * import { FileHound } from 'filehound';
    *
-   * const filehound = FileHound.newQuery();
-   * filehound
+   * const files = await FileHound.create()
    *   .depth(0)
-   *   .find()
-   *   .each(console.log); // array of files names only in the current directory
+   *   .find(); // array of file names only in the current directory
+   * ```
    */
   public depth(depth: number): FileHound {
     this.throwIfQueryLocked();
@@ -148,7 +188,27 @@ export class FileHound extends EventEmitter {
     return this;
   }
 
-
+  /**
+   * Specifies the types of file system entry to return. Defaults to
+   * regular files only.
+   *
+   * @param types - one or more file types
+   * @returns the FileHound instance
+   * @throws `Error`
+   * Thrown if the query is locked because a search has started.
+   * @throws `RangeError`
+   * Thrown if no file types are given.
+   * @throws `TypeError`
+   * Thrown if an invalid file type is given.
+   * @example
+   * ```ts
+   * import { FileHound, FileType } from 'filehound';
+   *
+   * const directories = await FileHound.create()
+   *   .type(FileType.DIRECTORY)
+   *   .find();
+   * ```
+   */
   public type(...types: FileType[]): FileHound {
     this.throwIfQueryLocked();
     this.validateTypeArguments(types);
@@ -169,12 +229,43 @@ export class FileHound extends EventEmitter {
     });
   }
 
+  /**
+   * Excludes hidden files (names beginning with a dot) from the results
+   *
+   * @returns the FileHound instance
+   * @throws `Error`
+   * Thrown if the query is locked because a search has started.
+   * @example
+   * ```ts
+   * import { FileHound } from 'filehound';
+   *
+   * const files = await FileHound.create()
+   *   .ignoreHiddenFiles()
+   *   .find();
+   * ```
+   */
   public ignoreHiddenFiles(): FileHound {
     this.throwIfQueryLocked();
     this._ignoreHiddenFiles = true;
     return this;
   }
 
+  /**
+   * Excludes hidden directories (names beginning with a dot), and their
+   * contents, from the search
+   *
+   * @returns the FileHound instance
+   * @throws `Error`
+   * Thrown if the query is locked because a search has started.
+   * @example
+   * ```ts
+   * import { FileHound } from 'filehound';
+   *
+   * const files = await FileHound.create()
+   *   .ignoreHiddenDirectories()
+   *   .find();
+   * ```
+   */
   public ignoreHiddenDirectories(): FileHound {
     this.throwIfQueryLocked();
     this._ignoreHiddenDirectories = true;
@@ -182,22 +273,25 @@ export class FileHound extends EventEmitter {
   }
 
   /**
-   * Asynchronously executes a file search.
+   * Asynchronously executes a file search. Once called, the query is
+   * locked and can no longer be modified.
    *
-   * @memberOf FileHound
-   * @method
-   * find
-   * @param {function} function - Optionally accepts a callback function
-   * @return Returns a Promise of all matches. If the Promise fulfils,
+   * @returns a Promise of all matches. If the Promise fulfils,
    * the fulfilment value is an array of all matching files
-   * @example
-   * import FileHound from 'filehound';
    *
-   * const filehound = FileHound.newQuery();
+   * @remarks
+   * Emits a `match` event for each matching file, an `error` event if the
+   * search fails and an `end` event when the search completes.
+   *
+   * @example
+   * ```ts
+   * import { FileHound } from 'filehound';
+   *
+   * const filehound = FileHound.create();
    * const files = await filehound.find();
    *
    * console.log(files);
-   *
+   * ```
    */
   public async find(): Promise<string[]> {
     this.queryLocked = true;
@@ -230,19 +324,18 @@ export class FileHound extends EventEmitter {
   }
 
   /**
-   * Synchronously executes a file search.
+   * Synchronously executes a file search. Once called, the query is
+   * locked and can no longer be modified. No events are emitted.
    *
-   * @memberOf FileHound
-   * @method
-   * findSync
-   * @return Returns an array of all matching files
+   * @returns an array of all matching files
    * @example
-   * import FileHound from 'filehound';
+   * ```ts
+   * import { FileHound } from 'filehound';
    *
-   * const filehound = FileHound.newQuery();
+   * const filehound = FileHound.create();
    * const files = filehound.findSync();
    * console.log(files);
-   *
+   * ```
    */
   public findSync(): any[] {
     this.queryLocked = true;
@@ -252,6 +345,13 @@ export class FileHound extends EventEmitter {
       .reduce(flatten);
   }
 
+  /**
+   * Returns the paths that will be searched. When no depth is set, any path
+   * that is a subdirectory of another search path is removed, as it would
+   * otherwise be searched twice.
+   *
+   * @returns a copy of the search paths
+   */
   public getPaths(): string[] {
     const paths = isDefined(this.maxDepth)
       ? this.searchPaths
