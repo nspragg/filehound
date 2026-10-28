@@ -1,6 +1,5 @@
 import {assert} from 'chai';
 import fs from 'fs';
-import moment from 'moment';
 import * as path from 'path';
 import * as sinon from 'sinon';
 import {FileHound, FileType} from '../src/filehound';
@@ -34,7 +33,9 @@ const nestedFiles = qualifyNames([
 const textFiles = qualifyNames(['/justFiles/dummy.txt']);
 const mixedExtensions = qualifyNames(['/ext/dummy.json', '/ext/dummy.txt']);
 const matchFiles = qualifyNames(['/mixed/aabbcc.json', '/mixed/ab.json']);
-const sandbox = sinon.sandbox.create();
+const sandbox = sinon.createSandbox();
+
+const MILLISECONDS_PER_HOUR = 60 * 60 * 1000;
 
 function getAbsolutePath(file: string): string {
     return path.join(`${__dirname}/fixtures/`, file);
@@ -44,10 +45,20 @@ function qualifyNames(names: string[]): string[] {
     return names.map(getAbsolutePath);
 }
 
+// Days are subtracted in local calendar time (as moment does), so they stay
+// correct across daylight saving changes
+function timeAgo(duration: number, unit: 'days' | 'hours'): Date {
+    if (unit === 'days') {
+        const date = new Date();
+        date.setDate(date.getDate() - duration);
+        return date;
+    }
+    return new Date(Date.now() - duration * MILLISECONDS_PER_HOUR);
+}
+
 function createFile(fname: string, opts: any): void {
-    const time = new Date(moment()
-        .subtract(opts.duration, opts.modifier)
-        .format());
+    // Truncate to whole seconds so the file is at least `duration` old when checked
+    const time = new Date(Math.floor(timeAgo(opts.duration, opts.modifier).getTime() / 1000) * 1000);
 
     const fd = fs.openSync(fname, 'w+');
     fs.futimesSync(fd, time, time);
@@ -1170,8 +1181,7 @@ describe('FileHound', async () => {
 
                 statSync.withArgs(file.name)
                     .returns({
-                        ctime: moment()
-                            .subtract(file.changed, 'hours'),
+                        ctime: timeAgo(file.changed, 'hours'),
                         isDirectory(): boolean {
                             return false;
                         }

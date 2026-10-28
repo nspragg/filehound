@@ -21,3 +21,7 @@ jobs:
       - run: npm ci
       - run: npx tsc --noEmit
       - run: npm test
+      - if: matrix.os == 'ubuntu-latest' && matrix.node == 24
+        run: npm run coverage
+      - if: matrix.os == 'ubuntu-latest' && matrix.node == 24
+        uses: coverallsapp/github-action@v2

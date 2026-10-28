@@ -13,10 +13,10 @@
     "clean": "rm -fr dist/*",
     "prepublish": "npm run build",
     "prepublishOnly": "tsc -p ./ --outDir dist",
-    "test": "mocha -r ts-node/register test/*.ts",
+    "test": "mocha",
     "posttest": "npm run lint",
     "lint": "eslint src",
-    "coverage": "nyc mocha && nyc report --reporter=html && nyc report --reporter=json-summary"
+    "coverage": "c8 mocha"
   },
   "repository": {
     "type": "git",
@@ -44,19 +44,6 @@
     "url": "https://github.com/nspragg/filehound/issues"
   },
   "homepage": "https://github.com/nspragg/filehound",
-  "nyc": {
-    "include": [
-      "src/**/*.ts"
-    ],
-    "extension": [
-      ".ts"
-    ],
-    "require": [
-      "ts-node/register"
-    ],
-    "sourceMap": true,
-    "instrument": true
-  },
   "dependencies": {
     "lodash": "^4.18.1",
     "minimatch": "^11.0.2",
@@ -67,13 +54,12 @@
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.20.5",
-    "chai": "^4.1.2",
+    "c8": "^12.0.0",
+    "chai": "^6.3.0",
     "eslint": "^10.13.0",
-    "istanbul": "1.1.0-alpha.1",
-    "mocha": "^5.0.5",
-    "moment": "^2.25.3",
-    "sinon": "^4.5.0",
-    "ts-node": "^8.10.1",
+    "mocha": "^12.0.3",
+    "sinon": "^22.1.0",
+    "tsx": "^4.23.15",
     "typedoc": "^0.28.20",
     "typescript": "~6.0",
     "typescript-eslint": "^8.72.1"
