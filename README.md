@@ -23,14 +23,14 @@ npm install --save filehound
 The example below prints all of the files in a directory that have the `.json` file extension:
 
 ```js
-const FileHound = require('filehound');
+const { FileHound, ext } = require('filehound');
 
-const files = FileHound.newQuery()
+const files = await FileHound.create()
   .paths('/some/dir')
-  .ext('json')
+  .match(ext('json'))
   .find();
 
-files.then(console.log);
+console.log(files);
 ```
 
 ## Documentation
