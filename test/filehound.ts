@@ -282,6 +282,60 @@ describe('FileHound', async () => {
 
                 assert.deepEqual(results.sort(), expected);
             });
+
+            async function findGlob(dir: string, pattern: string): Promise<string[]> {
+                const results = await FileHound.create()
+                    .paths(`${fixtureDir}/${dir}`)
+                    .match(glob(pattern))
+                    .find();
+
+                return results.sort();
+            }
+
+            it('supports brace expansion', async () => {
+                const results = await findGlob('ext', '*.{java,go}');
+
+                assert.deepEqual(results, qualifyNames(['ext/Dummy.java', 'ext/Dumpy.go']));
+            });
+
+            it('supports single character wildcards', async () => {
+                const results = await findGlob('mixed', '?.json');
+
+                assert.deepEqual(results, qualifyNames(['mixed/a.json', 'mixed/z.json']));
+            });
+
+            it('supports negated character classes', async () => {
+                const results = await findGlob('mixed', '[!a]*.json');
+
+                assert.deepEqual(results, qualifyNames(['mixed/z.json']));
+            });
+
+            it('supports extglob patterns', async () => {
+                const results = await findGlob('mixed', '+(a|b).json');
+
+                assert.deepEqual(results, qualifyNames(['mixed/a.json', 'mixed/ab.json']));
+            });
+
+            it('matches patterns containing directories against the full path', async () => {
+                const results = await findGlob('nested', '**/mydir/*.json');
+
+                assert.deepEqual(results, qualifyNames(['nested/mydir/e.json']));
+            });
+
+            it('does not match dotfiles with wildcards', async () => {
+                const results = await findGlob('visibility', '*.json');
+
+                assert.deepEqual(results, qualifyNames([
+                    'visibility/.hidden/visible.json',
+                    'visibility/visible.json'
+                ]));
+            });
+
+            it('is case sensitive', async () => {
+                const results = await findGlob('ext', 'dummy.*');
+
+                assert.deepEqual(results, qualifyNames(['ext/dummy.json', 'ext/dummy.txt']));
+            });
         });
 
         describe('.discard', () => {

@@ -6,7 +6,7 @@ import {
   Stats,
   statSync
 } from 'fs';
-import * as fileGlob from 'minimatch';
+import { Minimatch } from 'minimatch';
 import * as path from 'path';
 import * as fsp from './fsp';
 
@@ -172,7 +172,7 @@ export class File {
   }
 
   public isMatch(globPattern: string): boolean {
-    const glob = new fileGlob.Minimatch(globPattern, {
+    const glob = new Minimatch(globPattern, {
       matchBase: true
     });
     return glob.match(this.pathname);

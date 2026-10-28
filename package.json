@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "lodash": "^4.18.1",
-    "minimatch": "^3.0.3",
+    "minimatch": "^11.0.2",
     "unit-compare": "^1.0.1"
   },
   "devDependencies": {
