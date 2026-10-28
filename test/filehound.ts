@@ -839,6 +839,29 @@ describe('FileHound', async () => {
 
             assert.deepEqual(fh.getPaths(), [location4, location1]);
         });
+
+        it('accepts an array of paths', async () => {
+            const location1 = `${fixtureDir}/nested`;
+            const location2 = `${fixtureDir}/justFiles`;
+
+            const files = await FileHound.create()
+                .paths([location1, location2])
+                .find();
+
+            const expected = nestedFiles.concat(justFiles).sort();
+            assert.deepEqual(files, expected);
+        });
+
+        it('does not reorder the search paths when getting them', () => {
+            const location1 = `${fixtureDir}/nested`;
+            const location2 = `${fixtureDir}/justFiles`;
+
+            const fh = FileHound.create().paths(location1, location2);
+            fh.getPaths();
+            fh.depth(1);
+
+            assert.deepEqual(fh.getPaths(), [location1, location2]);
+        });
     });
 
     describe('.findSync', () => {

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2017",
+    "target": "es2023",
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "rootDir": "src",

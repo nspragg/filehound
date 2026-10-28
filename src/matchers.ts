@@ -222,14 +222,22 @@ export class Socket extends AbstractFilePredicate {
 /**
  * Matches files with any of the given extensions. A leading dot is optional.
  *
- * @param args - one or more extensions, or an array of extensions
+ * @param extensions - one or more extensions
  * @returns the predicate
  * @example
  * ```ts
  * FileHound.create().match(ext('json', '.txt'));
  * ```
  */
-export function ext(...args: any[]): FilePredicate {
+export function ext(...extensions: string[]): FilePredicate;
+/**
+ * Matches files with any of the given extensions. A leading dot is optional.
+ *
+ * @param extensions - an array of extensions
+ * @returns the predicate
+ */
+export function ext(extensions: string[]): FilePredicate;
+export function ext(...args: (string | string[])[]): FilePredicate {
   const extensions = from(args).map(cleanExtension);
   return new Extension(extensions);
 }
@@ -330,10 +338,8 @@ export function discard(...patterns: string[]): FilePredicate {
   }
 
   return patterns
-    .map(pattern => new TextMatch(pattern))
-    .reduce((a: any, b: any) => {
-      return a.or(b);
-    })
+    .map((pattern): FilePredicate => new TextMatch(pattern))
+    .reduce((a, b) => a.or(b))
     .not();
 }
 

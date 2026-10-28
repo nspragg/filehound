@@ -1,6 +1,5 @@
 import {EventEmitter} from 'events';
 import * as fs from 'fs';
-import bind from '../bind';
 import {File} from '../file';
 
 function createPathError(name: string): Error {
@@ -19,7 +18,6 @@ export class FileEmitter extends EventEmitter {
     this.stopped = true;
     this.pending = 0;
     this.abortOnError = false;
-    bind(this);
   }
 
   public stop(): void {

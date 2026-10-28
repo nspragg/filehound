@@ -1,10 +1,6 @@
 import * as os from 'os';
 import * as path from 'path';
 
-function flatten(a: string[], b: string[]): string[] {
-  return a.concat(b);
-}
-
 function hasParent(parent: string): boolean {
   const root = getRoot(parent);
   return parent && (parent !== root && parent !== '.');
@@ -26,10 +22,7 @@ function getSubDirectories(base: string, allPaths: string[]): string[] {
 }
 
 export function findSubDirectories(paths: string[]): string[] {
-  return paths.map((p) => {
-      return getSubDirectories(p, paths);
-    })
-    .reduce(flatten, []);
+  return paths.flatMap(p => getSubDirectories(p, paths));
 }
 
 export function notSubDirectory(subDirs: string[]): (s: string) => boolean {
@@ -52,6 +45,7 @@ export function reducePaths(searchPaths: string[]): string[] {
     return searchPaths;
   }
 
-  const subDirs = findSubDirectories(searchPaths.sort());
-  return searchPaths.filter(notSubDirectory(subDirs));
+  const sortedPaths = searchPaths.toSorted();
+  const subDirs = findSubDirectories(sortedPaths);
+  return sortedPaths.filter(notSubDirectory(subDirs));
 }

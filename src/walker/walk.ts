@@ -6,16 +6,12 @@ import {FileEmitter} from './emitter';
 const TERMINATE = false;
 const CONTINUE = true;
 
-function isDefined(value: any): any {
-  return value !== undefined;
-}
-
-function atMaxDepth(dir: File, root: File, opts: any): boolean {
+function atMaxDepth(dir: File, root: File, opts: WalkOptions): boolean {
   const depth = dir.getDepthSync() - root.getDepthSync();
-  return isDefined(opts.maxDepth) && depth > opts.maxDepth;
+  return opts.maxDepth !== undefined && depth > opts.maxDepth;
 }
 
-function shouldFilterDirectory(dir: File, root: File, opts: any): boolean {
+function shouldFilterDirectory(dir: File, root: File, opts: WalkOptions): boolean {
   return (atMaxDepth(dir, root, opts) || (opts.ignoreHiddenDirectories && dir.isHiddenSync()));
 }
 
@@ -28,7 +24,7 @@ export type WalkOptions = {
 
 type WalkPredicate = (path: File) => boolean;
 
-export async function async(root: string, isMatch: any, opts: WalkOptions): Promise<string[]> {
+export async function async(root: string, isMatch: FilePredicate, opts: WalkOptions): Promise<string[]> {
   const finder = new FileEmitter(root);
 
   return new Promise((resolve, reject) => {

@@ -8,7 +8,7 @@ import {
 } from 'fs';
 import { Minimatch } from 'minimatch';
 import * as path from 'path';
-import * as fsp from './fsp';
+import * as fsp from 'fs/promises';
 
 function joinWith(dir: string): (s: string) => string {
   return (file) => {

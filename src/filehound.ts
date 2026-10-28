@@ -1,20 +1,10 @@
 import * as path from 'path';
 
 import { EventEmitter } from 'events';
-import { copy, from } from './arrays';
+import { from } from './arrays';
 import { reducePaths } from './files';
 import {FilePredicate, matchAll} from './matchers';
 import * as walker from './walker/walk';
-
-import bind from './bind';
-
-function isDefined(value: any): any {
-  return value !== undefined;
-}
-
-function flatten(a: string[], b: string[]): string[] {
-  return a.concat(b);
-}
 
 /**
  * The types of file system entry that a search can return.
@@ -56,7 +46,6 @@ export class FileHound extends EventEmitter {
     super();
     this.searchPaths = [process.cwd()];
     this.types = [FileType.REGULAR];
-    bind(this);
   }
 
   /**
@@ -91,13 +80,13 @@ export class FileHound extends EventEmitter {
     const pending = args.map(fh => fh.find());
     const files = await Promise.all(pending);
 
-    return files.reduce(flatten, []);
+    return files.flat();
   }
   /**
    * Defines the search paths. Duplicate paths are removed and each path
    * is normalised. Defaults to the current working directory.
    *
-   * @param args - one or more paths, or an array of paths
+   * @param paths - one or more paths
    * @returns the FileHound instance
    * @throws `Error`
    * Thrown if the query is locked because a search has started.
@@ -110,9 +99,17 @@ export class FileHound extends EventEmitter {
    *   .find();
    * ```
    */
-  public paths(...args: string[]): FileHound {
+  public paths(...paths: string[]): FileHound;
+  /**
+   * Defines the search paths from an array.
+   *
+   * @param paths - an array of paths
+   * @returns the FileHound instance
+   */
+  public paths(paths: string[]): FileHound;
+  public paths(...args: (string | string[])[]): FileHound {
     this.throwIfQueryLocked();
-    this.searchPaths = [...new Set<string>(from(args))].map(path.normalize);
+    this.searchPaths = [...new Set(from(args))].map(path.normalize);
     return this;
   }
 
@@ -283,7 +280,7 @@ export class FileHound extends EventEmitter {
     try {
       const results = await Promise.all(searches);
       return results
-        .reduce(flatten)
+        .flat()
         .map((file) => {
           this.emit('match', file);
           return file;
@@ -310,12 +307,12 @@ export class FileHound extends EventEmitter {
    * console.log(files);
    * ```
    */
-  public findSync(): any[] {
+  public findSync(): string[] {
     this.queryLocked = true;
 
     return this.getPaths()
-      .map(this.searchSync)
-      .reduce(flatten);
+      .map(dir => this.searchSync(dir))
+      .flat();
   }
 
   /**
@@ -326,11 +323,11 @@ export class FileHound extends EventEmitter {
    * @returns a copy of the search paths
    */
   public getPaths(): string[] {
-    const paths = isDefined(this.maxDepth)
+    const paths = this.maxDepth !== undefined
       ? this.searchPaths
       : reducePaths(this.searchPaths);
 
-    return copy<string[]>(paths);
+    return [...paths];
   }
 
   private throwIfQueryLocked(): void {
@@ -352,7 +349,7 @@ export class FileHound extends EventEmitter {
   }
 
   private getMatchExpression(): FilePredicate {
-    return this.matchExpression === undefined ? matchAll() : this.matchExpression;
+    return this.matchExpression ?? matchAll();
   }
 
   private searchSync(dir: string): string[] {

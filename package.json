@@ -19,7 +19,7 @@
   "scripts": {
     "docs": "typedoc",
     "build": "tsc",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -p tsconfig.test.json",
     "watch": "tsc --watch",
     "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
     "prepublishOnly": "npm run clean && npm run build",
