@@ -1,0 +1,10 @@
+{
+  "entryPoints": [
+    "src/index.ts"
+  ],
+  "out": "docs",
+  "readme": "docs.md",
+  "name": "FileHound",
+  "excludePrivate": true,
+  "excludeExternals": true
+}

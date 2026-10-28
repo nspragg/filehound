@@ -4,7 +4,7 @@
   "description": "Find files the easy way",
   "main": "dist/index.js",
   "scripts": {
-    "jsdoc": "jsdoc -c ./docconfig/jsdoc.json",
+    "docs": "typedoc",
     "build": "tsc",
     "watch": "tsc --watch",
     "clean": "rm -fr dist/*",
@@ -66,13 +66,13 @@
     "eslint": "^3.11.1",
     "eslint-config-iplayer-base": "^1.0.0",
     "istanbul": "1.1.0-alpha.1",
-    "jsdoc": "^3.4.3",
     "mocha": "^5.0.5",
     "moment": "^2.25.3",
     "sinon": "^4.5.0",
     "ts-node": "^8.10.1",
     "tslint": "^5.8.0",
     "tslint-microsoft-contrib": "^6.2.0",
+    "typedoc": "^0.20.37",
     "typescript": "^3.9.2"
   }
 }

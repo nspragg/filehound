@@ -1,0 +1,324 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>FilePredicate | FileHound</title>
+	<meta name="description" content="Documentation for FileHound">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">FileHound</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules.html">FileHound</a>
+				</li>
+				<li>
+					<a href="filepredicate.html">FilePredicate</a>
+				</li>
+			</ul>
+			<h1>Interface FilePredicate</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>A composable test applied to each file found during a search</p>
+					</div>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">FilePredicate</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="filepredicate.html#and" class="tsd-kind-icon">and</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="filepredicate.html#not" class="tsd-kind-icon">not</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="filepredicate.html#or" class="tsd-kind-icon">or</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="filepredicate.html#test" class="tsd-kind-icon">test</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="and" class="tsd-anchor"></a>
+					<h3>and</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">and<span class="tsd-signature-symbol">(</span>predicate<span class="tsd-signature-symbol">: </span><a href="filepredicate.html" class="tsd-signature-type" data-tsd-kind="Interface">FilePredicate</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="filepredicate.html" class="tsd-signature-type" data-tsd-kind="Interface">FilePredicate</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/nspragg/filehound/blob/aab285b/src/matchers.ts#L30">matchers.ts:30</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Combines this predicate with another using logical AND</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>predicate: <a href="filepredicate.html" class="tsd-signature-type" data-tsd-kind="Interface">FilePredicate</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>the predicate to combine with</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="filepredicate.html" class="tsd-signature-type" data-tsd-kind="Interface">FilePredicate</a></h4>
+							<p>a predicate that matches when both predicates match</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="not" class="tsd-anchor"></a>
+					<h3>not</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">not<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="filepredicate.html" class="tsd-signature-type" data-tsd-kind="Interface">FilePredicate</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/nspragg/filehound/blob/aab285b/src/matchers.ts#L14">matchers.ts:14</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Negates this predicate</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="filepredicate.html" class="tsd-signature-type" data-tsd-kind="Interface">FilePredicate</a></h4>
+							<p>a predicate that matches when this one does not</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="or" class="tsd-anchor"></a>
+					<h3>or</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">or<span class="tsd-signature-symbol">(</span>predicate<span class="tsd-signature-symbol">: </span><a href="filepredicate.html" class="tsd-signature-type" data-tsd-kind="Interface">FilePredicate</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="filepredicate.html" class="tsd-signature-type" data-tsd-kind="Interface">FilePredicate</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/nspragg/filehound/blob/aab285b/src/matchers.ts#L22">matchers.ts:22</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Combines this predicate with another using logical OR</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>predicate: <a href="filepredicate.html" class="tsd-signature-type" data-tsd-kind="Interface">FilePredicate</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>the predicate to combine with</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="filepredicate.html" class="tsd-signature-type" data-tsd-kind="Interface">FilePredicate</a></h4>
+							<p>a predicate that matches when either predicate matches</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="test" class="tsd-anchor"></a>
+					<h3>test</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">test<span class="tsd-signature-symbol">(</span>file<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">File</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/nspragg/filehound/blob/aab285b/src/matchers.ts#L38">matchers.ts:38</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Tests whether a file satisfies this predicate</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>file: <span class="tsd-signature-type">File</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>the file to test</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+							<p>true if the file matches</p>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="../modules.html">Exports</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-enum">
+						<a href="../enums/filetype.html" class="tsd-kind-icon">File<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="../classes/filehound.html" class="tsd-kind-icon">File<wbr>Hound</a>
+					</li>
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-interface">
+						<a href="filepredicate.html" class="tsd-kind-icon">File<wbr>Predicate</a>
+						<ul>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="filepredicate.html#and" class="tsd-kind-icon">and</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="filepredicate.html#not" class="tsd-kind-icon">not</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="filepredicate.html#or" class="tsd-kind-icon">or</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="filepredicate.html#test" class="tsd-kind-icon">test</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#accessed" class="tsd-kind-icon">accessed</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#applyfilter" class="tsd-kind-icon">apply<wbr>Filter</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#changed" class="tsd-kind-icon">changed</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#discard" class="tsd-kind-icon">discard</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#ext" class="tsd-kind-icon">ext</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#glob" class="tsd-kind-icon">glob</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#isempty" class="tsd-kind-icon">is<wbr>Empty</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#like" class="tsd-kind-icon">like</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#matchall" class="tsd-kind-icon">match<wbr>All</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#modified" class="tsd-kind-icon">modified</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#not" class="tsd-kind-icon">not</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#size" class="tsd-kind-icon">size</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#socket" class="tsd-kind-icon">socket</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>
