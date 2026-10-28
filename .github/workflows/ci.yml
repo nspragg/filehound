@@ -20,7 +20,4 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx tsc --noEmit
-      - run: npx mocha -r ts-node/register 'test/*.ts'
-      # TODO: remove continue-on-error once the existing lint errors are fixed
-      - run: npm run lint
-        continue-on-error: true
+      - run: npm test

@@ -1,7 +1,7 @@
 import {File} from '../file';
+import {FileType} from '../filehound';
+import {FilePredicate} from '../matchers';
 import {FileEmitter} from './emitter';
-import {FileType} from "../filehound";
-import {FilePredicate} from "../matchers";
 
 const TERMINATE = false;
 const CONTINUE = true;
@@ -19,12 +19,12 @@ function shouldFilterDirectory(dir: File, root: File, opts: any): boolean {
   return (atMaxDepth(dir, root, opts) || (opts.ignoreHiddenDirectories && dir.isHiddenSync()));
 }
 
-type WalkOptions = {
+export type WalkOptions = {
     maxDepth?: number;
     ignoreHiddenFiles?: boolean;
     ignoreHiddenDirectories?: boolean;
     fileTypes: FileType[];
-}
+};
 
 type WalkPredicate = (path: File) => boolean;
 
@@ -35,17 +35,17 @@ export async function async(root: string, isMatch: any, opts: WalkOptions): Prom
     const files: string[] = [];
     const directories: string[] = [];
 
-    function fileTypeEnabled(type: FileType) {
+    function fileTypeEnabled(type: FileType): boolean {
       return opts.fileTypes.includes(type);
     }
 
     finder.on('file', (file) => {
-      function shouldSkipFile(file: File) {
+      function shouldSkipFile(): boolean {
         return file.isHiddenSync() && opts.ignoreHiddenFiles;
       }
 
-      function isFileMatch() {
-        return !shouldSkipFile(file) && isMatch.test(file);
+      function isFileMatch(): boolean {
+        return !shouldSkipFile() && isMatch.test(file);
       }
 
       if (fileTypeEnabled(FileType.REGULAR) && isFileMatch()) {
@@ -59,7 +59,7 @@ export async function async(root: string, isMatch: any, opts: WalkOptions): Prom
         return skip();
       }
 
-      function isDirectoryMatch() {
+      function isDirectoryMatch(): boolean {
         return dir !== root && isMatch.test(dir);
       }
 
@@ -82,7 +82,7 @@ export function sync(dir: string, matcher: FilePredicate, options: WalkOptions):
   const root = new File(dir);
   const files = [];
 
-  function fileTypeEnabled(type: FileType) {
+  function fileTypeEnabled(type: FileType): boolean {
     return options.fileTypes.includes(type);
   }
 
@@ -105,7 +105,6 @@ export function sync(dir: string, matcher: FilePredicate, options: WalkOptions):
   return files;
 }
 
-
 function getDirNames(dir: File): File[] {
   const names = dir.getFilesSync();
   return names.sort();
@@ -125,11 +124,10 @@ export function walkSync(path: File, fn: WalkPredicate): boolean {
   }
 }
 
-function isMatchingDirectory(root: File, path: File, isMatch: FilePredicate) {
-  return path !== root && path.isDirectorySync() && isMatch.test(path)
+function isMatchingDirectory(root: File, path: File, isMatch: FilePredicate): boolean {
+  return path !== root && path.isDirectorySync() && isMatch.test(path);
 }
 
-function isMatchingFile(path: File, isMatch: FilePredicate) {
-  return !path.isDirectorySync() && isMatch.test(path)
+function isMatchingFile(path: File, isMatch: FilePredicate): boolean {
+  return !path.isDirectorySync() && isMatch.test(path);
 }
-

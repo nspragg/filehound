@@ -4,7 +4,7 @@ export function copy<T>(value: T): T {
   return _.cloneDeep(value);
 }
 
-export function from(args: any[]) {
+export function from(args: any[]): any[] {
   if (_.isArray(args[0])) {
     return args[0];
   }

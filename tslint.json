@@ -45,6 +45,7 @@
     "prefer-object-spread": false,
     "no-http-string": false,
     "no-reserved-keywords": false,
+    "no-use-before-declare": false,
     "no-any": false,
     "no-unsafe-any": false,
     "max-classes-per-file": false,

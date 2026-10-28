@@ -1,6 +1,6 @@
+import {EventEmitter} from 'events';
 import * as fs from 'fs';
 import bind from '../bind';
-import {EventEmitter} from 'events';
 import {File} from '../file';
 
 function createPathError(name: string): Error {
@@ -32,8 +32,6 @@ export class FileEmitter extends EventEmitter {
     return this.walk(this.root);
   }
 
-
-  // TODO: depth?
   public async walk(directory: File): Promise<void> {
     if (this.stopped) {
       this.stop();

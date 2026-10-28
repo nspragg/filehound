@@ -1,7 +1,7 @@
-import {File} from './file';
 import * as _ from 'lodash';
 import {isDate, isNumber} from 'unit-compare';
 import {from} from './arrays';
+import {File} from './file';
 /**
  * A composable test applied to each file found during a search
  */
@@ -153,9 +153,9 @@ export class CustomFilter extends AbstractFilePredicate {
 export class Size extends AbstractFilePredicate {
   private readonly size: string | number;
 
-  constructor(size: string | number) {
+  constructor(sizeExpression: string | number) {
     super();
-    this.size = size;
+    this.size = sizeExpression;
   }
 
   test(file: File): boolean {

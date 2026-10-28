@@ -11,7 +11,7 @@ function hasParent(parent: string): boolean {
   return parent && (parent !== root && parent !== '.');
 }
 
-function getParent(dir: string) {
+function getParent(dir: string): string {
   return path.dirname(dir);
 }
 export function getRoot(dir: string): string {

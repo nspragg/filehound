@@ -2,9 +2,9 @@ import * as _ from 'lodash';
 import * as path from 'path';
 
 import { EventEmitter } from 'events';
-import {FilePredicate, matchAll} from './matchers';
 import { copy, from } from './arrays';
 import { reducePaths } from './files';
+import {FilePredicate, matchAll} from './matchers';
 import * as walker from './walker/walk';
 
 import bind from './bind';
@@ -146,15 +146,8 @@ export class FileHound extends EventEmitter {
       throw new TypeError('Match expression must be a valid matcher');
     }
 
-
     this.matchExpression = query;
     return this;
-  }
-
-  private throwIfQueryLocked() {
-    if (this.queryLocked) {
-      throw new Error('Cannot modify query after search has started');
-    }
   }
 
   /**
@@ -215,18 +208,6 @@ export class FileHound extends EventEmitter {
 
     this.types = types;
     return this;
-  }
-
-  private validateTypeArguments(types: FileType[]) {
-    if (types.length === 0) {
-      throw new RangeError('At least one file type must be specified');
-    }
-
-    types.forEach((type) => {
-      if (!Object.values(FileType).includes(type)) {
-        throw new TypeError(`Invalid file type: ${type}.`);
-      }
-    });
   }
 
   /**
@@ -319,10 +300,6 @@ export class FileHound extends EventEmitter {
     }
   }
 
-  private getMatchExpression() {
-    return this.matchExpression == null ? matchAll() : this.matchExpression;
-  }
-
   /**
    * Synchronously executes a file search. Once called, the query is
    * locked and can no longer be modified. No events are emitted.
@@ -360,6 +337,28 @@ export class FileHound extends EventEmitter {
     return copy<string[]>(paths);
   }
 
+  private throwIfQueryLocked(): void {
+    if (this.queryLocked) {
+      throw new Error('Cannot modify query after search has started');
+    }
+  }
+
+  private validateTypeArguments(types: FileType[]): void {
+    if (types.length === 0) {
+      throw new RangeError('At least one file type must be specified');
+    }
+
+    types.forEach((type) => {
+      if (!Object.values(FileType).includes(type)) {
+        throw new TypeError(`Invalid file type: ${type}.`);
+      }
+    });
+  }
+
+  private getMatchExpression(): FilePredicate {
+    return this.matchExpression === undefined ? matchAll() : this.matchExpression;
+  }
+
   private searchSync(dir: string): string[] {
     return walker.sync(dir, this.getMatchExpression(), this.getOptions());
   }
@@ -368,7 +367,7 @@ export class FileHound extends EventEmitter {
     return walker.async(dir, this.getMatchExpression(), this.getOptions());
   }
 
-  private getOptions() {
+  private getOptions(): walker.WalkOptions {
     return {
       ignoreHiddenDirectories: this._ignoreHiddenDirectories,
       ignoreHiddenFiles: this._ignoreHiddenFiles,
