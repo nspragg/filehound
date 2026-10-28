@@ -3,6 +3,9 @@
   "version": "2.0.0",
   "description": "Find files the easy way",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "docs": "typedoc",
     "build": "tsc",
