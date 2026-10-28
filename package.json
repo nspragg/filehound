@@ -4,6 +4,12 @@
   "description": "Find files the easy way",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "files": [
     "dist"
   ],
@@ -13,25 +19,24 @@
   "scripts": {
     "docs": "typedoc",
     "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "watch": "tsc --watch",
-    "clean": "rm -fr dist/*",
-    "prepublish": "npm run build",
-    "prepublishOnly": "tsc -p ./ --outDir dist",
+    "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
+    "prepublishOnly": "npm run clean && npm run build",
     "test": "mocha",
     "posttest": "npm run lint",
-    "lint": "eslint src",
+    "lint": "eslint src test",
     "coverage": "c8 mocha"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/nspragg/filehound.git"
+    "url": "git+https://github.com/nspragg/filehound.git"
   },
   "keywords": [
     "file",
     "recursive",
     "search",
     "filehound",
-    "file",
     "hound",
     "lister",
     "find",
@@ -43,6 +48,7 @@
     "fs",
     "file system"
   ],
+  "author": "nspragg <nspragg@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/nspragg/filehound/issues"

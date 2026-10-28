@@ -72,7 +72,7 @@ function deleteFile(fname: fs.PathLike): void {
 describe('FileHound', async () => {
     const fixtureDir = `${__dirname}/fixtures`;
 
-    function assertMatchError(value: any) {
+    function assertMatchError(value: any): void {
         assert.throws(() => {
             FileHound.create()
                 .paths(`${fixtureDir}/justFiles`)
@@ -101,7 +101,6 @@ describe('FileHound', async () => {
 
                 assert.deepEqual(results, mixedExtensions);
             });
-
 
         });
 
@@ -651,7 +650,7 @@ describe('FileHound', async () => {
             assertType(RangeError,'At least one file type must be specified');
         });
 
-        function assertType(expectedError: Function, re: RegExp|string, ...types: any[]) {
+        function assertType(expectedError: new (...args: any[]) => Error, re: RegExp|string, ...types: any[]): void {
             assert.throws( () => {
                 FileHound.create()
                     .paths(`${fixtureDir}/deeplyNested`)
@@ -732,7 +731,6 @@ describe('FileHound', async () => {
             await assertDepth(-1);
         });
 
-
         it('throws when depth is a fractional number', async () => {
             await assertDepth(1.5);
         });
@@ -754,10 +752,10 @@ describe('FileHound', async () => {
         });
 
         it('throws when depth is a string', async () => {
-            await assertDepth("0");
+            await assertDepth('0');
         });
 
-        async function assertDepth(depth: any) {
+        async function assertDepth(depth: any): Promise<void> {
             try {
                 await FileHound.create()
                     .paths(`${fixtureDir}/deeplyNested`)

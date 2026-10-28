@@ -19,7 +19,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
-      - run: npx tsc --noEmit
+      - run: npm run typecheck
       - run: npm test
       - if: matrix.os == 'ubuntu-latest' && matrix.node == 24
         run: npm run coverage
