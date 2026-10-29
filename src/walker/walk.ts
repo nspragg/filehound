@@ -21,12 +21,10 @@ export function createPathError(name: string): Error {
 export class Walk {
   readonly matcher: FilePredicate;
   readonly #root: File;
-  readonly #rootDepth: number;
   readonly #opts: WalkOptions;
 
   constructor(root: File, matcher: FilePredicate, opts: WalkOptions) {
     this.#root = root;
-    this.#rootDepth = root.getDepthSync();
     this.matcher = matcher;
     this.#opts = opts;
   }
@@ -46,12 +44,15 @@ export class Walk {
     return false;
   }
 
+  // Hidden directories are neither returned nor walked
   shouldSkipDirectory(dir: File): boolean {
-    if (dir === this.#root) {
-      return false;
-    }
-    const atMaxDepth = this.#opts.maxDepth !== undefined && dir.getDepthSync() - this.#rootDepth > this.#opts.maxDepth;
-    return atMaxDepth || (this.#opts.ignoreHiddenDirectories && dir.isHiddenSync());
+    return dir !== this.#root && this.#opts.ignoreHiddenDirectories && dir.isHiddenSync();
+  }
+
+  // depth counts levels below the root, which is 0. A directory beyond
+  // maxDepth is still returned, like any other entry at its level, but not walked.
+  canDescend(depth: number): boolean {
+    return this.#opts.maxDepth === undefined || depth <= this.#opts.maxDepth;
   }
 
   #typeEnabled(type: FileType): boolean {

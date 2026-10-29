@@ -706,6 +706,18 @@ describe('FileHound', async () => {
         }
     });
 
+    describe('relative search paths', () => {
+        it('returns paths as path.join would, without a leading ./', async () => {
+            const dir = path.relative(process.cwd(), `${fixtureDir}/justFiles`);
+            const expected = fs.readdirSync(dir).sort().map(name => path.join(dir, name));
+
+            for (const searchPath of [dir, `./${dir}`, `./${dir}/`]) {
+                assert.deepEqual(await FileHound.create().paths(searchPath).find(), expected);
+                assert.deepEqual(FileHound.create().paths(searchPath).findSync(), expected);
+            }
+        });
+    });
+
     describe('.depth', () => {
         it('only returns files in the current directory', async () => {
             const query = FileHound.create()
@@ -755,6 +767,40 @@ describe('FileHound', async () => {
                     'deeplyNested/mydir/mydir2/y.json'
                 ])
             );
+        });
+
+        it('returns directories at the depth limit without walking them', async () => {
+            const query = (depth: number): FileHound => FileHound.create()
+                .paths(`${fixtureDir}/deeplyNested`)
+                .type(FileType.DIRECTORY)
+                .depth(depth);
+
+            for (const [depth, expected] of [
+                [0, ['deeplyNested/mydir']],
+                [1, ['deeplyNested/mydir', 'deeplyNested/mydir/mydir2']]
+            ] as const) {
+                assert.deepEqual(await query(depth).find(), qualifyNames([...expected]));
+                assert.deepEqual(query(depth).findSync(), qualifyNames([...expected]));
+            }
+        });
+
+        it('returns files and directories in the current directory', async () => {
+            const files = await FileHound.create()
+                .paths(`${fixtureDir}/deeplyNested`)
+                .type(FileType.REGULAR, FileType.DIRECTORY)
+                .depth(0)
+                .find();
+
+            assert.deepEqual(files, qualifyNames(['deeplyNested/c.json', 'deeplyNested/d.json', 'deeplyNested/mydir']));
+        });
+
+        it('ignores a trailing separator on the search path', async () => {
+            const query = (dir: string): FileHound => FileHound.create().paths(dir).depth(0);
+
+            for (const dir of [`${fixtureDir}/deeplyNested/`, `${fixtureDir}/deeplyNested`]) {
+                assert.deepEqual(await query(dir).find(), qualifyNames(['/deeplyNested/c.json', 'deeplyNested/d.json']));
+                assert.deepEqual(query(dir).findSync(), qualifyNames(['/deeplyNested/c.json', 'deeplyNested/d.json']));
+            }
         });
 
         it('returns files n level deep relative to path', async () => {

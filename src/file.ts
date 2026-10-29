@@ -92,7 +92,8 @@ export class File {
     if (!await this.isDirectory()) { return []; }
 
     const entries = await fsp.readdir(this.#pathname, {withFileTypes: true});
-    const results = entries.map(entry => this.#child(entry));
+    const prefix = this.#childPrefix();
+    const results = entries.map(entry => this.#child(prefix, entry));
 
     if (results.length === 0) { return []; }
     if (glob) { return results.filter(file => matchesName(file, glob)); }
@@ -102,21 +103,15 @@ export class File {
 
   public getFilesSync(glob?: string): File[] {
     if (this.isDirectorySync()) {
+      const prefix = this.#childPrefix();
       const files = readdirSync(this.#pathname, {withFileTypes: true})
-        .map(entry => this.#child(entry));
+        .map(entry => this.#child(prefix, entry));
 
       if (glob) { return files.filter(file => matchesName(file, glob)); }
 
       return files;
     }
     return [];
-  }
-
-  public getDepthSync(): number {
-    if (!this.isDirectorySync()) {
-      return this.#depth(path.dirname(this.#pathname));
-    }
-    return this.#depth(this.#pathname);
   }
 
   public getName(): string {
@@ -206,8 +201,15 @@ export class File {
     return path.matchesGlob(this.getRelativePath(), globPattern);
   }
 
-  #child(entry: Dirent): File {
-    return new File(path.join(this.#pathname, entry.name), entry, this.#root ?? this.#pathname);
+  // path.join is the costliest step of a walk, so it runs once per directory
+  // rather than once per entry. Entry names never contain a separator, so
+  // prefix + name is exactly what path.join would give.
+  #childPrefix(): string {
+    return path.join(this.#pathname, '_').slice(0, -1);
+  }
+
+  #child(prefix: string, entry: Dirent): File {
+    return new File(prefix + entry.name, entry, this.#root ?? this.#pathname);
   }
 
   // Symlinks are left to stat so their targets are reported
@@ -232,10 +234,6 @@ export class File {
     return path.normalize(this.#pathname)
       .split(path.sep)
       .some(segment => segment.startsWith('.') && segment !== '.' && segment !== '..');
-  }
-
-  #depth(pathname: string): number {
-    return pathname.split(path.sep).length - 1;
   }
 
   async #access(permission: number): Promise<boolean> {

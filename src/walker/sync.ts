@@ -25,20 +25,23 @@ function isVisitable(file: File, walk: Walk): boolean {
   }
 }
 
-function visit(file: File, walk: Walk): File[] {
+// Entries are visited depth first in name order, adding to a single list of matches
+function visit(file: File, walk: Walk, depth: number, matches: File[]): File[] {
   const isDirectory = file.isDirectorySync();
   if (isDirectory && walk.shouldSkipDirectory(file)) {
-    return [];
+    return matches;
   }
 
   const type = isDirectory ? FileType.DIRECTORY : file.isFileSync() ? FileType.REGULAR : undefined;
-  const matches = walk.isCandidate(file, type) && walk.matcher.testSync(file) ? [file] : [];
+  if (walk.isCandidate(file, type) && walk.matcher.testSync(file)) {
+    matches.push(file);
+  }
 
-  if (isDirectory) {
+  if (isDirectory && walk.canDescend(depth)) {
     const children = file.getFilesSync().sort(byName);
     for (const child of children) {
       if (isVisitable(child, walk)) {
-        matches.push(...visit(child, walk));
+        visit(child, walk, depth + 1, matches);
       }
     }
   }
@@ -53,5 +56,5 @@ export function walkSync(dir: string, matcher: FilePredicate, opts: WalkOptions)
     throw createPathError(dir);
   }
 
-  return visit(root, new Walk(root, matcher, opts));
+  return visit(root, new Walk(root, matcher, opts), 0, []);
 }

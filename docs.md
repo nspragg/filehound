@@ -199,6 +199,15 @@ const files = await FileHound.create()
   .find();
 ```
 
+Directories at the limit are not searched, but they are still returned when searching for directories. This lists the subdirectories of the current directory:
+
+```js
+const subdirectories = await FileHound.create()
+  .type(FileType.DIRECTORY)
+  .depth(0)
+  .find();
+```
+
 #### Combining multiple searches
 
 Find all the files that are _either_ over 1K _or_ have the `.json` file extension:

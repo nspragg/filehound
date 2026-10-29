@@ -25,8 +25,9 @@
     "prepublishOnly": "npm run clean && npm run build",
     "test": "mocha",
     "posttest": "npm run lint",
-    "lint": "eslint src test",
-    "coverage": "c8 mocha"
+    "lint": "eslint src test bench",
+    "coverage": "c8 mocha",
+    "bench": "npm run build && node bench/bench.mjs"
   },
   "repository": {
     "type": "git",

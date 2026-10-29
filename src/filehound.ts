@@ -170,7 +170,8 @@ export class FileHound<T = string> extends EventEmitter {
 
   /**
    * Specify the directory search depth. If set to zero, recursive searching
-   * will be disabled
+   * will be disabled. Directories at the limit are not searched, but are
+   * still returned when {@link FileHound.type} includes directories.
    *
    * @param depth - the maximum search depth (a non-negative integer)
    * @returns the FileHound instance
@@ -355,7 +356,10 @@ export class FileHound<T = string> extends EventEmitter {
 
     try {
       const files = (await Promise.all(searches)).flat();
-      const results = await Promise.all(files.map(file => this.#toResult(file)));
+      // Stats are only fetched when asked for, saving a promise per match
+      const results = this.#includeFileStats
+        ? await Promise.all(files.map(file => this.#toResult(file)))
+        : files.map(file => file.getName() as T);
       for (const result of results) {
         this.emit('match', result);
       }

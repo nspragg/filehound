@@ -30,8 +30,9 @@ async function isVisitable(file: File, walk: Walk): Promise<boolean> {
   }
 }
 
-// Entries are visited concurrently, then their matches are joined in name order
-async function visit(file: File, walk: Walk): Promise<File[]> {
+// Entries are visited concurrently, then their matches are joined in name order.
+// concat, not push(...matches): spreading over ~120k elements overflows the stack.
+async function visit(file: File, walk: Walk, depth: number): Promise<File[]> {
   const isDirectory = await file.isDirectory();
   if (isDirectory && walk.shouldSkipDirectory(file)) {
     return [];
@@ -40,12 +41,12 @@ async function visit(file: File, walk: Walk): Promise<File[]> {
   const type = isDirectory ? FileType.DIRECTORY : await file.isFile() ? FileType.REGULAR : undefined;
   const matches = walk.isCandidate(file, type) && await walk.matcher.test(file) ? [file] : [];
 
-  if (isDirectory) {
+  if (isDirectory && walk.canDescend(depth)) {
     const children = (await file.getFiles()).sort(byName);
     const childMatches = await Promise.all(children.map(async (child) => {
-      return await isVisitable(child, walk) ? visit(child, walk) : [];
+      return await isVisitable(child, walk) ? visit(child, walk, depth + 1) : [];
     }));
-    matches.push(...childMatches.flat());
+    return matches.concat(childMatches.flat());
   }
   return matches;
 }
@@ -58,5 +59,5 @@ export async function walkAsync(dir: string, matcher: FilePredicate, opts: WalkO
     throw createPathError(dir);
   }
 
-  return visit(root, new Walk(root, matcher, opts));
+  return visit(root, new Walk(root, matcher, opts), 0);
 }

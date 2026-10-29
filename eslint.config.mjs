@@ -28,5 +28,15 @@ export default tseslint.config(
       'eqeqeq': 'error',
       'no-console': 'error'
     }
+  },
+  {
+    files: ['bench/**'],
+    languageOptions: {
+      globals: { console: 'readonly', process: 'readonly' }
+    },
+    rules: {
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      'no-console': 'off'
+    }
   }
 );
