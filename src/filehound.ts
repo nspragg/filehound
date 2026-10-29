@@ -1,10 +1,14 @@
 import * as path from 'path';
 
 import { EventEmitter } from 'events';
+import { Stats } from 'fs';
 import { from } from './arrays';
 import { reducePaths } from './files';
 import {FilePredicate, matchAll} from './matchers';
-import * as walker from './walker/walk';
+import { File } from './file';
+import {walkAsync} from './walker/async';
+import {walkSync} from './walker/sync';
+import {WalkOptions} from './walker/walk';
 
 /**
  * The types of file system entry that a search can return.
@@ -15,7 +19,20 @@ export enum FileType {
 }
 
 /**
+ * A match returned when {@link FileHound.includeFileStats} is set.
+ */
+export type FileWithStats = {
+  /** the path of the matching file */
+  path: string;
+  /** the file's stats, as returned by `fs.stat` */
+  stats: Stats;
+};
+
+/**
  * A fluent query for searching the file system.
+ *
+ * @typeParam T - the type of each match: a path, or a {@link FileWithStats}
+ * when {@link FileHound.includeFileStats} is set
  *
  * @remarks
  * Configure a query by chaining methods, then run it with {@link FileHound.find}
@@ -33,7 +50,7 @@ export enum FileType {
  *   .find();
  * ```
  */
-export class FileHound extends EventEmitter {
+export class FileHound<T = string> extends EventEmitter {
   private searchPaths: string[];
   private maxDepth: number;
   private types: FileType[];
@@ -41,6 +58,7 @@ export class FileHound extends EventEmitter {
   private _ignoreHiddenFiles: boolean;
   private _ignoreHiddenDirectories: boolean;
   private _ignoreSymlinks: boolean;
+  private _includeFileStats: boolean;
   private queryLocked: boolean;
 
   public constructor() {
@@ -77,7 +95,7 @@ export class FileHound extends EventEmitter {
    * const files = await FileHound.any(fh1, fh2);
    * ```
    */
-  public static async any(...args: FileHound[]): Promise<string[]> {
+  public static async any<T>(...args: FileHound<T>[]): Promise<T[]> {
     const pending = args.map(fh => fh.find());
     const files = await Promise.all(pending);
 
@@ -100,15 +118,15 @@ export class FileHound extends EventEmitter {
    *   .find();
    * ```
    */
-  public paths(...paths: string[]): FileHound;
+  public paths(...paths: string[]): this;
   /**
    * Defines the search paths from an array.
    *
    * @param paths - an array of paths
    * @returns the FileHound instance
    */
-  public paths(paths: string[]): FileHound;
-  public paths(...args: (string | string[])[]): FileHound {
+  public paths(paths: string[]): this;
+  public paths(...args: (string | string[])[]): this {
     this.throwIfQueryLocked();
     this.searchPaths = [...new Set(from(args))].map(path.normalize);
     return this;
@@ -133,10 +151,10 @@ export class FileHound extends EventEmitter {
    *   .find();
    * ```
    */
-  public match(query: FilePredicate): FileHound {
+  public match(query: FilePredicate): this {
     this.throwIfQueryLocked();
 
-    if (query === null || query === undefined || typeof query !== 'object' || typeof query.test !== 'function') {
+    if (query === null || query === undefined || typeof query !== 'object' || typeof query.test !== 'function' || typeof query.testSync !== 'function') {
       throw new TypeError('Match expression must be a valid matcher');
     }
 
@@ -163,7 +181,7 @@ export class FileHound extends EventEmitter {
    *   .find(); // array of file names only in the current directory
    * ```
    */
-  public depth(depth: number): FileHound {
+  public depth(depth: number): this {
     this.throwIfQueryLocked();
 
     if (depth < 0 || !Number.isSafeInteger(depth)) {
@@ -196,7 +214,7 @@ export class FileHound extends EventEmitter {
    *   .find();
    * ```
    */
-  public type(...types: FileType[]): FileHound {
+  public type(...types: FileType[]): this {
     this.throwIfQueryLocked();
     this.validateTypeArguments(types);
 
@@ -219,7 +237,7 @@ export class FileHound extends EventEmitter {
    *   .find();
    * ```
    */
-  public ignoreHiddenFiles(): FileHound {
+  public ignoreHiddenFiles(): this {
     this.throwIfQueryLocked();
     this._ignoreHiddenFiles = true;
     return this;
@@ -241,7 +259,7 @@ export class FileHound extends EventEmitter {
    *   .find();
    * ```
    */
-  public ignoreHiddenDirectories(): FileHound {
+  public ignoreHiddenDirectories(): this {
     this.throwIfQueryLocked();
     this._ignoreHiddenDirectories = true;
     return this;
@@ -268,10 +286,34 @@ export class FileHound extends EventEmitter {
    *   .find();
    * ```
    */
-  public ignoreSymlinks(): FileHound {
+  public ignoreSymlinks(): this {
     this.throwIfQueryLocked();
     this._ignoreSymlinks = true;
     return this;
+  }
+
+  /**
+   * Returns each match with its stats, as `{ path, stats }`, in place of
+   * its path. Stats already fetched by a predicate are reused.
+   *
+   * @returns the FileHound instance, typed to return {@link FileWithStats} matches
+   * @throws `Error`
+   * Thrown if the query is locked because a search has started.
+   * @example
+   * ```ts
+   * import { FileHound } from 'filehound';
+   *
+   * const files = await FileHound.create()
+   *   .includeFileStats()
+   *   .find();
+   *
+   * files.forEach(({ path, stats }) => console.log(path, stats.size));
+   * ```
+   */
+  public includeFileStats(): FileHound<FileWithStats> {
+    this.throwIfQueryLocked();
+    this._includeFileStats = true;
+    return this as FileHound<unknown> as FileHound<FileWithStats>;
   }
 
   /**
@@ -295,7 +337,7 @@ export class FileHound extends EventEmitter {
    * console.log(files);
    * ```
    */
-  public async find(): Promise<string[]> {
+  public async find(): Promise<T[]> {
     this.queryLocked = true;
 
     const searches = [];
@@ -306,13 +348,12 @@ export class FileHound extends EventEmitter {
     }
 
     try {
-      const results = await Promise.all(searches);
-      return results
-        .flat()
-        .map((file) => {
-          this.emit('match', file);
-          return file;
-        });
+      const files = (await Promise.all(searches)).flat();
+      const results = await Promise.all(files.map(file => this.toResult(file)));
+      for (const result of results) {
+        this.emit('match', result);
+      }
+      return results;
     } catch (error) {
       this.emit('error', error);
       throw error;
@@ -335,12 +376,12 @@ export class FileHound extends EventEmitter {
    * console.log(files);
    * ```
    */
-  public findSync(): string[] {
+  public findSync(): T[] {
     this.queryLocked = true;
 
     return this.getPaths()
-      .map(dir => this.searchSync(dir))
-      .flat();
+      .flatMap(dir => this.searchSync(dir))
+      .map(file => this.toResultSync(file));
   }
 
   /**
@@ -380,15 +421,29 @@ export class FileHound extends EventEmitter {
     return this.matchExpression ?? matchAll();
   }
 
-  private searchSync(dir: string): string[] {
-    return walker.sync(dir, this.getMatchExpression(), this.getOptions());
+  private async toResult(file: File): Promise<T> {
+    if (this._includeFileStats) {
+      return {path: file.getName(), stats: await file.getStats()} as T;
+    }
+    return file.getName() as T;
   }
 
-  private async searchAsync(dir: string): Promise<string[]> {
-    return walker.async(dir, this.getMatchExpression(), this.getOptions());
+  private toResultSync(file: File): T {
+    if (this._includeFileStats) {
+      return {path: file.getName(), stats: file.getStatsSync()} as T;
+    }
+    return file.getName() as T;
   }
 
-  private getOptions(): walker.WalkOptions {
+  private searchSync(dir: string): File[] {
+    return walkSync(dir, this.getMatchExpression(), this.getOptions());
+  }
+
+  private async searchAsync(dir: string): Promise<File[]> {
+    return walkAsync(dir, this.getMatchExpression(), this.getOptions());
+  }
+
+  private getOptions(): WalkOptions {
     return {
       ignoreHiddenDirectories: this._ignoreHiddenDirectories,
       ignoreHiddenFiles: this._ignoreHiddenFiles,

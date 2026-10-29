@@ -1,8 +1,9 @@
-export {FileHound, FileType} from './filehound';
+export {FileHound, FileType, FileWithStats} from './filehound';
 export {
   FilePredicate,
   accessed,
   applyFilter,
+  applyFilterSync,
   changed,
   discard,
   ext,

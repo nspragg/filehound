@@ -1,13 +1,15 @@
 import {assert} from 'chai';
 import fs from 'fs';
+import * as net from 'net';
 import * as os from 'os';
 import * as path from 'path';
 import * as sinon from 'sinon';
-import {FileHound, FileType} from '../src/filehound';
+import {FileHound, FileType, FileWithStats} from '../src/filehound';
 
 import {
     accessed,
     applyFilter,
+    applyFilterSync,
     changed,
     discard,
     ext,
@@ -17,7 +19,8 @@ import {
     matchAll,
     modified,
     not,
-    size
+    size,
+    socket
 } from '../src/matchers';
 
 const justFiles = qualifyNames([
@@ -210,7 +213,7 @@ describe('FileHound', async () => {
                 const results = await FileHound.create()
                     .paths(`${fixtureDir}/deeplyNested`)
                     .type(FileType.DIRECTORY)
-                    .match(glob('*mydir*'))
+                    .match(glob('**/*mydir*'))
                     .find();
 
                 assert.deepEqual(results, expectedDirectories);
@@ -260,7 +263,7 @@ describe('FileHound', async () => {
                 const results = await FileHound.create()
                     .paths(`${fixtureDir}/deeplyNested`)
                     .type(FileType.DIRECTORY)
-                    .match(glob('*dir4*')
+                    .match(glob('**/*dir4*')
                         .not())
                     .find();
 
@@ -281,17 +284,32 @@ describe('FileHound', async () => {
                 assert.deepEqual(results.sort(), matchFiles);
             });
 
-            it('performs recursive search using matching on a given pattern', async () => {
+            it('matches patterns at any depth using **', async () => {
                 const results = await FileHound.create()
                     .paths(`${fixtureDir}/nested`)
                     .match(
-                        glob('*.json')
+                        glob('**/*.json')
                     )
                     .find();
 
                 const expected = nestedFiles.filter(f => /\.json$/.test(f));
 
                 assert.deepEqual(results.sort(), expected);
+            });
+
+            it('matches patterns without ** against the top level of the search path only', async () => {
+                const results = await findGlob('nested', '*.json');
+
+                assert.deepEqual(results, qualifyNames(['nested/c.json', 'nested/d.json']));
+            });
+
+            it('matches patterns relative to each search path', async () => {
+                const results = await FileHound.create()
+                    .paths(`${fixtureDir}/nested`, `${fixtureDir}/ext`)
+                    .match(glob('*.json'))
+                    .find();
+
+                assert.deepEqual(results.sort(), qualifyNames(['ext/dummy.json', 'nested/c.json', 'nested/d.json']));
             });
 
             async function findGlob(dir: string, pattern: string): Promise<string[]> {
@@ -333,19 +351,31 @@ describe('FileHound', async () => {
                 assert.deepEqual(results, qualifyNames(['nested/mydir/e.json']));
             });
 
-            it('does not match dotfiles with wildcards', async () => {
-                const results = await findGlob('visibility', '*.json');
+            it('does not match dotfiles or dot directories with wildcards', async () => {
+                const results = await findGlob('visibility', '**/*.json');
 
-                assert.deepEqual(results, qualifyNames([
-                    'visibility/.hidden/visible.json',
-                    'visibility/visible.json'
-                ]));
+                assert.deepEqual(results, qualifyNames(['visibility/visible.json']));
             });
 
-            it('is case sensitive', async () => {
-                const results = await findGlob('ext', 'dummy.*');
+            it('matches the same files as fs.glob', async () => {
+                // Includes case differences, which fs.glob treats per platform
+                const cases = [
+                    ['ext', 'dummy.*'],
+                    ['ext', '*.{java,go}'],
+                    ['nested', '**/*.json'],
+                    ['visibility', '**/*.json'],
+                    ['deeplyNested', '**/*']
+                ];
 
-                assert.deepEqual(results, qualifyNames(['ext/dummy.json', 'ext/dummy.txt']));
+                for (const [dir, pattern] of cases) {
+                    const cwd = getAbsolutePath(dir);
+                    const expected = fs.globSync(pattern, {cwd, withFileTypes: true})
+                        .filter(entry => entry.isFile())
+                        .map(entry => path.join(entry.parentPath, entry.name))
+                        .sort();
+
+                    assert.deepEqual(await findGlob(dir, pattern), expected, pattern);
+                }
             });
         });
 
@@ -630,15 +660,15 @@ describe('FileHound', async () => {
                 qualifyNames([
                     '/deeplyNested/c.json',
                     'deeplyNested/d.json',
+                    '/deeplyNested/mydir',
                     'deeplyNested/mydir/e.json',
+                    '/deeplyNested/mydir/mydir2',
                     'deeplyNested/mydir/mydir2/f.json',
+                    '/deeplyNested/mydir/mydir2/mydir3',
+                    '/deeplyNested/mydir/mydir2/mydir3/mydir4',
                     'deeplyNested/mydir/mydir2/mydir3/mydir4/failed.json',
                     'deeplyNested/mydir/mydir2/mydir3/z.json',
-                    'deeplyNested/mydir/mydir2/y.json',
-                    '/deeplyNested/mydir',
-                    '/deeplyNested/mydir/mydir2',
-                    '/deeplyNested/mydir/mydir2/mydir3',
-                    '/deeplyNested/mydir/mydir2/mydir3/mydir4'
+                    'deeplyNested/mydir/mydir2/y.json'
                 ])
             );
         });
@@ -885,7 +915,7 @@ describe('FileHound', async () => {
                 .paths(`${fixtureDir}/deeplyNested`)
                 .type(FileType.DIRECTORY)
                 .match(
-                    glob('*dir4*')
+                    glob('**/*dir4*')
                         .not()
                 )
                 .findSync();
@@ -973,6 +1003,18 @@ describe('FileHound', async () => {
             assert.equal(noHiddenFiles.length, 1);
             assert.deepEqual(noHiddenFiles, qualifyNames(['/visibility/visible.json']));
         });
+
+        it('ignores hidden files when searching synchronously', () => {
+            const noHiddenFiles = FileHound.create()
+                .paths(`${fixtureDir}/visibility`)
+                .ignoreHiddenFiles()
+                .findSync();
+
+            assert.deepEqual(noHiddenFiles, qualifyNames([
+                '/visibility/.hidden/visible.json',
+                '/visibility/visible.json'
+            ]));
+        });
     });
 
     describe('.applyFilter', () => {
@@ -985,6 +1027,131 @@ describe('FileHound', async () => {
                 .find();
 
             assert.deepEqual(files, qualifyNames(['/custom/passed.txt']));
+        });
+
+        it('returns files based on an asynchronous custom filter', async () => {
+            const files = await FileHound.create()
+                .match(applyFilter(async file => await file.size() === 1024))
+                .paths(`${fixtureDir}/custom`)
+                .find();
+
+            assert.deepEqual(files, qualifyNames(['/custom/passed.txt']));
+        });
+
+        it('throws when used with findSync', () => {
+            const fh = FileHound.create()
+                .match(applyFilter(async file => await file.size() === 1024))
+                .paths(`${fixtureDir}/custom`);
+
+            assert.throws(() => fh.findSync(), TypeError, 'applyFilter() filters can only be used with find()');
+        });
+    });
+
+    describe('.applyFilterSync', () => {
+        it('returns files based on a custom filter', async () => {
+            const query = (): FileHound => FileHound.create()
+                .match(applyFilterSync(file => file.sizeSync() === 1024))
+                .paths(`${fixtureDir}/custom`);
+
+            assert.deepEqual(await query().find(), qualifyNames(['/custom/passed.txt']));
+            assert.deepEqual(query().findSync(), qualifyNames(['/custom/passed.txt']));
+        });
+    });
+
+    describe('async predicates', () => {
+        afterEach(() => {
+            sandbox.restore();
+        });
+
+        it('does not make synchronous file system calls during find', async () => {
+            const statSync = sandbox.spy(fs, 'statSync');
+            const lstatSync = sandbox.spy(fs, 'lstatSync');
+            const readdirSync = sandbox.spy(fs, 'readdirSync');
+
+            const files = await FileHound.create()
+                .paths(`${fixtureDir}/sizes`)
+                .match(size('>0').and(modified('<1000 days').or(not(isEmpty()))))
+                .find();
+
+            assert.isNotEmpty(files);
+            sinon.assert.notCalled(statSync);
+            sinon.assert.notCalled(lstatSync);
+            sinon.assert.notCalled(readdirSync);
+        });
+
+        it('stats each file at most once', async () => {
+            const stat = sandbox.spy(fs.promises, 'stat');
+
+            const files = await FileHound.create()
+                .paths(`${fixtureDir}/sizes`)
+                .match(size('>=0').and(modified('<1000 days')))
+                .includeFileStats()
+                .find();
+
+            const statted = stat.getCalls().map(call => call.args[0]);
+            assert.equal(statted.length, new Set(statted).size);
+            assert.includeMembers(statted, files.map(file => file.path));
+        });
+    });
+
+    describe('.socket', () => {
+        let tmpDir: string;
+        let server: net.Server;
+
+        before((done) => {
+            tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fh-'));
+            fs.writeFileSync(path.join(tmpDir, 'a.txt'), '');
+            server = net.createServer().listen(path.join(tmpDir, 's.sock'), done);
+        });
+
+        after((done) => {
+            server.close(() => {
+                fs.rmSync(tmpDir, {recursive: true, force: true});
+                done();
+            });
+        });
+
+        it('returns sockets', async () => {
+            const query = (): FileHound => FileHound.create().paths(tmpDir).match(socket());
+
+            assert.deepEqual(await query().find(), [path.join(tmpDir, 's.sock')]);
+            assert.deepEqual(query().findSync(), [path.join(tmpDir, 's.sock')]);
+        });
+    });
+
+    describe('.includeFileStats', () => {
+        it('returns the path and stats of each match', async () => {
+            const query = (): FileHound<FileWithStats> => FileHound.create()
+                .paths(`${fixtureDir}/justFiles`)
+                .includeFileStats();
+
+            for (const files of [await query().find(), query().findSync()]) {
+                assert.deepEqual(files.map(file => file.path), justFiles);
+                for (const {path: file, stats} of files) {
+                    assert.equal(stats.size, fs.statSync(file).size);
+                }
+            }
+        });
+
+        it('emits matches with their stats', async () => {
+            const spy = sinon.spy();
+
+            await FileHound.create()
+                .paths(`${fixtureDir}/justFiles`)
+                .includeFileStats()
+                .on('match', spy)
+                .find();
+
+            sinon.assert.callCount(spy, 3);
+            sinon.assert.calledWithMatch(spy, {path: justFiles[0], stats: sinon.match.instanceOf(fs.Stats)});
+        });
+
+        it('throws when calling .includeFileStats after query started', () => {
+            assert.throws(() => {
+                const fh = FileHound.create().paths(`${fixtureDir}/justFiles`);
+                fh.findSync();
+                fh.includeFileStats();
+            }, Error, 'Cannot modify query after search has started');
         });
     });
 
@@ -1164,6 +1331,8 @@ describe('FileHound', async () => {
                     return true;
                 }
             });
+            // ctime cannot be set directly, so async stats come from the same stub
+            sandbox.stub(fs.promises, 'stat').callsFake(async (p: fs.PathLike) => statSync(p));
         });
 
         after(() => {

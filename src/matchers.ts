@@ -29,13 +29,27 @@ export interface FilePredicate {
   and(predicate: FilePredicate): FilePredicate;
 
   /**
-   * Tests whether a file satisfies this predicate
+   * Asynchronously tests whether a file satisfies this predicate. Used by
+   * {@link FileHound.find}.
+   *
+   * @param file - the file to test
+   * @returns a Promise that fulfils with true if the file matches
+   */
+  test(file: File): Promise<boolean>;
+
+  /**
+   * Synchronously tests whether a file satisfies this predicate. Used by
+   * {@link FileHound.findSync}.
    *
    * @param file - the file to test
    * @returns true if the file matches
+   * @throws `TypeError`
+   * Thrown if the predicate can only be tested asynchronously.
    */
-  test(file: File): boolean;
+  testSync(file: File): boolean;
 }
+
+// Predicates that need no I/O only implement testSync
 export abstract class AbstractFilePredicate implements FilePredicate {
   or(f: FilePredicate): FilePredicate {
     return new Or(this, f);
@@ -49,7 +63,11 @@ export abstract class AbstractFilePredicate implements FilePredicate {
     return new Not(this);
   }
 
-  abstract test(file: File): boolean;
+  async test(file: File): Promise<boolean> {
+    return this.testSync(file);
+  }
+
+  abstract testSync(file: File): boolean;
 }
 
 export class And extends AbstractFilePredicate {
@@ -62,8 +80,12 @@ export class And extends AbstractFilePredicate {
     this.right = right;
   }
 
-  test(file: File): boolean {
-    return this.left.test(file) && this.right.test(file);
+  async test(file: File): Promise<boolean> {
+    return await this.left.test(file) && this.right.test(file);
+  }
+
+  testSync(file: File): boolean {
+    return this.left.testSync(file) && this.right.testSync(file);
   }
 }
 
@@ -75,8 +97,12 @@ export class Not extends AbstractFilePredicate {
     this.filePredicate = filePredicate;
   }
 
-  test(file: File): boolean {
-    return !this.filePredicate.test(file);
+  async test(file: File): Promise<boolean> {
+    return !await this.filePredicate.test(file);
+  }
+
+  testSync(file: File): boolean {
+    return !this.filePredicate.testSync(file);
   }
 }
 
@@ -90,8 +116,12 @@ export class Or extends AbstractFilePredicate {
     this.right = right;
   }
 
-  test(file: File): boolean {
-    return this.left.test(file) || this.right.test(file);
+  async test(file: File): Promise<boolean> {
+    return await this.left.test(file) || this.right.test(file);
+  }
+
+  testSync(file: File): boolean {
+    return this.left.testSync(file) || this.right.testSync(file);
   }
 }
 
@@ -103,7 +133,7 @@ export class Extension extends AbstractFilePredicate {
     this.extensions = extensions;
   }
 
-  test(file: File): boolean {
+  testSync(file: File): boolean {
     return this.extensions.includes(file.getPathExtension());
   }
 }
@@ -116,7 +146,7 @@ export class Glob extends AbstractFilePredicate {
     this.globPattern = globPattern;
   }
 
-  test(file: File): boolean {
+  testSync(file: File): boolean {
     return file.isMatch(this.globPattern);
   }
 }
@@ -130,12 +160,29 @@ export class TextMatch extends AbstractFilePredicate {
     this.flags = flags;
   }
 
-  test(file: File): boolean {
+  testSync(file: File): boolean {
     return new RegExp(this.pattern, this.flags).test(file.getName());
   }
 }
 
 export class CustomFilter extends AbstractFilePredicate {
+  private readonly fn: (path: File) => boolean | Promise<boolean>;
+
+  constructor(fn: (path: File) => boolean | Promise<boolean>) {
+    super();
+    this.fn = fn;
+  }
+
+  async test(file: File): Promise<boolean> {
+    return this.fn(file);
+  }
+
+  testSync(_file: File): boolean {
+    throw new TypeError('applyFilter() filters can only be used with find(). Use applyFilterSync() with findSync()');
+  }
+}
+
+export class CustomFilterSync extends AbstractFilePredicate {
   private readonly fn: (path: File) => boolean;
 
   constructor(fn: (path: File) => boolean) {
@@ -143,7 +190,7 @@ export class CustomFilter extends AbstractFilePredicate {
     this.fn = fn;
   }
 
-  test(file: File): boolean {
+  testSync(file: File): boolean {
     return this.fn(file);
   }
 }
@@ -156,9 +203,12 @@ export class Size extends AbstractFilePredicate {
     this.size = sizeExpression;
   }
 
-  test(file: File): boolean {
-    const actualSize = file.sizeSync();
-    return isNumber(actualSize).assert(this.size);
+  async test(file: File): Promise<boolean> {
+    return isNumber(await file.size()).assert(this.size);
+  }
+
+  testSync(file: File): boolean {
+    return isNumber(file.sizeSync()).assert(this.size);
   }
 }
 
@@ -170,10 +220,12 @@ export class Modified extends AbstractFilePredicate {
     this.days = days;
   }
 
-  test(file: File): boolean {
-    const lastModified = file.lastModifiedSync();
-    return isDate(lastModified)
-      .assert(this.days);
+  async test(file: File): Promise<boolean> {
+    return isDate(await file.lastModified()).assert(this.days);
+  }
+
+  testSync(file: File): boolean {
+    return isDate(file.lastModifiedSync()).assert(this.days);
   }
 }
 
@@ -185,10 +237,12 @@ export class Accessed extends AbstractFilePredicate {
     this.days = days;
   }
 
-  test(file: File): boolean {
-    const lastAccessed = file.lastAccessedSync();
-    return isDate(lastAccessed)
-      .assert(this.days);
+  async test(file: File): Promise<boolean> {
+    return isDate(await file.lastAccessed()).assert(this.days);
+  }
+
+  testSync(file: File): boolean {
+    return isDate(file.lastAccessedSync()).assert(this.days);
   }
 }
 
@@ -200,21 +254,27 @@ export class Changed extends AbstractFilePredicate {
     this.days = days;
   }
 
-  test(file: File): boolean {
-    const last = file.lastChangedSync();
-    return isDate(last)
-      .assert(this.days);
+  async test(file: File): Promise<boolean> {
+    return isDate(await file.lastChanged()).assert(this.days);
+  }
+
+  testSync(file: File): boolean {
+    return isDate(file.lastChangedSync()).assert(this.days);
   }
 }
 
 export class MatchAll extends AbstractFilePredicate {
-  test(_file: File): boolean {
+  testSync(_file: File): boolean {
     return true;
   }
 }
 
 export class Socket extends AbstractFilePredicate {
-  test(file: File): boolean {
+  async test(file: File): Promise<boolean> {
+    return file.isSocket();
+  }
+
+  testSync(file: File): boolean {
     return file.isSocketSync();
   }
 }
@@ -285,7 +345,11 @@ export function socket(): FilePredicate {
 }
 
 /**
- * Matches files whose path satisfies a glob pattern
+ * Matches files whose path, relative to the search path, satisfies a glob
+ * pattern. Patterns follow Node's `path.matchesGlob` and `fs.glob` rules:
+ * `*.json` matches only the top level of the search path, and a leading `**`
+ * segment matches at any depth. Wildcards, including `**`, do not match names
+ * beginning with a dot.
  *
  * @param globPattern - the glob pattern
  * @returns the predicate
@@ -299,17 +363,34 @@ export function glob(globPattern: string): FilePredicate {
 }
 
 /**
- * Matches files using a custom function
+ * Matches files using a custom function, which may be asynchronous. Can only
+ * be used with {@link FileHound.find}; use {@link applyFilterSync} with
+ * {@link FileHound.findSync}.
+ *
+ * @param fn - returns, or fulfils with, true for files to include
+ * @returns the predicate
+ * @example
+ * ```ts
+ * FileHound.create().match(applyFilter(async file => await file.size() > 0));
+ * ```
+ */
+export function applyFilter(fn: (path: File) => boolean | Promise<boolean>): FilePredicate {
+  return new CustomFilter(fn);
+}
+
+/**
+ * Matches files using a synchronous custom function. Can be used with both
+ * {@link FileHound.find} and {@link FileHound.findSync}.
  *
  * @param fn - returns true for files to include
  * @returns the predicate
  * @example
  * ```ts
- * FileHound.create().match(applyFilter(file => file.sizeSync() > 0));
+ * FileHound.create().match(applyFilterSync(file => file.sizeSync() > 0));
  * ```
  */
-export function applyFilter(fn: (path: File) => boolean): FilePredicate {
-  return new CustomFilter(fn);
+export function applyFilterSync(fn: (path: File) => boolean): FilePredicate {
+  return new CustomFilterSync(fn);
 }
 
 /**

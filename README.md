@@ -14,6 +14,8 @@
 npm install --save filehound
 ```
 
+Requires Node.js 24 or later.
+
 ## Demo
 
 <img src="https://cloud.githubusercontent.com/assets/917111/13683231/7e915c2c-e6fd-11e5-9d58-e7228cf76ccf.gif" width="600"/>

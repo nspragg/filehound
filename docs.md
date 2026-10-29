@@ -34,9 +34,11 @@ Find all the files that start with `dev`:
 ```js
 const files = await FileHound.create()
   .paths('/etc/pki/')
-  .match(glob('dev*'))
+  .match(glob('**/dev*'))
   .find();
 ```
+
+Glob patterns follow the same rules as Node's [`fs.glob`](https://nodejs.org/api/fs.html#fspromisesglobpattern-options) and [`path.matchesGlob`](https://nodejs.org/api/path.html#pathmatchesglobpath-pattern), and are matched against each path relative to the search path. A pattern without `**`, such as `dev*`, matches only the top level of the search path. Wildcards don't match names beginning with a dot, and on macOS and Windows wildcard patterns ignore case, as they do in Node.
 
 #### Filtering by file size
 
@@ -79,7 +81,7 @@ Find all the `.txt` files that are larger than 1024 bytes _and_ start with `note
 const files = await FileHound.create()
   .paths('/etc/pki/')
   .match(
-    glob('note*')
+    glob('**/note*')
       .and(ext('txt'))
       .and(size('>1024'))
   )
@@ -115,13 +117,37 @@ const files = await FileHound.create()
 
 #### Custom filters
 
-Find all of the files that pass a custom test:
+Find all of the files that pass a custom test. The test can be asynchronous:
 
 ```js
 const files = await FileHound.create()
   .paths('/some/dir')
-  .match(applyFilter(file => file.getName().includes('report')))
+  .match(applyFilter(async file => await file.size() > 0 && file.getName().includes('report')))
   .find();
+```
+
+Filters made with `applyFilter` only work with `find()`. Use `applyFilterSync` for a synchronous test that works with both `find()` and `findSync()`:
+
+```js
+const files = FileHound.create()
+  .paths('/some/dir')
+  .match(applyFilterSync(file => file.getName().includes('report')))
+  .findSync();
+```
+
+The built-in matchers work with both. With `find()`, they check files using asynchronous calls, so a search doesn't block the event loop.
+
+#### Including file stats
+
+Return each match as `{ path, stats }`, where `stats` is an `fs.Stats` object:
+
+```js
+const files = await FileHound.create()
+  .paths('/some/dir')
+  .includeFileStats()
+  .find();
+
+files.forEach(({ path, stats }) => console.log(path, stats.size));
 ```
 
 #### Finding directories

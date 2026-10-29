@@ -8,22 +8,30 @@ import {
   Stats,
   statSync
 } from 'fs';
-import { Minimatch } from 'minimatch';
 import * as path from 'path';
 import * as fsp from 'fs/promises';
 
 type FileKind = Pick<Stats, 'isDirectory' | 'isFile' | 'isSocket'>;
+
+function matchesName(file: File, globPattern: string): boolean {
+  return path.matchesGlob(path.basename(file.getName()), globPattern);
+}
 
 export class File {
   private readonly dir: string;
   private readonly pathname: string;
   // Type info from readdir, saving a stat call
   private readonly dirent?: Dirent;
+  // The directory a search started from; glob patterns are matched relative to it
+  private readonly root?: string;
+  // Fetched once, so predicates and results share a single stat call
+  private stats?: Stats;
 
-  constructor(pathname: string, dirent?: Dirent) {
+  constructor(pathname: string, dirent?: Dirent, root?: string) {
     this.dir = process.cwd();
     this.pathname = pathname;
     this.dirent = dirent;
+    this.root = root;
   }
 
   public isDirectorySync(): boolean {
@@ -97,7 +105,7 @@ export class File {
     const results = entries.map(entry => this.child(entry));
 
     if (results.length === 0) { return []; }
-    if (glob) { return results.filter(file => file.isMatch(glob)); }
+    if (glob) { return results.filter(file => matchesName(file, glob)); }
 
     return results;
   }
@@ -107,7 +115,7 @@ export class File {
       const files = readdirSync(this.pathname, {withFileTypes: true})
         .map(entry => this.child(entry));
 
-      if (glob) { return files.filter(file => file.isMatch(glob)); }
+      if (glob) { return files.filter(file => matchesName(file, glob)); }
 
       return files;
     }
@@ -136,6 +144,11 @@ export class File {
     return path.normalize(this.getAbsolutePath());
   }
 
+  // Relative to the search root, or the working directory like fs.glob
+  public getRelativePath(): string {
+    return path.relative(this.root ?? this.dir, this.pathname);
+  }
+
   public getPathExtension(): string {
     return path.extname(this.pathname).substring(1);
   }
@@ -154,6 +167,32 @@ export class File {
 
   public sizeSync(): number {
     return this.getStatsSync().size;
+  }
+
+  public async lastModified(): Promise<Date> {
+    return (await this.getStats()).mtime;
+  }
+
+  public async lastAccessed(): Promise<Date> {
+    return (await this.getStats()).atime;
+  }
+
+  public async lastChanged(): Promise<Date> {
+    return (await this.getStats()).ctime;
+  }
+
+  public async size(): Promise<number> {
+    return (await this.getStats()).size;
+  }
+
+  public getStatsSync(): Stats {
+    this.stats ??= statSync(this.pathname);
+    return this.stats;
+  }
+
+  public async getStats(): Promise<Stats> {
+    this.stats ??= await fsp.stat(this.pathname);
+    return this.stats;
   }
 
   public async isWritable(): Promise<boolean> {
@@ -177,14 +216,11 @@ export class File {
   }
 
   public isMatch(globPattern: string): boolean {
-    const glob = new Minimatch(globPattern, {
-      matchBase: true
-    });
-    return glob.match(this.pathname);
+    return path.matchesGlob(this.getRelativePath(), globPattern);
   }
 
   private child(entry: Dirent): File {
-    return new File(path.join(this.pathname, entry.name), entry);
+    return new File(path.join(this.pathname, entry.name), entry, this.root ?? this.pathname);
   }
 
   // Symlinks are left to stat so their targets are reported
@@ -198,14 +234,6 @@ export class File {
 
   private async getKind(): Promise<FileKind> {
     return this.getKnownKind() ?? this.getStats();
-  }
-
-  private getStatsSync(): Stats {
-    return statSync(this.pathname);
-  }
-
-  private async getStats(): Promise<Stats> {
-    return fsp.stat(this.pathname);
   }
 
   private isHiddenFile(): boolean {
