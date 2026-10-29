@@ -71,110 +71,110 @@ export abstract class AbstractFilePredicate implements FilePredicate {
 }
 
 export class And extends AbstractFilePredicate {
-  private readonly left: FilePredicate;
-  private readonly right: FilePredicate;
+  readonly #left: FilePredicate;
+  readonly #right: FilePredicate;
 
   constructor(left: FilePredicate, right: FilePredicate) {
     super();
-    this.left = left;
-    this.right = right;
+    this.#left = left;
+    this.#right = right;
   }
 
   async test(file: File): Promise<boolean> {
-    return await this.left.test(file) && this.right.test(file);
+    return await this.#left.test(file) && this.#right.test(file);
   }
 
   testSync(file: File): boolean {
-    return this.left.testSync(file) && this.right.testSync(file);
+    return this.#left.testSync(file) && this.#right.testSync(file);
   }
 }
 
 export class Not extends AbstractFilePredicate {
-  private readonly filePredicate: FilePredicate;
+  readonly #filePredicate: FilePredicate;
 
   constructor(filePredicate: FilePredicate) {
     super();
-    this.filePredicate = filePredicate;
+    this.#filePredicate = filePredicate;
   }
 
   async test(file: File): Promise<boolean> {
-    return !await this.filePredicate.test(file);
+    return !await this.#filePredicate.test(file);
   }
 
   testSync(file: File): boolean {
-    return !this.filePredicate.testSync(file);
+    return !this.#filePredicate.testSync(file);
   }
 }
 
 export class Or extends AbstractFilePredicate {
-  private readonly left: FilePredicate;
-  private readonly right: FilePredicate;
+  readonly #left: FilePredicate;
+  readonly #right: FilePredicate;
 
   constructor(left: FilePredicate, right: FilePredicate) {
     super();
-    this.left = left;
-    this.right = right;
+    this.#left = left;
+    this.#right = right;
   }
 
   async test(file: File): Promise<boolean> {
-    return await this.left.test(file) || this.right.test(file);
+    return await this.#left.test(file) || this.#right.test(file);
   }
 
   testSync(file: File): boolean {
-    return this.left.testSync(file) || this.right.testSync(file);
+    return this.#left.testSync(file) || this.#right.testSync(file);
   }
 }
 
 export class Extension extends AbstractFilePredicate {
-  private readonly extensions: string[];
+  readonly #extensions: string[];
 
   constructor(extensions: string[]) {
     super();
-    this.extensions = extensions;
+    this.#extensions = extensions;
   }
 
   testSync(file: File): boolean {
-    return this.extensions.includes(file.getPathExtension());
+    return this.#extensions.includes(file.getPathExtension());
   }
 }
 
 export class Glob extends AbstractFilePredicate {
-  private readonly globPattern: string;
+  readonly #globPattern: string;
 
   constructor(globPattern: string) {
     super();
-    this.globPattern = globPattern;
+    this.#globPattern = globPattern;
   }
 
   testSync(file: File): boolean {
-    return file.isMatch(this.globPattern);
+    return file.isMatch(this.#globPattern);
   }
 }
 export class TextMatch extends AbstractFilePredicate {
-  private readonly pattern: string;
-  private readonly flags?: string;
+  readonly #pattern: string;
+  readonly #flags?: string;
 
   constructor(pattern: string, flags?: string) {
     super();
-    this.pattern = pattern;
-    this.flags = flags;
+    this.#pattern = pattern;
+    this.#flags = flags;
   }
 
   testSync(file: File): boolean {
-    return new RegExp(this.pattern, this.flags).test(file.getName());
+    return new RegExp(this.#pattern, this.#flags).test(file.getName());
   }
 }
 
 export class CustomFilter extends AbstractFilePredicate {
-  private readonly fn: (path: File) => boolean | Promise<boolean>;
+  readonly #fn: (path: File) => boolean | Promise<boolean>;
 
   constructor(fn: (path: File) => boolean | Promise<boolean>) {
     super();
-    this.fn = fn;
+    this.#fn = fn;
   }
 
   async test(file: File): Promise<boolean> {
-    return this.fn(file);
+    return this.#fn(file);
   }
 
   testSync(_file: File): boolean {
@@ -183,83 +183,83 @@ export class CustomFilter extends AbstractFilePredicate {
 }
 
 export class CustomFilterSync extends AbstractFilePredicate {
-  private readonly fn: (path: File) => boolean;
+  readonly #fn: (path: File) => boolean;
 
   constructor(fn: (path: File) => boolean) {
     super();
-    this.fn = fn;
+    this.#fn = fn;
   }
 
   testSync(file: File): boolean {
-    return this.fn(file);
+    return this.#fn(file);
   }
 }
 
 export class Size extends AbstractFilePredicate {
-  private readonly size: string | number;
+  readonly #size: string | number;
 
   constructor(sizeExpression: string | number) {
     super();
-    this.size = sizeExpression;
+    this.#size = sizeExpression;
   }
 
   async test(file: File): Promise<boolean> {
-    return isNumber(await file.size()).assert(this.size);
+    return isNumber(await file.size()).assert(this.#size);
   }
 
   testSync(file: File): boolean {
-    return isNumber(file.sizeSync()).assert(this.size);
+    return isNumber(file.sizeSync()).assert(this.#size);
   }
 }
 
 export class Modified extends AbstractFilePredicate {
-  private readonly days: string | number;
+  readonly #days: string | number;
 
   constructor(days: string | number) {
     super();
-    this.days = days;
+    this.#days = days;
   }
 
   async test(file: File): Promise<boolean> {
-    return isDate(await file.lastModified()).assert(this.days);
+    return isDate(await file.lastModified()).assert(this.#days);
   }
 
   testSync(file: File): boolean {
-    return isDate(file.lastModifiedSync()).assert(this.days);
+    return isDate(file.lastModifiedSync()).assert(this.#days);
   }
 }
 
 export class Accessed extends AbstractFilePredicate {
-  private readonly days: string | number;
+  readonly #days: string | number;
 
   constructor(days: string | number) {
     super();
-    this.days = days;
+    this.#days = days;
   }
 
   async test(file: File): Promise<boolean> {
-    return isDate(await file.lastAccessed()).assert(this.days);
+    return isDate(await file.lastAccessed()).assert(this.#days);
   }
 
   testSync(file: File): boolean {
-    return isDate(file.lastAccessedSync()).assert(this.days);
+    return isDate(file.lastAccessedSync()).assert(this.#days);
   }
 }
 
 export class Changed extends AbstractFilePredicate {
-  private readonly days: string | number;
+  readonly #days: string | number;
 
   constructor(days: string | number) {
     super();
-    this.days = days;
+    this.#days = days;
   }
 
   async test(file: File): Promise<boolean> {
-    return isDate(await file.lastChanged()).assert(this.days);
+    return isDate(await file.lastChanged()).assert(this.#days);
   }
 
   testSync(file: File): boolean {
-    return isDate(file.lastChangedSync()).assert(this.days);
+    return isDate(file.lastChangedSync()).assert(this.#days);
   }
 }
 

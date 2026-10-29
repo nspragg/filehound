@@ -20,38 +20,38 @@ export function createPathError(name: string): Error {
 // matches in name order.
 export class Walk {
   readonly matcher: FilePredicate;
-  private readonly root: File;
-  private readonly rootDepth: number;
-  private readonly opts: WalkOptions;
+  readonly #root: File;
+  readonly #rootDepth: number;
+  readonly #opts: WalkOptions;
 
   constructor(root: File, matcher: FilePredicate, opts: WalkOptions) {
-    this.root = root;
-    this.rootDepth = root.getDepthSync();
+    this.#root = root;
+    this.#rootDepth = root.getDepthSync();
     this.matcher = matcher;
-    this.opts = opts;
+    this.#opts = opts;
   }
 
   get ignoreSymlinks(): boolean {
-    return this.opts.ignoreSymlinks;
+    return this.#opts.ignoreSymlinks;
   }
 
   isCandidate(file: File, isDirectory: boolean): boolean {
     if (isDirectory) {
-      return file !== this.root && this.typeEnabled(FileType.DIRECTORY);
+      return file !== this.#root && this.#typeEnabled(FileType.DIRECTORY);
     }
-    return this.typeEnabled(FileType.REGULAR) && !(this.opts.ignoreHiddenFiles && file.isHiddenSync());
+    return this.#typeEnabled(FileType.REGULAR) && !(this.#opts.ignoreHiddenFiles && file.isHiddenSync());
   }
 
   shouldSkipDirectory(dir: File): boolean {
-    if (dir === this.root) {
+    if (dir === this.#root) {
       return false;
     }
-    const atMaxDepth = this.opts.maxDepth !== undefined && dir.getDepthSync() - this.rootDepth > this.opts.maxDepth;
-    return atMaxDepth || (this.opts.ignoreHiddenDirectories && dir.isHiddenSync());
+    const atMaxDepth = this.#opts.maxDepth !== undefined && dir.getDepthSync() - this.#rootDepth > this.#opts.maxDepth;
+    return atMaxDepth || (this.#opts.ignoreHiddenDirectories && dir.isHiddenSync());
   }
 
-  private typeEnabled(type: FileType): boolean {
-    return this.opts.fileTypes.includes(type);
+  #typeEnabled(type: FileType): boolean {
+    return this.#opts.fileTypes.includes(type);
   }
 }
 
