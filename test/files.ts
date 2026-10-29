@@ -20,10 +20,17 @@ describe('Files', () => {
     });
   });
 
-  describe('.getRoot', () => {
-    it('returns the root of a given path', () => {
-      const root = files.getRoot('/a/b/c');
-      assert.equal('/', root);
+  describe('.isSubDirectory(base, candidate)', () => {
+    it('returns true for a nested relative path', () => {
+      assert.strictEqual(files.isSubDirectory('fixtures', 'fixtures/nested/deeper'), true);
+    });
+
+    it('returns true for a nested absolute path', () => {
+      assert.strictEqual(files.isSubDirectory('/a', '/a/b/c'), true);
+    });
+
+    it('returns false for a sibling', () => {
+      assert.strictEqual(files.isSubDirectory('/a/b', '/a/c'), false);
     });
   });
 });

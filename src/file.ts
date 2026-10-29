@@ -87,7 +87,7 @@ export class File {
           return path.join(this.pathname, file);
         });
     }
-    return undefined;
+    return [];
   }
 
   public async getList(glob?: string): Promise<string[]> {
@@ -119,7 +119,7 @@ export class File {
 
       return files;
     }
-    return undefined;
+    return [];
   }
 
   public getDepthSync(): number {
@@ -134,10 +134,7 @@ export class File {
   }
 
   public getAbsolutePath(): string {
-    if (path.isAbsolute(this.pathname)) {
-      return this.pathname;
-    }
-    return [this.dir, this.pathname].join(path.sep);
+    return path.resolve(this.dir, this.pathname);
   }
 
   public getCanonicalPath(): string {
@@ -240,8 +237,11 @@ export class File {
     return (/^\./).test(path.basename(this.pathname));
   }
 
+  // Normalising first means either separator is handled on Windows
   private isHiddenDirectory(): boolean {
-    return (/(^|\/)\.[^/.]/g).test(this.pathname);
+    return path.normalize(this.pathname)
+      .split(path.sep)
+      .some(segment => segment.startsWith('.') && segment !== '.' && segment !== '..');
   }
 
   private depth(pathname: string): number {

@@ -52,14 +52,14 @@ export type FileWithStats = {
  */
 export class FileHound<T = string> extends EventEmitter {
   private searchPaths: string[];
-  private maxDepth: number;
+  private maxDepth?: number;
   private types: FileType[];
-  private matchExpression: FilePredicate;
-  private _ignoreHiddenFiles: boolean;
-  private _ignoreHiddenDirectories: boolean;
-  private _ignoreSymlinks: boolean;
-  private _includeFileStats: boolean;
-  private queryLocked: boolean;
+  private matchExpression?: FilePredicate;
+  private _ignoreHiddenFiles = false;
+  private _ignoreHiddenDirectories = false;
+  private _ignoreSymlinks = false;
+  private _includeFileStats = false;
+  private queryLocked = false;
 
   public constructor() {
     super();

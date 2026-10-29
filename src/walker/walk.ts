@@ -5,9 +5,9 @@ import {FilePredicate} from '../matchers';
 
 export type WalkOptions = {
     maxDepth?: number;
-    ignoreHiddenFiles?: boolean;
-    ignoreHiddenDirectories?: boolean;
-    ignoreSymlinks?: boolean;
+    ignoreHiddenFiles: boolean;
+    ignoreHiddenDirectories: boolean;
+    ignoreSymlinks: boolean;
     fileTypes: FileType[];
 };
 

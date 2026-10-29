@@ -5,7 +5,7 @@
     "moduleResolution": "nodenext",
     "rootDir": "src",
     "outDir": "dist",
-    "strict": false,
+    "strict": true,
     "types": ["node", "mocha"],
     "sourceMap": false,
     "allowJs": false,

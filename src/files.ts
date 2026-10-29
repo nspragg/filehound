@@ -1,18 +1,12 @@
-import * as os from 'os';
 import * as path from 'path';
 
+// dirname is a fixed point at a root (`/`, `C:\`) and at `.`
 function hasParent(parent: string): boolean {
-  const root = getRoot(parent);
-  return parent && (parent !== root && parent !== '.');
+  return path.dirname(parent) !== parent;
 }
 
 function getParent(dir: string): string {
   return path.dirname(dir);
-}
-export function getRoot(dir: string): string {
-  return os.platform() === 'win32'
-    ? dir.split(path.sep)[0] + path.sep
-    : path.sep;
 }
 
 function getSubDirectories(base: string, allPaths: string[]): string[] {

@@ -795,7 +795,7 @@ describe('FileHound', async () => {
                 assert.fail('Expected an error to be thrown');
             } catch (err) {
                 assert.instanceOf(err, RangeError);
-                assert.equal(err.message, 'Depth must be a positive integer');
+                assert.equal((err as RangeError).message, 'Depth must be a positive integer');
             }
         }
     });
@@ -1317,7 +1317,7 @@ describe('FileHound', async () => {
     });
 
     describe('.changed', () => {
-        let statSync;
+        let statSync: sinon.SinonStub;
 
         before(() => {
             fs.mkdirSync(getAbsolutePath('dates'));

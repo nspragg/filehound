@@ -152,7 +152,7 @@ export class Glob extends AbstractFilePredicate {
 }
 export class TextMatch extends AbstractFilePredicate {
   private readonly pattern: string;
-  private readonly flags: string;
+  private readonly flags?: string;
 
   constructor(pattern: string, flags?: string) {
     super();
