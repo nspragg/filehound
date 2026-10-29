@@ -1,7 +1,0 @@
---recursive
---require ts-node/register
---require source-map-support/register
---ui bdd
---timeout 60000
-test/**/**/*.ts
-

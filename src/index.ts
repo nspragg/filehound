@@ -1,6 +1,6 @@
-export {FileHound, FileType, FileWithStats} from './filehound';
+export {FileHound, FileType, type FileWithStats} from './filehound.js';
 export {
-  FilePredicate,
+  type FilePredicate,
   accessed,
   applyFilter,
   applyFilterSync,
@@ -14,4 +14,4 @@ export {
   modified,
   not,
   size
-} from './matchers';
+} from './matchers.js';

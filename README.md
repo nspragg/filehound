@@ -25,7 +25,7 @@ Requires Node.js 24 or later.
 The example below prints all of the files in a directory that have the `.json` file extension:
 
 ```js
-const { FileHound, ext } = require('filehound');
+import { FileHound, ext } from 'filehound';
 
 const files = await FileHound.create()
   .paths('/some/dir')

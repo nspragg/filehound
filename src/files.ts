@@ -1,4 +1,4 @@
-import * as path from 'path';
+import * as path from 'node:path';
 
 // dirname is a fixed point at a root (`/`, `C:\`) and at `.`
 function hasParent(parent: string): boolean {

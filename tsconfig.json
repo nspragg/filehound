@@ -6,6 +6,8 @@
     "rootDir": "src",
     "outDir": "dist",
     "strict": true,
+    "verbatimModuleSyntax": true,
+    "noImplicitOverride": true,
     "erasableSyntaxOnly": true,
     "types": ["node", "mocha"],
     "sourceMap": false,

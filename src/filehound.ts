@@ -1,14 +1,14 @@
-import * as path from 'path';
+import * as path from 'node:path';
 
-import { EventEmitter } from 'events';
-import { Stats } from 'fs';
-import { from } from './arrays';
-import { reducePaths } from './files';
-import {FilePredicate, matchAll} from './matchers';
-import { File } from './file';
-import {walkAsync} from './walker/async';
-import {walkSync} from './walker/sync';
-import {WalkOptions} from './walker/walk';
+import { EventEmitter } from 'node:events';
+import type { Stats } from 'node:fs';
+import { from } from './arrays.js';
+import { reducePaths } from './files.js';
+import {type FilePredicate, matchAll} from './matchers.js';
+import type { File } from './file.js';
+import {walkAsync} from './walker/async.js';
+import {walkSync} from './walker/sync.js';
+import type {WalkOptions} from './walker/walk.js';
 
 /**
  * The types of file system entry that a search can return. The values are

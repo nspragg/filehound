@@ -1,7 +1,7 @@
-import {dirname, resolve} from 'path';
-import {File} from '../file';
-import {FileType} from '../filehound';
-import {FilePredicate} from '../matchers';
+import {dirname, resolve} from 'node:path';
+import type {File} from '../file.js';
+import {FileType} from '../filehound.js';
+import type {FilePredicate} from '../matchers.js';
 
 export type WalkOptions = {
     maxDepth?: number;
@@ -11,8 +11,8 @@ export type WalkOptions = {
     fileTypes: FileType[];
 };
 
-export function createPathError(name: string): Error {
-  return new Error(`'${name}' is not a valid path`);
+export function createPathError(name: string, cause: unknown): Error {
+  return new Error(`'${name}' is not a valid path`, {cause});
 }
 
 // State shared by a walk. The async and sync walks (async.ts and sync.ts) share

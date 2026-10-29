@@ -1,13 +1,13 @@
 import {
   constants,
-  Dirent,
+  type Dirent,
   lstatSync,
   readdirSync,
-  Stats,
+  type Stats,
   statSync
-} from 'fs';
-import * as path from 'path';
-import * as fsp from 'fs/promises';
+} from 'node:fs';
+import * as path from 'node:path';
+import * as fsp from 'node:fs/promises';
 
 type FileKind = Pick<Stats, 'isDirectory' | 'isFile'>;
 

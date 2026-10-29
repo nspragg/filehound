@@ -1,10 +1,10 @@
 import {assert} from 'chai';
-import fs from 'fs';
-import * as net from 'net';
-import * as os from 'os';
-import * as path from 'path';
+import fs from 'node:fs';
+import * as net from 'node:net';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import * as sinon from 'sinon';
-import {FileHound, FileType, FileWithStats} from '../src/filehound';
+import {FileHound, FileType, type FileWithStats} from '../src/filehound.js';
 
 import {
     accessed,
@@ -20,7 +20,7 @@ import {
     modified,
     not,
     size
-} from '../src/matchers';
+} from '../src/matchers.js';
 
 const justFiles = qualifyNames([
     '/justFiles/a.json',
@@ -869,6 +869,28 @@ describe('FileHound', async () => {
                 .find();
 
             assert.deepEqual(files, justFiles);
+        });
+
+        it('rejects an invalid path, keeping the file system error as the cause', async () => {
+            const badPath = `${fixtureDir}/justBad`;
+            try {
+                await FileHound.create().paths(badPath).find();
+                assert.fail('Expected an error to be thrown');
+            } catch (err) {
+                assert.equal((err as Error).message, `'${badPath}' is not a valid path`);
+                assert.propertyVal((err as Error).cause, 'code', 'ENOENT');
+            }
+        });
+
+        it('throws on an invalid path, keeping the file system error as the cause (sync)', () => {
+            const badPath = `${fixtureDir}/justBad`;
+            try {
+                FileHound.create().paths(badPath).findSync();
+                assert.fail('Expected an error to be thrown');
+            } catch (err) {
+                assert.equal((err as Error).message, `'${badPath}' is not a valid path`);
+                assert.propertyVal((err as Error).cause, 'code', 'ENOENT');
+            }
         });
 
         it('returns files performing a recursive search', async () => {

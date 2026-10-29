@@ -1,8 +1,8 @@
-import * as fs from 'fs';
-import {File} from '../file';
-import {FileType} from '../filehound';
-import {FilePredicate} from '../matchers';
-import {ancestorsOf, byName, createPathError, Walk, WalkOptions} from './walk';
+import * as fs from 'node:fs';
+import {File} from '../file.js';
+import {FileType} from '../filehound.js';
+import type {FilePredicate} from '../matchers.js';
+import {ancestorsOf, byName, createPathError, Walk, type WalkOptions} from './walk.js';
 
 // A linked directory that resolves to one of its own ancestors would be walked forever
 function isCyclicLink(link: File): boolean {
@@ -52,8 +52,8 @@ export function walkSync(dir: string, matcher: FilePredicate, opts: WalkOptions)
   const root = new File(dir);
   try {
     root.getStatsSync();
-  } catch {
-    throw createPathError(dir);
+  } catch (error) {
+    throw createPathError(dir, error);
   }
 
   return visit(root, new Walk(root, matcher, opts), 0, []);

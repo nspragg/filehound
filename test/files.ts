@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import * as files from '../src/files';
+import * as files from '../src/files.js';
 
 describe('Files', () => {
   describe('.notSubDirectory(subDirs)', () => {

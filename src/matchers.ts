@@ -1,6 +1,6 @@
 import {isDate, isNumber} from 'unit-compare';
-import {from} from './arrays';
-import {File} from './file';
+import {from} from './arrays.js';
+import type {File} from './file.js';
 /**
  * A composable test applied to each file found during a search
  */
@@ -80,7 +80,7 @@ export class And extends AbstractFilePredicate {
     this.#right = right;
   }
 
-  async test(file: File): Promise<boolean> {
+  override async test(file: File): Promise<boolean> {
     return await this.#left.test(file) && this.#right.test(file);
   }
 
@@ -97,7 +97,7 @@ export class Not extends AbstractFilePredicate {
     this.#filePredicate = filePredicate;
   }
 
-  async test(file: File): Promise<boolean> {
+  override async test(file: File): Promise<boolean> {
     return !await this.#filePredicate.test(file);
   }
 
@@ -116,7 +116,7 @@ export class Or extends AbstractFilePredicate {
     this.#right = right;
   }
 
-  async test(file: File): Promise<boolean> {
+  override async test(file: File): Promise<boolean> {
     return await this.#left.test(file) || this.#right.test(file);
   }
 
@@ -173,7 +173,7 @@ export class CustomFilter extends AbstractFilePredicate {
     this.#fn = fn;
   }
 
-  async test(file: File): Promise<boolean> {
+  override async test(file: File): Promise<boolean> {
     return this.#fn(file);
   }
 
@@ -203,7 +203,7 @@ export class Size extends AbstractFilePredicate {
     this.#size = sizeExpression;
   }
 
-  async test(file: File): Promise<boolean> {
+  override async test(file: File): Promise<boolean> {
     return isNumber(await file.size()).assert(this.#size);
   }
 
@@ -220,7 +220,7 @@ export class Modified extends AbstractFilePredicate {
     this.#days = days;
   }
 
-  async test(file: File): Promise<boolean> {
+  override async test(file: File): Promise<boolean> {
     return isDate(await file.lastModified()).assert(this.#days);
   }
 
@@ -237,7 +237,7 @@ export class Accessed extends AbstractFilePredicate {
     this.#days = days;
   }
 
-  async test(file: File): Promise<boolean> {
+  override async test(file: File): Promise<boolean> {
     return isDate(await file.lastAccessed()).assert(this.#days);
   }
 
@@ -254,7 +254,7 @@ export class Changed extends AbstractFilePredicate {
     this.#days = days;
   }
 
-  async test(file: File): Promise<boolean> {
+  override async test(file: File): Promise<boolean> {
     return isDate(await file.lastChanged()).assert(this.#days);
   }
 
