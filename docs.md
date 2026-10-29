@@ -166,6 +166,8 @@ const everything = await FileHound.create()
   .find();
 ```
 
+`FileType.REGULAR` and `FileType.DIRECTORY` are the strings `'regular'` and `'directory'`, so `.type('directory')` works too.
+
 #### Ignoring hidden files and directories
 
 ```js

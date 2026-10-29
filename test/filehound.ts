@@ -677,6 +677,23 @@ describe('FileHound', async () => {
             assertType(TypeError, 'Invalid file type: invalid.', 'invalid' as any);
         });
 
+        it('throws when a file type name is given instead of its value', async () => {
+            assertType(TypeError, 'Invalid file type: DIRECTORY.', 'DIRECTORY' as any);
+        });
+
+        it('accepts file type values as strings', async () => {
+            const results = await FileHound.create()
+                .paths(`${fixtureDir}/deeplyNested`)
+                .type('directory')
+                .find();
+
+            assert.deepEqual(results, await FileHound.create()
+                .paths(`${fixtureDir}/deeplyNested`)
+                .type(FileType.DIRECTORY)
+                .find());
+            assert.isNotEmpty(results);
+        });
+
         it('throws when type is absent', async () => {
             assertType(RangeError,'At least one file type must be specified');
         });

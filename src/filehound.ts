@@ -11,12 +11,17 @@ import {walkSync} from './walker/sync';
 import {WalkOptions} from './walker/walk';
 
 /**
- * The types of file system entry that a search can return.
+ * The types of file system entry that a search can return. The values are
+ * plain strings, so `'directory'` can be passed in place of `FileType.DIRECTORY`.
  */
-export enum FileType {
-  REGULAR,
-  DIRECTORY
-}
+export const FileType = {
+  REGULAR: 'regular',
+  DIRECTORY: 'directory'
+} as const;
+
+export type FileType = typeof FileType[keyof typeof FileType];
+
+const fileTypes: readonly string[] = Object.values(FileType);
 
 /**
  * A match returned when {@link FileHound.includeFileStats} is set.
@@ -411,7 +416,7 @@ export class FileHound<T = string> extends EventEmitter {
     }
 
     types.forEach((type) => {
-      if (!Object.values(FileType).includes(type)) {
+      if (!fileTypes.includes(type)) {
         throw new TypeError(`Invalid file type: ${type}.`);
       }
     });
