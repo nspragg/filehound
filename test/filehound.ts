@@ -19,8 +19,7 @@ import {
     matchAll,
     modified,
     not,
-    size,
-    socket
+    size
 } from '../src/matchers';
 
 const justFiles = qualifyNames([
@@ -1111,7 +1110,7 @@ describe('FileHound', async () => {
         });
     });
 
-    describe('.socket', () => {
+    describe('special files', () => {
         let tmpDir: string;
         let server: net.Server;
 
@@ -1128,11 +1127,11 @@ describe('FileHound', async () => {
             });
         });
 
-        it('returns sockets', async () => {
-            const query = (): FileHound => FileHound.create().paths(tmpDir).match(socket());
+        it('are not returned as regular files', async () => {
+            const query = (): FileHound => FileHound.create().paths(tmpDir);
 
-            assert.deepEqual(await query().find(), [path.join(tmpDir, 's.sock')]);
-            assert.deepEqual(query().findSync(), [path.join(tmpDir, 's.sock')]);
+            assert.deepEqual(await query().find(), [path.join(tmpDir, 'a.txt')]);
+            assert.deepEqual(query().findSync(), [path.join(tmpDir, 'a.txt')]);
         });
     });
 

@@ -1,5 +1,6 @@
 import * as fsp from 'fs/promises';
 import {File} from '../file';
+import {FileType} from '../filehound';
 import {FilePredicate} from '../matchers';
 import {ancestorsOf, byName, createPathError, Walk, WalkOptions} from './walk';
 
@@ -36,7 +37,8 @@ async function visit(file: File, walk: Walk): Promise<File[]> {
     return [];
   }
 
-  const matches = walk.isCandidate(file, isDirectory) && await walk.matcher.test(file) ? [file] : [];
+  const type = isDirectory ? FileType.DIRECTORY : await file.isFile() ? FileType.REGULAR : undefined;
+  const matches = walk.isCandidate(file, type) && await walk.matcher.test(file) ? [file] : [];
 
   if (isDirectory) {
     const children = (await file.getFiles()).sort(byName);

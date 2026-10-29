@@ -269,16 +269,6 @@ export class MatchAll extends AbstractFilePredicate {
   }
 }
 
-export class Socket extends AbstractFilePredicate {
-  async test(file: File): Promise<boolean> {
-    return file.isSocket();
-  }
-
-  testSync(file: File): boolean {
-    return file.isSocketSync();
-  }
-}
-
 /**
  * Matches files with any of the given extensions. A leading dot is optional.
  *
@@ -333,15 +323,6 @@ export function size(s:  number | string): FilePredicate {
  */
 export function isEmpty(): FilePredicate {
   return new Size(0);
-}
-
-/**
- * Matches socket files
- *
- * @returns the predicate
- */
-export function socket(): FilePredicate {
-  return new Socket();
 }
 
 /**

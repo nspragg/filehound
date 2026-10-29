@@ -9,7 +9,7 @@ import {
 import * as path from 'path';
 import * as fsp from 'fs/promises';
 
-type FileKind = Pick<Stats, 'isDirectory' | 'isFile' | 'isSocket'>;
+type FileKind = Pick<Stats, 'isDirectory' | 'isFile'>;
 
 function matchesName(file: File, globPattern: string): boolean {
   return path.matchesGlob(path.basename(file.getName()), globPattern);
@@ -36,20 +36,12 @@ export class File {
     return this.#getKindSync().isDirectory();
   }
 
-  public isSocketSync(): boolean {
-    return this.#getKindSync().isSocket();
-  }
-
   public isFileSync(): boolean {
     return this.#getKindSync().isFile();
   }
 
   public async isDirectory(): Promise<boolean> {
     return (await this.#getKind()).isDirectory();
-  }
-
-  public async isSocket(): Promise<boolean> {
-    return (await this.#getKind()).isSocket();
   }
 
   public async isFile(): Promise<boolean> {

@@ -15,6 +15,7 @@ import {WalkOptions} from './walker/walk';
  * plain strings, so `'directory'` can be passed in place of `FileType.DIRECTORY`.
  */
 export const FileType = {
+  /** Regular files only: not sockets, FIFOs or devices */
   REGULAR: 'regular',
   DIRECTORY: 'directory'
 } as const;

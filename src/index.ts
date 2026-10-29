@@ -13,6 +13,5 @@ export {
   matchAll,
   modified,
   not,
-  size,
-  socket
+  size
 } from './matchers';

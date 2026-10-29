@@ -35,11 +35,15 @@ export class Walk {
     return this.#opts.ignoreSymlinks;
   }
 
-  isCandidate(file: File, isDirectory: boolean): boolean {
-    if (isDirectory) {
+  // type is undefined for entries that are neither, such as sockets and FIFOs
+  isCandidate(file: File, type?: FileType): boolean {
+    if (type === FileType.DIRECTORY) {
       return file !== this.#root && this.#typeEnabled(FileType.DIRECTORY);
     }
-    return this.#typeEnabled(FileType.REGULAR) && !(this.#opts.ignoreHiddenFiles && file.isHiddenSync());
+    if (type === FileType.REGULAR) {
+      return this.#typeEnabled(FileType.REGULAR) && !(this.#opts.ignoreHiddenFiles && file.isHiddenSync());
+    }
+    return false;
   }
 
   shouldSkipDirectory(dir: File): boolean {

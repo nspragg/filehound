@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import {File} from '../file';
+import {FileType} from '../filehound';
 import {FilePredicate} from '../matchers';
 import {ancestorsOf, byName, createPathError, Walk, WalkOptions} from './walk';
 
@@ -30,7 +31,8 @@ function visit(file: File, walk: Walk): File[] {
     return [];
   }
 
-  const matches = walk.isCandidate(file, isDirectory) && walk.matcher.testSync(file) ? [file] : [];
+  const type = isDirectory ? FileType.DIRECTORY : file.isFileSync() ? FileType.REGULAR : undefined;
+  const matches = walk.isCandidate(file, type) && walk.matcher.testSync(file) ? [file] : [];
 
   if (isDirectory) {
     const children = file.getFilesSync().sort(byName);
