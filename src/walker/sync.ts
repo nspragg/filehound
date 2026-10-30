@@ -1,8 +1,7 @@
 import * as fs from 'node:fs';
 import {File} from '../file.js';
-import {FileType} from '../filehound.js';
 import type {FilePredicate} from '../matchers.js';
-import {ancestorsOf, byName, createPathError, Walk, type WalkOptions} from './walk.js';
+import {ancestorsOf, byName, createPathError, EntryType, typeOf, Walk, type WalkOptions} from './walk.js';
 
 // A linked directory that resolves to one of its own ancestors would be walked forever
 function isCyclicLink(link: File): boolean {
@@ -11,37 +10,45 @@ function isCyclicLink(link: File): boolean {
 }
 
 // Broken links are skipped, as are all links when ignoreSymlinks is set
-function isVisitable(file: File, walk: Walk): boolean {
-  if (!file.isSymbolicLinkSync()) {
-    return true;
-  }
+function isVisitableLink(link: File, walk: Walk): boolean {
   if (walk.ignoreSymlinks) {
     return false;
   }
   try {
-    return !(file.isDirectorySync() && isCyclicLink(file));
+    return !(link.isDirectorySync() && isCyclicLink(link));
   } catch {
     return false;
   }
 }
 
+// The root and links have no known kind, so need a stat
+function visitUntyped(file: File, walk: Walk, depth: number, matches: File[]): File[] {
+  return visitTyped(file, typeOf(file.getStatsSync()), walk, depth, matches);
+}
+
+function visitLink(link: File, walk: Walk, depth: number, matches: File[]): File[] {
+  return isVisitableLink(link, walk) ? visitUntyped(link, walk, depth, matches) : matches;
+}
+
 // Entries are visited depth first in name order, adding to a single list of matches
-function visit(file: File, walk: Walk, depth: number, matches: File[]): File[] {
-  const isDirectory = file.isDirectorySync();
-  if (isDirectory && walk.shouldSkipDirectory(file)) {
+function visitTyped(file: File, type: EntryType, walk: Walk, depth: number, matches: File[]): File[] {
+  if (type === EntryType.DIRECTORY && walk.shouldSkipDirectory(file)) {
     return matches;
   }
 
-  const type = isDirectory ? FileType.DIRECTORY : file.isFileSync() ? FileType.REGULAR : undefined;
   if (walk.isCandidate(file, type) && walk.matcher.testSync(file)) {
     matches.push(file);
   }
 
-  if (isDirectory && walk.canDescend(depth)) {
+  if (type === EntryType.DIRECTORY && walk.canDescend(depth)) {
     const children = file.getFilesSync().sort(byName);
+    // Children always have a dirent, so only links lack a known kind
     for (const child of children) {
-      if (isVisitable(child, walk)) {
-        visit(child, walk, depth + 1, matches);
+      const kind = child.getKnownKind();
+      if (kind) {
+        visitTyped(child, typeOf(kind), walk, depth + 1, matches);
+      } else {
+        visitLink(child, walk, depth + 1, matches);
       }
     }
   }
@@ -56,5 +63,5 @@ export function walkSync(dir: string, matcher: FilePredicate, opts: WalkOptions)
     throw createPathError(dir, error);
   }
 
-  return visit(root, new Walk(root, matcher, opts), 0, []);
+  return visitUntyped(root, new Walk(root, matcher, opts), 0, []);
 }

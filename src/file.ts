@@ -9,7 +9,7 @@ import {
 import * as path from 'node:path';
 import * as fsp from 'node:fs/promises';
 
-type FileKind = Pick<Stats, 'isDirectory' | 'isFile'>;
+export type FileKind = Pick<Stats, 'isDirectory' | 'isFile'>;
 
 function matchesName(file: File, globPattern: string): boolean {
   return path.matchesGlob(path.basename(file.getName()), globPattern);
@@ -46,6 +46,12 @@ export class File {
 
   public async isFile(): Promise<boolean> {
     return (await this.#getKind()).isFile();
+  }
+
+  // The kind readdir gave, so needs no I/O. Undefined for links, whose targets
+  // are reported, and for files made without a dirent, such as a walk's root.
+  public getKnownKind(): FileKind | undefined {
+    return this.#dirent?.isSymbolicLink() ? undefined : this.#dirent;
   }
 
   public isSymbolicLinkSync(): boolean {
@@ -212,17 +218,12 @@ export class File {
     return new File(prefix + entry.name, entry, this.#root ?? this.#pathname);
   }
 
-  // Symlinks are left to stat so their targets are reported
-  #getKnownKind(): FileKind | undefined {
-    return this.#dirent?.isSymbolicLink() ? undefined : this.#dirent;
-  }
-
   #getKindSync(): FileKind {
-    return this.#getKnownKind() ?? this.getStatsSync();
+    return this.getKnownKind() ?? this.getStatsSync();
   }
 
   async #getKind(): Promise<FileKind> {
-    return this.#getKnownKind() ?? this.getStats();
+    return this.getKnownKind() ?? this.getStats();
   }
 
   #isHiddenFile(): boolean {

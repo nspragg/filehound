@@ -1,8 +1,7 @@
 import * as fsp from 'node:fs/promises';
 import {File} from '../file.js';
-import {FileType} from '../filehound.js';
 import type {FilePredicate} from '../matchers.js';
-import {ancestorsOf, byName, createPathError, Walk, type WalkOptions} from './walk.js';
+import {ancestorsOf, byName, createPathError, EntryType, typeOf, Walk, type WalkOptions} from './walk.js';
 
 // A linked directory that resolves to one of its own ancestors would be walked forever
 async function isCyclicLink(link: File): Promise<boolean> {
@@ -16,39 +15,66 @@ async function isCyclicLink(link: File): Promise<boolean> {
 }
 
 // Broken links are skipped, as are all links when ignoreSymlinks is set
-async function isVisitable(file: File, walk: Walk): Promise<boolean> {
-  if (!await file.isSymbolicLink()) {
-    return true;
-  }
+async function isVisitableLink(link: File, walk: Walk): Promise<boolean> {
   if (walk.ignoreSymlinks) {
     return false;
   }
   try {
-    return !(await file.isDirectory() && await isCyclicLink(file));
+    return !(await link.isDirectory() && await isCyclicLink(link));
   } catch {
     return false;
   }
 }
 
-// Entries are visited concurrently, then their matches are joined in name order.
-// concat, not push(...matches): spreading over ~120k elements overflows the stack.
-async function visit(file: File, walk: Walk, depth: number): Promise<File[]> {
-  const isDirectory = await file.isDirectory();
-  if (isDirectory && walk.shouldSkipDirectory(file)) {
+// A promise per entry is the main cost of an async walk, so one is only made
+// when needed: for a directory to read, a link or root to stat, or a matcher that
+// needs I/O. Anything else, such as a file typed by readdir and matched by
+// extension, is visited synchronously.
+type Visited = File[] | Promise<File[]>;
+
+// The root and links have no known kind, so need a stat
+async function visitUntyped(file: File, walk: Walk, depth: number): Promise<File[]> {
+  return visitTyped(file, typeOf(await file.getStats()), walk, depth);
+}
+
+async function visitLink(link: File, walk: Walk, depth: number): Promise<File[]> {
+  return await isVisitableLink(link, walk) ? visitUntyped(link, walk, depth) : [];
+}
+
+function visitTyped(file: File, type: EntryType, walk: Walk, depth: number): Visited {
+  if (type === EntryType.DIRECTORY && walk.shouldSkipDirectory(file)) {
     return [];
   }
-
-  const type = isDirectory ? FileType.DIRECTORY : await file.isFile() ? FileType.REGULAR : undefined;
-  const matches = walk.isCandidate(file, type) && await walk.matcher.test(file) ? [file] : [];
-
-  if (isDirectory && walk.canDescend(depth)) {
-    const children = (await file.getFiles()).sort(byName);
-    const childMatches = await Promise.all(children.map(async (child) => {
-      return await isVisitable(child, walk) ? visit(child, walk, depth + 1) : [];
-    }));
-    return matches.concat(childMatches.flat());
+  if (!walk.isCandidate(file, type)) {
+    return descend(file, type, walk, depth, []);
   }
-  return matches;
+  if (walk.isSyncMatcher) {
+    return descend(file, type, walk, depth, walk.matcher.testSync(file) ? [file] : []);
+  }
+  return walk.matcher.test(file).then(isMatch => descend(file, type, walk, depth, isMatch ? [file] : []));
+}
+
+function descend(file: File, type: EntryType, walk: Walk, depth: number, matches: File[]): Visited {
+  return type === EntryType.DIRECTORY && walk.canDescend(depth) ? visitChildren(file, walk, depth, matches) : matches;
+}
+
+// Children are visited concurrently, then their matches are joined in name order.
+// concat, not push(...matches): spreading over ~120k elements overflows the stack.
+async function visitChildren(dir: File, walk: Walk, depth: number, matches: File[]): Promise<File[]> {
+  const children = (await dir.getFiles()).sort(byName);
+  // Children always have a dirent, so only links lack a known kind
+  const visited = children.map((child) => {
+    const kind = child.getKnownKind();
+    return kind ? visitTyped(child, typeOf(kind), walk, depth + 1) : visitLink(child, walk, depth + 1);
+  });
+
+  const pending = visited.filter(result => result instanceof Promise);
+  if (pending.length === 0) {
+    return matches.concat((visited as File[][]).flat());
+  }
+  const settled = await Promise.all(pending);
+  let next = 0;
+  return matches.concat(visited.flatMap(result => result instanceof Promise ? settled[next++] : result));
 }
 
 export async function walkAsync(dir: string, matcher: FilePredicate, opts: WalkOptions): Promise<File[]> {
@@ -59,5 +85,5 @@ export async function walkAsync(dir: string, matcher: FilePredicate, opts: WalkO
     throw createPathError(dir, error);
   }
 
-  return visit(root, new Walk(root, matcher, opts), 0);
+  return visitUntyped(root, new Walk(root, matcher, opts), 0);
 }

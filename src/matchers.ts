@@ -49,6 +49,19 @@ export interface FilePredicate {
   testSync(file: File): boolean;
 }
 
+// Brands predicates that test a file without I/O, so find() can call testSync
+// and save a promise per file. The symbol is not exported from the package, so
+// any other predicate is assumed to need I/O and is tested with test().
+const sync = Symbol('SyncFilePredicate');
+
+export interface SyncFilePredicate extends FilePredicate {
+  readonly [sync]: true;
+}
+
+export function isSyncPredicate(predicate: FilePredicate): predicate is SyncFilePredicate {
+  return (predicate as Partial<SyncFilePredicate>)[sync] === true;
+}
+
 // Predicates that need no I/O only implement testSync
 export abstract class AbstractFilePredicate implements FilePredicate {
   or(f: FilePredicate): FilePredicate {
@@ -80,6 +93,10 @@ export class And extends AbstractFilePredicate {
     this.#right = right;
   }
 
+  get [sync](): boolean {
+    return isSyncPredicate(this.#left) && isSyncPredicate(this.#right);
+  }
+
   override async test(file: File): Promise<boolean> {
     return await this.#left.test(file) && this.#right.test(file);
   }
@@ -95,6 +112,10 @@ export class Not extends AbstractFilePredicate {
   constructor(filePredicate: FilePredicate) {
     super();
     this.#filePredicate = filePredicate;
+  }
+
+  get [sync](): boolean {
+    return isSyncPredicate(this.#filePredicate);
   }
 
   override async test(file: File): Promise<boolean> {
@@ -116,6 +137,10 @@ export class Or extends AbstractFilePredicate {
     this.#right = right;
   }
 
+  get [sync](): boolean {
+    return isSyncPredicate(this.#left) && isSyncPredicate(this.#right);
+  }
+
   override async test(file: File): Promise<boolean> {
     return await this.#left.test(file) || this.#right.test(file);
   }
@@ -126,6 +151,8 @@ export class Or extends AbstractFilePredicate {
 }
 
 export class Extension extends AbstractFilePredicate {
+  readonly [sync] = true;
+
   readonly #extensions: string[];
 
   constructor(extensions: string[]) {
@@ -139,6 +166,8 @@ export class Extension extends AbstractFilePredicate {
 }
 
 export class Glob extends AbstractFilePredicate {
+  readonly [sync] = true;
+
   readonly #globPattern: string;
 
   constructor(globPattern: string) {
@@ -151,6 +180,8 @@ export class Glob extends AbstractFilePredicate {
   }
 }
 export class TextMatch extends AbstractFilePredicate {
+  readonly [sync] = true;
+
   readonly #pattern: string;
   readonly #flags?: string;
 
@@ -183,6 +214,8 @@ export class CustomFilter extends AbstractFilePredicate {
 }
 
 export class CustomFilterSync extends AbstractFilePredicate {
+  readonly [sync] = true;
+
   readonly #fn: (path: File) => boolean;
 
   constructor(fn: (path: File) => boolean) {
@@ -264,6 +297,8 @@ export class Changed extends AbstractFilePredicate {
 }
 
 export class MatchAll extends AbstractFilePredicate {
+  readonly [sync] = true;
+
   testSync(_file: File): boolean {
     return true;
   }

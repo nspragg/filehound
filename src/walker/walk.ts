@@ -1,7 +1,7 @@
 import {dirname, resolve} from 'node:path';
-import type {File} from '../file.js';
-import {FileType} from '../filehound.js';
-import type {FilePredicate} from '../matchers.js';
+import type {File, FileKind} from '../file.js';
+import {FileType} from '../filetype.js';
+import {type FilePredicate, isSyncPredicate} from '../matchers.js';
 
 export type WalkOptions = {
     maxDepth?: number;
@@ -10,6 +10,12 @@ export type WalkOptions = {
     ignoreSymlinks: boolean;
     fileTypes: FileType[];
 };
+
+// Every entry has one. FileType is the public subset; anything else, such as a
+// socket or FIFO, is OTHER and never matched.
+export const EntryType = {...FileType, OTHER: 'other'} as const;
+
+export type EntryType = typeof EntryType[keyof typeof EntryType];
 
 export function createPathError(name: string, cause: unknown): Error {
   return new Error(`'${name}' is not a valid path`, {cause});
@@ -20,12 +26,15 @@ export function createPathError(name: string, cause: unknown): Error {
 // matches in name order.
 export class Walk {
   readonly matcher: FilePredicate;
+  // Checked once, as combined predicates work it out from their parts
+  readonly isSyncMatcher: boolean;
   readonly #root: File;
   readonly #opts: WalkOptions;
 
   constructor(root: File, matcher: FilePredicate, opts: WalkOptions) {
     this.#root = root;
     this.matcher = matcher;
+    this.isSyncMatcher = isSyncPredicate(matcher);
     this.#opts = opts;
   }
 
@@ -33,15 +42,15 @@ export class Walk {
     return this.#opts.ignoreSymlinks;
   }
 
-  // type is undefined for entries that are neither, such as sockets and FIFOs
-  isCandidate(file: File, type?: FileType): boolean {
-    if (type === FileType.DIRECTORY) {
-      return file !== this.#root && this.#typeEnabled(FileType.DIRECTORY);
+  isCandidate(file: File, type: EntryType): boolean {
+    switch (type) {
+      case EntryType.DIRECTORY:
+        return file !== this.#root && this.#typeEnabled(type);
+      case EntryType.REGULAR:
+        return this.#typeEnabled(type) && !(this.#opts.ignoreHiddenFiles && file.isHiddenSync());
+      case EntryType.OTHER:
+        return false;
     }
-    if (type === FileType.REGULAR) {
-      return this.#typeEnabled(FileType.REGULAR) && !(this.#opts.ignoreHiddenFiles && file.isHiddenSync());
-    }
-    return false;
   }
 
   // Hidden directories are neither returned nor walked
@@ -60,6 +69,10 @@ export class Walk {
   }
 }
 
+export function typeOf(kind: FileKind): EntryType {
+  return kind.isDirectory() ? EntryType.DIRECTORY : kind.isFile() ? EntryType.REGULAR : EntryType.OTHER;
+}
+
 export function byName(a: File, b: File): number {
   return a.getName() < b.getName() ? -1 : a.getName() > b.getName() ? 1 : 0;
 }
@@ -72,5 +85,6 @@ export function ancestorsOf(file: File): string[] {
     ancestor = dirname(ancestor);
   }
   ancestors.push(ancestor);
+
   return ancestors;
 }

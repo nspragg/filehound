@@ -4,7 +4,8 @@ import * as net from 'node:net';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import * as sinon from 'sinon';
-import {FileHound, FileType, type FileWithStats} from '../src/filehound.js';
+import {FileHound, type FileWithStats} from '../src/filehound.js';
+import {FileType} from '../src/filetype.js';
 
 import {
     accessed,
@@ -13,8 +14,10 @@ import {
     changed,
     discard,
     ext,
+    type FilePredicate,
     glob,
     isEmpty,
+    isSyncPredicate,
     like,
     matchAll,
     modified,
@@ -1139,6 +1142,44 @@ describe('FileHound', async () => {
 
             assert.deepEqual(await query().find(), qualifyNames(['/custom/passed.txt']));
             assert.deepEqual(query().findSync(), qualifyNames(['/custom/passed.txt']));
+        });
+    });
+
+    describe('isSyncPredicate', () => {
+        it('is true for predicates that only use the file name', () => {
+            assert.isTrue(isSyncPredicate(ext('json')));
+            assert.isTrue(isSyncPredicate(glob('*.json')));
+            assert.isTrue(isSyncPredicate(like('json')));
+            assert.isTrue(isSyncPredicate(discard('node_modules')));
+            assert.isTrue(isSyncPredicate(matchAll()));
+            assert.isTrue(isSyncPredicate(applyFilterSync(() => true)));
+        });
+
+        it('is false for predicates that read the file', () => {
+            assert.isFalse(isSyncPredicate(size('>0')));
+            assert.isFalse(isSyncPredicate(modified('<1 day')));
+            assert.isFalse(isSyncPredicate(accessed('<1 day')));
+            assert.isFalse(isSyncPredicate(changed('<1 day')));
+            assert.isFalse(isSyncPredicate(isEmpty()));
+            assert.isFalse(isSyncPredicate(applyFilter(async () => true)));
+        });
+
+        it('is true for a combined predicate only when every part is', () => {
+            assert.isTrue(isSyncPredicate(ext('json').and(glob('*')).or(not(ext('txt')))));
+            assert.isFalse(isSyncPredicate(ext('json').and(size('>0'))));
+            assert.isFalse(isSyncPredicate(ext('json').or(size('>0'))));
+            assert.isFalse(isSyncPredicate(not(size('>0'))));
+        });
+
+        it('is false for a predicate that is not one of ours', () => {
+            const custom: FilePredicate = {
+                test: async () => true,
+                testSync: () => true,
+                not: () => custom,
+                or: () => custom,
+                and: () => custom
+            };
+            assert.isFalse(isSyncPredicate(custom));
         });
     });
 

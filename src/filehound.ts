@@ -6,21 +6,10 @@ import { from } from './arrays.js';
 import { reducePaths } from './files.js';
 import {type FilePredicate, matchAll} from './matchers.js';
 import type { File } from './file.js';
+import {FileType} from './filetype.js';
 import {walkAsync} from './walker/async.js';
 import {walkSync} from './walker/sync.js';
 import type {WalkOptions} from './walker/walk.js';
-
-/**
- * The types of file system entry that a search can return. The values are
- * plain strings, so `'directory'` can be passed in place of `FileType.DIRECTORY`.
- */
-export const FileType = {
-  /** Regular files only: not sockets, FIFOs or devices */
-  REGULAR: 'regular',
-  DIRECTORY: 'directory'
-} as const;
-
-export type FileType = typeof FileType[keyof typeof FileType];
 
 const fileTypes: readonly string[] = Object.values(FileType);
 
