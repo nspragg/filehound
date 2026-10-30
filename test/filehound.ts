@@ -71,6 +71,14 @@ function createFile(fname: string, opts: any): void {
     fs.closeSync(fd);
 }
 
+async function collect<T>(matches: AsyncIterable<T>): Promise<T[]> {
+    const found = [];
+    for await (const match of matches) {
+        found.push(match);
+    }
+    return found;
+}
+
 function deleteFile(fname: fs.PathLike): void {
     fs.unlinkSync(fname);
 }
@@ -1757,6 +1765,142 @@ describe('FileHound', async () => {
                 fh.findSync();
                 fh.ignoreSymlinks();
             }, Error, 'Cannot modify query after search has started');
+        });
+    });
+
+    describe('.iterate', () => {
+        it('returns the same matches as find, in the same order', async () => {
+            const query = (): FileHound => FileHound.create().paths(`${fixtureDir}/nested`);
+
+            assert.deepEqual(await collect(query().iterate()), await query().find());
+        });
+
+        it('returns matches with their stats', async () => {
+            const files = await collect(FileHound.create()
+                .paths(`${fixtureDir}/justFiles`)
+                .includeFileStats()
+                .iterate());
+
+            assert.deepEqual(files.map(file => file.path), justFiles);
+            assert.isTrue(files[0].stats.isFile());
+        });
+
+        it('stops the search when the loop is left early', async () => {
+            const found = [];
+            for await (const file of FileHound.create().paths(`${fixtureDir}/justFiles`).iterate()) {
+                found.push(file);
+                break;
+            }
+
+            assert.deepEqual(found, [justFiles[0]]);
+        });
+
+        it('rejects an invalid path when iterated', async () => {
+            const iterator = FileHound.create().paths(`${fixtureDir}/justBad`).iterate();
+
+            try {
+                await iterator.next();
+            } catch (err) {
+                assert.match((err as Error).message, /is not a valid path/);
+                return;
+            }
+            assert.fail('Expected to reject!');
+        });
+
+        it('emits no events', async () => {
+            const spy = sinon.spy();
+            const fh = FileHound.create().paths(`${fixtureDir}/justFiles`);
+            fh.on('match', spy).on('end', spy);
+
+            await collect(fh.iterate());
+
+            sinon.assert.notCalled(spy);
+        });
+
+        it('throws when modifying the query after iterate is called', () => {
+            assert.throws(() => {
+                const fh = FileHound.create().paths(`${fixtureDir}/justFiles`);
+                fh.iterate();
+                fh.depth(1);
+            }, Error, 'Cannot modify query after search has started');
+        });
+    });
+
+    // The async walk reads directories, and visits siblings, ahead of where it
+    // has got to, up to fixed limits. These trees are bigger than both.
+    describe('walk order', () => {
+        let tmpDir: string;
+
+        function inTmp(...names: string[]): string {
+            return path.join(tmpDir, ...names);
+        }
+
+        before(() => {
+            tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'filehound-'));
+            for (const top of ['a', 'b', 'c']) {
+                for (let i = 0; i < 30; i++) {
+                    const dir = inTmp(top, `d${i}`);
+                    fs.mkdirSync(dir, {recursive: true});
+                    for (let j = 0; j < 70; j++) {
+                        fs.writeFileSync(path.join(dir, `f${j}.${j % 2 ? 'txt' : 'json'}`), '');
+                    }
+                }
+            }
+            fs.symlinkSync(inTmp('c'), inTmp('b', 'link'), 'dir');
+            fs.mkdirSync(inTmp('a', '.hidden'));
+            fs.writeFileSync(inTmp('a', '.hidden', 'x.json'), '');
+        });
+
+        after(() => {
+            fs.rmSync(tmpDir, {recursive: true, force: true});
+        });
+
+        const queries: Record<string, () => FileHound> = {
+            'all files': () => FileHound.create().paths(tmpDir),
+            'a sync matcher': () => FileHound.create().paths(tmpDir).match(ext('json')),
+            // Custom filters aren't known to be sync, so are tested as needing I/O
+            'a matcher needing I/O': () => FileHound.create().paths(tmpDir).match(applyFilterSync(file => file.getName().endsWith('1.txt'))),
+            'directories': () => FileHound.create().paths(tmpDir).type(FileType.DIRECTORY),
+            'hidden directories ignored': () => FileHound.create().paths(tmpDir).ignoreHiddenDirectories(),
+            'a depth limit': () => FileHound.create().paths(tmpDir).depth(1).type(FileType.DIRECTORY, FileType.REGULAR)
+        };
+
+        for (const [name, query] of Object.entries(queries)) {
+            it(`matches findSync with ${name}`, async () => {
+                const expected = query().findSync();
+
+                assert.isNotEmpty(expected);
+                assert.deepEqual(await query().find(), expected);
+                assert.deepEqual(await collect(query().iterate()), expected);
+            });
+        }
+
+        it('rejects, without an unhandled rejection, when a directory read ahead cannot be read', async function () {
+            if (process.getuid?.() === 0) {
+                this.skip();
+            }
+            const unhandled = sinon.spy();
+            process.on('unhandledRejection', unhandled);
+            const locked = inTmp('c', 'd29');
+            fs.chmodSync(locked, 0o000);
+            try {
+                // Leaving early, before reaching the unreadable directory
+                for await (const file of FileHound.create().paths(tmpDir).iterate()) {
+                    assert.ok(file);
+                    break;
+                }
+                try {
+                    await FileHound.create().paths(tmpDir).find();
+                    assert.fail('Expected to reject!');
+                } catch (err) {
+                    assert.equal((err as NodeJS.ErrnoException).code, 'EACCES');
+                }
+                await new Promise(resolve => setTimeout(resolve, 50));
+                sinon.assert.notCalled(unhandled);
+            } finally {
+                fs.chmodSync(locked, 0o755);
+                process.off('unhandledRejection', unhandled);
+            }
         });
     });
 });

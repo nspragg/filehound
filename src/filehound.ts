@@ -336,29 +336,52 @@ export class FileHound<T = string> extends EventEmitter {
   public async find(): Promise<T[]> {
     this.#queryLocked = true;
 
-    const searches = [];
-    const paths = this.getPaths();
-
-    for (const currentPath of paths) {
-      searches.push(this.#searchAsync(currentPath));
-    }
-
+    // push, not concat per batch, which would copy the results each time
+    const found: T[] = [];
     try {
-      const files = (await Promise.all(searches)).flat();
-      // Stats are only fetched when asked for, saving a promise per match
-      const results = this.#includeFileStats
-        ? await Promise.all(files.map(file => this.#toResult(file)))
-        : files.map(file => file.getName() as T);
-      for (const result of results) {
-        this.emit('match', result);
+      for await (const results of this.#results()) {
+        for (const result of results) {
+          found.push(result);
+          this.emit('match', result);
+        }
       }
-      return results;
+      return found;
     } catch (error) {
       this.emit('error', error);
       throw error;
     } finally {
       this.emit('end');
     }
+  }
+
+  /**
+   * Asynchronously executes a file search, returning matches one at a time
+   * as they are found, in the same order as {@link FileHound.find}. Once
+   * called, the query is locked and can no longer be modified. No events are
+   * emitted.
+   *
+   * @remarks
+   * The search runs ahead of the loop by a bounded amount, so a large search
+   * can be read without holding every match in memory. Breaking out of the
+   * loop stops the search.
+   *
+   * @returns an async iterator of matches
+   * @example
+   * ```ts
+   * import { FileHound, ext } from 'filehound';
+   *
+   * const query = FileHound.create()
+   *   .paths('/tmp')
+   *   .match(ext('json'));
+   *
+   * for await (const file of query.iterate()) {
+   *   console.log(file);
+   * }
+   * ```
+   */
+  public iterate(): AsyncGenerator<T> {
+    this.#queryLocked = true;
+    return this.#iterate();
   }
 
   /**
@@ -438,8 +461,23 @@ export class FileHound<T = string> extends EventEmitter {
     return walkSync(dir, this.#getMatchExpression(), this.#getOptions());
   }
 
-  async #searchAsync(dir: string): Promise<File[]> {
-    return walkAsync(dir, this.#getMatchExpression(), this.#getOptions());
+  async *#iterate(): AsyncGenerator<T> {
+    for await (const results of this.#results()) {
+      yield* results;
+    }
+  }
+
+  // Results come in batches, as a promise per batch costs far less than one
+  // per match. Search paths are walked in turn, so results stay in path order.
+  async *#results(): AsyncGenerator<T[]> {
+    for (const dir of this.getPaths()) {
+      for await (const files of walkAsync(dir, this.#getMatchExpression(), this.#getOptions())) {
+        // Stats are only fetched when asked for, saving a promise per match
+        yield this.#includeFileStats
+          ? await Promise.all(files.map(file => this.#toResult(file)))
+          : files.map(file => file.getName() as T);
+      }
+    }
   }
 
   #getOptions(): WalkOptions {
