@@ -14,6 +14,17 @@ import type {WalkOptions} from './walker/walk.js';
 const fileTypes: readonly string[] = Object.values(FileType);
 
 /**
+ * Options for {@link FileHound.find} and {@link FileHound.iterate}.
+ */
+export type SearchOptions = {
+  /**
+   * Stops the search when aborted. The search then rejects with the
+   * signal's reason, which is an `AbortError` unless another is given.
+   */
+  signal?: AbortSignal;
+};
+
+/**
  * A match returned when {@link FileHound.includeFileStats} is set.
  */
 export type FileWithStats = {
@@ -316,12 +327,13 @@ export class FileHound<T = string> extends EventEmitter {
    * Asynchronously executes a file search. Once called, the query is
    * locked and can no longer be modified.
    *
+   * @param options - a signal to stop the search
    * @returns a Promise of all matches. If the Promise fulfils,
    * the fulfilment value is an array of all matching files
    *
    * @remarks
    * Emits a `match` event for each matching file, an `error` event if the
-   * search fails and an `end` event when the search completes.
+   * search fails or is aborted and an `end` event when the search completes.
    *
    * @example
    * ```ts
@@ -332,17 +344,25 @@ export class FileHound<T = string> extends EventEmitter {
    *
    * console.log(files);
    * ```
+   * @example
+   * Giving up on a search after five seconds:
+   * ```ts
+   * const files = await FileHound.create()
+   *   .paths('/')
+   *   .find({ signal: AbortSignal.timeout(5000) });
+   * ```
    */
-  public async find(): Promise<T[]> {
+  public async find(options: SearchOptions = {}): Promise<T[]> {
     this.#queryLocked = true;
 
     // push, not concat per batch, which would copy the results each time
     const found: T[] = [];
     try {
-      for await (const results of this.#results()) {
+      for await (const results of this.#results(options.signal)) {
         for (const result of results) {
           found.push(result);
           this.emit('match', result);
+          options.signal?.throwIfAborted();
         }
       }
       return found;
@@ -357,14 +377,19 @@ export class FileHound<T = string> extends EventEmitter {
   /**
    * Asynchronously executes a file search, returning matches one at a time
    * as they are found, in the same order as {@link FileHound.find}. Once
-   * called, the query is locked and can no longer be modified. No events are
-   * emitted.
+   * called, the query is locked and can no longer be modified.
    *
    * @remarks
    * The search runs ahead of the loop by a bounded amount, so a large search
    * can be read without holding every match in memory. Breaking out of the
    * loop stops the search.
    *
+   * Emits a `match` event as each match is returned, an `error` event if the
+   * search fails or is aborted and an `end` event when the search finishes:
+   * when every match has been returned, the search fails or is aborted, or
+   * the loop is left early.
+   *
+   * @param options - a signal to stop the search
    * @returns an async iterator of matches
    * @example
    * ```ts
@@ -379,9 +404,9 @@ export class FileHound<T = string> extends EventEmitter {
    * }
    * ```
    */
-  public iterate(): AsyncGenerator<T> {
+  public iterate(options: SearchOptions = {}): AsyncGenerator<T> {
     this.#queryLocked = true;
-    return this.#iterate();
+    return this.#iterate(options.signal);
   }
 
   /**
@@ -461,17 +486,30 @@ export class FileHound<T = string> extends EventEmitter {
     return walkSync(dir, this.#getMatchExpression(), this.#getOptions());
   }
 
-  async *#iterate(): AsyncGenerator<T> {
-    for await (const results of this.#results()) {
-      yield* results;
+  // A match is only emitted when it is returned, so a loop left early never
+  // sees a match event for a match it didn't get
+  async *#iterate(signal?: AbortSignal): AsyncGenerator<T> {
+    try {
+      for await (const results of this.#results(signal)) {
+        for (const result of results) {
+          this.emit('match', result);
+          yield result;
+          signal?.throwIfAborted();
+        }
+      }
+    } catch (error) {
+      this.emit('error', error);
+      throw error;
+    } finally {
+      this.emit('end');
     }
   }
 
   // Results come in batches, as a promise per batch costs far less than one
   // per match. Search paths are walked in turn, so results stay in path order.
-  async *#results(): AsyncGenerator<T[]> {
+  async *#results(signal?: AbortSignal): AsyncGenerator<T[]> {
     for (const dir of this.getPaths()) {
-      for await (const files of walkAsync(dir, this.#getMatchExpression(), this.#getOptions())) {
+      for await (const files of walkAsync(dir, this.#getMatchExpression(), this.#getOptions(), signal)) {
         // Stats are only fetched when asked for, saving a promise per match
         yield this.#includeFileStats
           ? await Promise.all(files.map(file => this.#toResult(file)))

@@ -1,5 +1,6 @@
 import {assert} from 'chai';
 import fs from 'node:fs';
+import {getEventListeners} from 'node:events';
 import * as net from 'node:net';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -1807,14 +1808,41 @@ describe('FileHound', async () => {
             assert.fail('Expected to reject!');
         });
 
-        it('emits no events', async () => {
-            const spy = sinon.spy();
+        it('emits a match event for each match, then an end event', async () => {
+            const events: string[] = [];
             const fh = FileHound.create().paths(`${fixtureDir}/justFiles`);
-            fh.on('match', spy).on('end', spy);
+            fh.on('match', file => events.push(file)).on('end', () => events.push('end'));
 
             await collect(fh.iterate());
 
-            sinon.assert.notCalled(spy);
+            assert.deepEqual(events, [...justFiles, 'end']);
+        });
+
+        it('emits an end event, with no further matches, when the loop is left early', async () => {
+            const events: string[] = [];
+            const fh = FileHound.create().paths(`${fixtureDir}/justFiles`);
+            fh.on('match', file => events.push(file)).on('end', () => events.push('end'));
+
+            for await (const file of fh.iterate()) {
+                assert.ok(file);
+                break;
+            }
+
+            assert.deepEqual(events, [justFiles[0], 'end']);
+        });
+
+        it('emits an error event, then an end event, when the search fails', async () => {
+            const events: string[] = [];
+            const fh = FileHound.create().paths(`${fixtureDir}/justBad`);
+            fh.on('error', () => events.push('error')).on('end', () => events.push('end'));
+
+            try {
+                await collect(fh.iterate());
+            } catch {
+                assert.deepEqual(events, ['error', 'end']);
+                return;
+            }
+            assert.fail('Expected to reject!');
         });
 
         it('throws when modifying the query after iterate is called', () => {
@@ -1899,6 +1927,135 @@ describe('FileHound', async () => {
                 sinon.assert.notCalled(unhandled);
             } finally {
                 fs.chmodSync(locked, 0o755);
+                process.off('unhandledRejection', unhandled);
+            }
+        });
+    });
+
+    describe('cancellation', () => {
+        let tmpDir: string;
+
+        // More directories than the walk visits and reads ahead
+        before(() => {
+            tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'filehound-'));
+            for (let i = 0; i < 200; i++) {
+                const dir = path.join(tmpDir, `d${String(i).padStart(3, '0')}`);
+                fs.mkdirSync(dir);
+                for (let j = 0; j < 5; j++) {
+                    fs.writeFileSync(path.join(dir, `f${j}.txt`), '');
+                }
+            }
+        });
+
+        after(() => {
+            fs.rmSync(tmpDir, {recursive: true, force: true});
+        });
+
+        afterEach(() => {
+            sandbox.restore();
+        });
+
+        async function rejection(pending: Promise<unknown>): Promise<unknown> {
+            try {
+                await pending;
+            } catch (err) {
+                return err;
+            }
+            return assert.fail('Expected to reject!');
+        }
+
+        it('rejects with the reason of an already aborted signal', async () => {
+            const reason = new Error('stop');
+            const signal = AbortSignal.abort(reason);
+            const query = (): FileHound => FileHound.create().paths(tmpDir);
+
+            assert.strictEqual(await rejection(query().find({signal})), reason);
+            assert.strictEqual(await rejection(collect(query().iterate({signal}))), reason);
+        });
+
+        it('stops find when aborted, emitting no more matches, then error and end', async () => {
+            const controller = new AbortController();
+            const events: string[] = [];
+            const fh = FileHound.create().paths(tmpDir);
+            fh.on('match', () => {
+                events.push('match');
+                controller.abort();
+            })
+                .on('error', () => events.push('error'))
+                .on('end', () => events.push('end'));
+
+            const err = await rejection(fh.find({signal: controller.signal}));
+
+            assert.equal((err as Error).name, 'AbortError');
+            assert.deepEqual(events, ['match', 'error', 'end']);
+        });
+
+        it('stops iterate when aborted inside the loop', async () => {
+            const controller = new AbortController();
+            const found: string[] = [];
+
+            const err = await rejection((async () => {
+                for await (const file of FileHound.create().paths(tmpDir).iterate({signal: controller.signal})) {
+                    found.push(file);
+                    controller.abort();
+                }
+            })());
+
+            assert.equal((err as Error).name, 'AbortError');
+            assert.lengthOf(found, 1);
+        });
+
+        it('stops waiting on a predicate that never settles', async () => {
+            const query = FileHound.create()
+                .paths(tmpDir)
+                .match(applyFilter(() => new Promise<boolean>(() => {})));
+
+            const err = await rejection(query.find({signal: AbortSignal.timeout(20)}));
+
+            assert.equal((err as Error).name, 'TimeoutError');
+        });
+
+        // Reads in flight when the search is aborted would otherwise find
+        // more directories down the chain, and read those ahead too
+        it('starts no more directory reads once aborted', async () => {
+            const chainDir = fs.mkdtempSync(path.join(os.tmpdir(), 'filehound-'));
+            try {
+                let dir = chainDir;
+                fs.writeFileSync(path.join(dir, '0.txt'), '');
+                for (let i = 0; i < 100; i++) {
+                    dir = path.join(dir, 'a');
+                    fs.mkdirSync(dir);
+                }
+                const readdir = sandbox.spy(fs.promises, 'readdir');
+                const controller = new AbortController();
+                const fh = FileHound.create().paths(chainDir).on('match', () => controller.abort());
+
+                await rejection(fh.find({signal: controller.signal}));
+                const reads = readdir.callCount;
+                await new Promise(resolve => setTimeout(resolve, 50));
+
+                assert.equal(readdir.callCount, reads);
+            } finally {
+                fs.rmSync(chainDir, {recursive: true, force: true});
+            }
+        });
+
+        it('leaves no listeners on the signal, nor unhandled rejections', async () => {
+            const unhandled = sinon.spy();
+            process.on('unhandledRejection', unhandled);
+            try {
+                const completed = new AbortController();
+                await FileHound.create().paths(tmpDir).find({signal: completed.signal});
+                assert.lengthOf(getEventListeners(completed.signal, 'abort'), 0);
+
+                const aborted = new AbortController();
+                const fh = FileHound.create().paths(tmpDir).on('match', () => aborted.abort());
+                await rejection(fh.find({signal: aborted.signal}));
+                await new Promise(resolve => setTimeout(resolve, 50));
+
+                assert.lengthOf(getEventListeners(aborted.signal, 'abort'), 0);
+                sinon.assert.notCalled(unhandled);
+            } finally {
                 process.off('unhandledRejection', unhandled);
             }
         });

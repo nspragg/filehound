@@ -1,4 +1,4 @@
-export {FileHound, type FileWithStats} from './filehound.js';
+export {FileHound, type FileWithStats, type SearchOptions} from './filehound.js';
 export {FileType} from './filetype.js';
 export {
   type FilePredicate,

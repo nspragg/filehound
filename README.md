@@ -16,10 +16,6 @@ npm install --save filehound
 
 Requires Node.js 24 or later.
 
-## Demo
-
-<img src="https://cloud.githubusercontent.com/assets/917111/13683231/7e915c2c-e6fd-11e5-9d58-e7228cf76ccf.gif" width="600"/>
-
 ## Usage
 
 The example below prints all of the files in a directory that have the `.json` file extension:
@@ -33,6 +29,31 @@ const files = await FileHound.create()
   .find();
 
 console.log(files);
+```
+
+### Iterating over matches
+
+`find()` waits for the whole search to finish. To handle each match as it's found, loop over `iterate()` instead. Matches come in the same order as `find()`, and the search only runs a little ahead of the loop, so a large search doesn't hold every match in memory:
+
+```js
+import { FileHound, ext } from 'filehound';
+
+const query = FileHound.create()
+  .paths('/some/dir')
+  .match(ext('json'));
+
+for await (const file of query.iterate()) {
+  console.log(file);
+}
+```
+
+Leaving the loop early stops the search, for example to find the first match only:
+
+```js
+for await (const file of query.iterate()) {
+  console.log(`First match: ${file}`);
+  break;
+}
 ```
 
 ## Documentation
@@ -56,5 +77,3 @@ See [contributing guide](./CONTRIBUTING.md)
 ## Related modules
 
 - Finding files by content - [FileSniffer](https://github.com/nspragg/filesniffer)
-- Editing text files  - [FileSurgeon](https://github.com/nspragg/filesurgeon)
-- File object  - [File-js](https://github.com/nspragg/file-js)

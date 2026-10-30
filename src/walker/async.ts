@@ -4,12 +4,14 @@ import type {FilePredicate} from '../matchers.js';
 import {Heap} from './heap.js';
 import {ancestorsOf, byName, createPathError, EntryType, typeOf, Walk, type WalkOptions} from './walk.js';
 
-// How many siblings are visited ahead of the one being walked, for those that
-// need I/O, such as links. Each level of the walk has its own window, so the
-// work in flight is bounded by this times the depth.
+// How many siblings are visited ahead of the one being walked. Visiting starts
+// the I/O an entry needs: a directory's read, a link's stat or a predicate's.
+// Each level of the walk has its own window, so the work in flight is bounded
+// by this times the depth.
 const WINDOW = 64;
 
-// How many directories can be read ahead of the walk and not yet walked
+// How many more directories can be read ahead of the walk, beyond those in
+// its windows, and not yet walked
 const READ_AHEAD = 64;
 
 // Work started ahead of the walk may fail before the walk reaches it, and
@@ -40,6 +42,7 @@ type Found = {dir: File; depth: number; position: Position};
 // of it, in the order the walk will reach them. Reads are queued, so one read
 // out of order would hold up the walk behind the rest.
 class AsyncWalk extends Walk {
+  readonly #signal?: AbortSignal;
   // Read or being read, and not yet taken by the walk
   readonly #reads = new Map<File, Promise<File[]>>();
   // Found but not yet read
@@ -47,6 +50,37 @@ class AsyncWalk extends Walk {
   // Of directories, and links that may be, for when the walk reads them
   readonly #positions = new WeakMap<File, Position>();
   readonly #taken = new WeakSet<File>();
+
+  constructor(root: File, matcher: FilePredicate, opts: WalkOptions, signal?: AbortSignal) {
+    super(root, matcher, opts);
+    this.#signal = signal;
+  }
+
+  // Rejects as soon as the walk is aborted, rather than when the work is done,
+  // which for a slow predicate could be a long wait
+  abortable<T>(pending: Promise<T>): Promise<T> {
+    const signal = this.#signal;
+    if (!signal) {
+      return pending;
+    }
+    signal.throwIfAborted();
+    return new Promise((resolve, reject) => {
+      const abort = (): void => reject(signal.reason);
+      signal.addEventListener('abort', abort, {once: true});
+      pending.then((value) => {
+        signal.removeEventListener('abort', abort);
+        resolve(value);
+      }, (error: unknown) => {
+        signal.removeEventListener('abort', abort);
+        reject(error);
+      });
+    });
+  }
+
+  // For after a yield, as whoever reads the walk may have aborted it meanwhile
+  throwIfAborted(): void {
+    this.#signal?.throwIfAborted();
+  }
 
   // The directory's children in name order, read ahead if it was reached
   read(dir: File, depth: number): Promise<File[]> {
@@ -85,6 +119,9 @@ class AsyncWalk extends Walk {
   }
 
   #readAhead(): void {
+    if (this.#signal?.aborted) {
+      return;
+    }
     while (this.#reads.size < READ_AHEAD && this.#found.size > 0) {
       const found = this.#found.pop()!;
       if (!this.#taken.has(found.dir)) {
@@ -165,9 +202,10 @@ function visitChild(child: File, walk: AsyncWalk, depth: number): Visited {
 async function* walkVisit(visit: Visit, walk: AsyncWalk, depth: number): AsyncGenerator<File[]> {
   if (visit.match) {
     yield [visit.match];
+    walk.throwIfAborted();
   }
   if (visit.children) {
-    yield* walkChildren(await visit.children, walk, depth + 1);
+    yield* walkChildren(await walk.abortable(visit.children), walk, depth + 1);
   }
 }
 
@@ -182,7 +220,7 @@ async function* walkChildren(children: File[], walk: AsyncWalk, depth: number): 
     }
     const visited = visits[next]!;
     visits[next] = undefined;
-    const visit = visited instanceof Promise ? await visited : visited;
+    const visit = visited instanceof Promise ? await walk.abortable(visited) : visited;
 
     if (visit.match) {
       matches.push(visit.match);
@@ -190,17 +228,25 @@ async function* walkChildren(children: File[], walk: AsyncWalk, depth: number): 
     if (visit.children) {
       if (matches.length > 0) {
         yield matches;
+        walk.throwIfAborted();
         matches = [];
       }
-      yield* walkChildren(await visit.children, walk, depth + 1);
+      yield* walkChildren(await walk.abortable(visit.children), walk, depth + 1);
     }
   }
   if (matches.length > 0) {
     yield matches;
+    walk.throwIfAborted();
   }
 }
 
-export async function* walkAsync(dir: string, matcher: FilePredicate, opts: WalkOptions): AsyncGenerator<File[]> {
+export async function* walkAsync(
+  dir: string,
+  matcher: FilePredicate,
+  opts: WalkOptions,
+  signal?: AbortSignal
+): AsyncGenerator<File[]> {
+  signal?.throwIfAborted();
   const root = new File(dir);
   try {
     await root.getStats();
@@ -208,6 +254,6 @@ export async function* walkAsync(dir: string, matcher: FilePredicate, opts: Walk
     throw createPathError(dir, error);
   }
 
-  const walk = new AsyncWalk(root, matcher, opts);
-  yield* walkVisit(await visitUntyped(root, walk, 0), walk, 0);
+  const walk = new AsyncWalk(root, matcher, opts, signal);
+  yield* walkVisit(await walk.abortable(visitUntyped(root, walk, 0)), walk, 0);
 }
