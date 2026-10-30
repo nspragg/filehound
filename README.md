@@ -16,6 +16,8 @@ npm install --save filehound
 
 Requires Node.js 24 or later.
 
+Upgrading from V1? See the [migration guide](./MIGRATING.md).
+
 ## Usage
 
 The example below prints all of the files in a directory that have the `.json` file extension:

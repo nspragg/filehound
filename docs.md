@@ -4,6 +4,20 @@
 
 > Flexible and fluent interface for searching the file system
 
+## Installation
+
+```
+npm install --save filehound
+```
+
+Requires Node.js 24 or later. Filehound is an ES module, with TypeScript types included. CommonJS can load it too, as Node 24 can `require()` ES modules:
+
+```js
+const { FileHound, ext } = require('filehound');
+```
+
+Upgrading from V1? See the [migration guide](https://github.com/nspragg/filehound/blob/master/MIGRATING.md).
+
 ## Common examples
 
 The example below prints all of the files in a directory that have the `.json` file extension:
@@ -19,12 +33,6 @@ const files = await FileHound.create()
 console.log(files);
 ```
 
-Or with ES modules or TypeScript:
-
-```ts
-import { FileHound, ext } from 'filehound';
-```
-
 The remaining examples assume the functions they use have been imported in the same way.
 
 #### Matching the filename
@@ -38,7 +46,7 @@ const files = await FileHound.create()
   .find();
 ```
 
-Glob patterns follow the same rules as Node's [`fs.glob`](https://nodejs.org/api/fs.html#fspromisesglobpattern-options) and [`path.matchesGlob`](https://nodejs.org/api/path.html#pathmatchesglobpath-pattern), and are matched against each path relative to the search path. A pattern without `**`, such as `dev*`, matches only the top level of the search path. Wildcards don't match names beginning with a dot, and on macOS and Windows wildcard patterns ignore case, as they do in Node.
+Glob patterns follow the same rules as Node's [`fs.glob`](https://nodejs.org/api/fs.html#fspromisesglobpattern-options) and [`path.matchesGlob`](https://nodejs.org/api/path.html#pathmatchesglobpath-pattern), and are matched against each path relative to the search path. So a pattern matches only at the depth it spells out: `dev*` matches only the top level of the search path, and `certs/dev*` only inside `certs`. Start a pattern with `**/` to match at any depth. Wildcards don't match names beginning with a dot, and on macOS and Windows wildcard patterns ignore case, as they do in Node.
 
 #### Filtering by file size
 
@@ -107,11 +115,19 @@ const files = await FileHound.create()
   .find();
 ```
 
-Exclude any paths matching a pattern:
+Exclude any paths matching a regular expression:
 
 ```js
 const files = await FileHound.create()
   .match(discard('node_modules'))
+  .find();
+```
+
+Or include only those that match one, with `like`:
+
+```js
+const files = await FileHound.create()
+  .match(like('reports?/2026'))
   .find();
 ```
 
@@ -126,7 +142,7 @@ const files = await FileHound.create()
   .find();
 ```
 
-Filters made with `applyFilter` only work with `find()`. Use `applyFilterSync` for a synchronous test that works with both `find()` and `findSync()`:
+Filters made with `applyFilter` only work with `find()` and `iterate()`. Use `applyFilterSync` for a synchronous test that works with `findSync()` too:
 
 ```js
 const files = FileHound.create()
@@ -135,7 +151,9 @@ const files = FileHound.create()
   .findSync();
 ```
 
-The built-in matchers work with both. With `find()`, they check files using asynchronous calls, so a search doesn't block the event loop.
+The built-in matchers work with all three. With `find()` and `iterate()`, those that need to read from the file system, such as `size` and `modified`, use asynchronous calls, so a search doesn't block the event loop.
+
+A filter is given a `FileView`: a read-only view of the file, with methods for its name, paths, type, size, dates and stats, and none that change the file system. A filter should have no side effects, as it may be called ahead of the matches being returned, at the same time as other filters, and on files that are never returned.
 
 #### Including file stats
 
@@ -169,6 +187,8 @@ const everything = await FileHound.create()
 `FileType.REGULAR` and `FileType.DIRECTORY` are the strings `'regular'` and `'directory'`, so `.type('directory')` works too.
 
 #### Ignoring hidden files and directories
+
+A hidden file or directory is one whose name begins with a dot. Ignoring hidden directories also leaves out everything inside them:
 
 ```js
 const files = await FileHound.create()
@@ -245,6 +265,51 @@ const jsonFiles = await FileHound.create()
   .find();
 ```
 
+#### Handling matches as they're found
+
+`find()` waits for the whole search to finish. To handle each match as it's found, loop over `iterate()` instead. The search only runs a little ahead of the loop, so a large search doesn't hold every match in memory:
+
+```js
+const query = FileHound.create()
+  .paths('/some/dir')
+  .match(ext('json'));
+
+for await (const file of query.iterate()) {
+  console.log(file);
+}
+```
+
+Leaving the loop early, with `break` or `return`, stops the search.
+
+`find()`, `iterate()` and `findSync()` return matches in the same order: depth first, with the entries of each directory in name order.
+
+#### Cancelling a search
+
+Pass an `AbortSignal` to `find()` or `iterate()` to stop a search. An aborted search rejects with the signal's reason. For example, to give up after five seconds:
+
+```js
+const files = await FileHound.create()
+  .paths('/')
+  .find({ signal: AbortSignal.timeout(5000) });
+```
+
+Or stop it yourself with an `AbortController`, for example when Ctrl+C is pressed:
+
+```js
+const controller = new AbortController();
+process.once('SIGINT', () => controller.abort());
+
+try {
+  const files = await FileHound.create()
+    .paths('/')
+    .find({ signal: controller.signal });
+  console.log(files);
+} catch (error) {
+  if (error.name !== 'AbortError') throw error;
+  console.log('search cancelled');
+}
+```
+
 #### Search synchronously
 
 Find all JSON files in '/tmp' synchronously:
@@ -258,7 +323,7 @@ const jsonFiles = FileHound.create()
 
 #### Binding to match, error and end events
 
-Bind to a `match` event to process each file on match. Bind to the events before calling `find()`:
+Bind to a `match` event to process each file on match. Bind to the events before calling `find()` or `iterate()`:
 
 ```js
 const filehound = FileHound.create();
@@ -278,9 +343,11 @@ filehound.on('end', () => {
 await filehound.find();
 ```
 
+An `error` event is emitted if the search fails or is aborted. The `end` event is emitted once the search has finished, however it finished: with every match found, with an error, aborted, or with a loop over `iterate()` left early. `findSync()` emits no events.
+
 #### Queries can't be changed once a search starts
 
-Once `find()` or `findSync()` has been called, changing the query throws an error. Create a new query for each search:
+Once `find()`, `iterate()` or `findSync()` has been called, changing the query throws an error. Create a new query for each search:
 
 ```js
 const query = FileHound.create().paths('/some/dir');
@@ -290,4 +357,5 @@ query.match(ext('json')); // throws: Cannot modify query after search has starte
 ```
 
 #### Find files by matching content
+
 See [FileSniffer](https://github.com/nspragg/filesniffer)

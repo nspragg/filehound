@@ -7,6 +7,7 @@ import * as path from 'node:path';
 import * as sinon from 'sinon';
 import {FileHound, type FileWithStats} from '../src/filehound.js';
 import {FileType} from '../src/filetype.js';
+import type {FileView} from '../src/file.js';
 
 import {
     accessed,
@@ -2058,6 +2059,46 @@ describe('FileHound', async () => {
             } finally {
                 process.off('unhandledRejection', unhandled);
             }
+        });
+    });
+
+    describe('FileView', () => {
+        function viewOf(file: string): FileView {
+            let view: FileView | undefined;
+            FileHound.create()
+                .paths(path.dirname(file))
+                .match(applyFilterSync((candidate) => {
+                    if (candidate.getName() === file) {
+                        view = candidate;
+                    }
+                    return false;
+                }))
+                .findSync();
+            return view ?? assert.fail(`${file} was not visited`);
+        }
+
+        it('gives predicates no way to change the file system, nor the walk', () => {
+            const view = viewOf(justFiles[0]) as unknown as Record<string, unknown>;
+
+            for (const method of ['delete', 'getFiles', 'getFilesSync', 'getKnownKind', 'getList', 'getListSync']) {
+                assert.notProperty(view, method);
+            }
+        });
+
+        it('describes the file to predicates', async () => {
+            const view = viewOf(justFiles[0]);
+            const stats = fs.statSync(justFiles[0]);
+
+            assert.equal(view.getName(), justFiles[0]);
+            assert.equal(view.getRelativePath(), 'a.json');
+            assert.equal(view.getPathExtension(), 'json');
+            assert.isTrue(view.isMatch('*.json'));
+            assert.isTrue(view.isFileSync());
+            assert.isFalse(await view.isDirectory());
+            assert.isFalse(view.isHiddenSync());
+            assert.equal(view.sizeSync(), stats.size);
+            assert.equal((await view.lastModified()).getTime(), stats.mtime.getTime());
+            assert.isTrue(await view.exists());
         });
     });
 });

@@ -1,6 +1,6 @@
 import {isDate, isNumber} from 'unit-compare';
 import {from} from './arrays.js';
-import type {File} from './file.js';
+import type {FileView} from './file.js';
 /**
  * A composable test applied to each file found during a search
  */
@@ -35,7 +35,7 @@ export interface FilePredicate {
    * @param file - the file to test
    * @returns a Promise that fulfils with true if the file matches
    */
-  test(file: File): Promise<boolean>;
+  test(file: FileView): Promise<boolean>;
 
   /**
    * Synchronously tests whether a file satisfies this predicate. Used by
@@ -46,7 +46,7 @@ export interface FilePredicate {
    * @throws `TypeError`
    * Thrown if the predicate can only be tested asynchronously.
    */
-  testSync(file: File): boolean;
+  testSync(file: FileView): boolean;
 }
 
 // Brands predicates that test a file without I/O, so find() can call testSync
@@ -76,11 +76,11 @@ export abstract class AbstractFilePredicate implements FilePredicate {
     return new Not(this);
   }
 
-  async test(file: File): Promise<boolean> {
+  async test(file: FileView): Promise<boolean> {
     return this.testSync(file);
   }
 
-  abstract testSync(file: File): boolean;
+  abstract testSync(file: FileView): boolean;
 }
 
 export class And extends AbstractFilePredicate {
@@ -97,11 +97,11 @@ export class And extends AbstractFilePredicate {
     return isSyncPredicate(this.#left) && isSyncPredicate(this.#right);
   }
 
-  override async test(file: File): Promise<boolean> {
+  override async test(file: FileView): Promise<boolean> {
     return await this.#left.test(file) && this.#right.test(file);
   }
 
-  testSync(file: File): boolean {
+  testSync(file: FileView): boolean {
     return this.#left.testSync(file) && this.#right.testSync(file);
   }
 }
@@ -118,11 +118,11 @@ export class Not extends AbstractFilePredicate {
     return isSyncPredicate(this.#filePredicate);
   }
 
-  override async test(file: File): Promise<boolean> {
+  override async test(file: FileView): Promise<boolean> {
     return !await this.#filePredicate.test(file);
   }
 
-  testSync(file: File): boolean {
+  testSync(file: FileView): boolean {
     return !this.#filePredicate.testSync(file);
   }
 }
@@ -141,11 +141,11 @@ export class Or extends AbstractFilePredicate {
     return isSyncPredicate(this.#left) && isSyncPredicate(this.#right);
   }
 
-  override async test(file: File): Promise<boolean> {
+  override async test(file: FileView): Promise<boolean> {
     return await this.#left.test(file) || this.#right.test(file);
   }
 
-  testSync(file: File): boolean {
+  testSync(file: FileView): boolean {
     return this.#left.testSync(file) || this.#right.testSync(file);
   }
 }
@@ -160,7 +160,7 @@ export class Extension extends AbstractFilePredicate {
     this.#extensions = extensions;
   }
 
-  testSync(file: File): boolean {
+  testSync(file: FileView): boolean {
     return this.#extensions.includes(file.getPathExtension());
   }
 }
@@ -175,7 +175,7 @@ export class Glob extends AbstractFilePredicate {
     this.#globPattern = globPattern;
   }
 
-  testSync(file: File): boolean {
+  testSync(file: FileView): boolean {
     return file.isMatch(this.#globPattern);
   }
 }
@@ -191,24 +191,24 @@ export class TextMatch extends AbstractFilePredicate {
     this.#flags = flags;
   }
 
-  testSync(file: File): boolean {
+  testSync(file: FileView): boolean {
     return new RegExp(this.#pattern, this.#flags).test(file.getName());
   }
 }
 
 export class CustomFilter extends AbstractFilePredicate {
-  readonly #fn: (path: File) => boolean | Promise<boolean>;
+  readonly #fn: (file: FileView) => boolean | Promise<boolean>;
 
-  constructor(fn: (path: File) => boolean | Promise<boolean>) {
+  constructor(fn: (file: FileView) => boolean | Promise<boolean>) {
     super();
     this.#fn = fn;
   }
 
-  override async test(file: File): Promise<boolean> {
+  override async test(file: FileView): Promise<boolean> {
     return this.#fn(file);
   }
 
-  testSync(_file: File): boolean {
+  testSync(_file: FileView): boolean {
     throw new TypeError('applyFilter() filters can only be used with find(). Use applyFilterSync() with findSync()');
   }
 }
@@ -216,14 +216,14 @@ export class CustomFilter extends AbstractFilePredicate {
 export class CustomFilterSync extends AbstractFilePredicate {
   readonly [sync] = true;
 
-  readonly #fn: (path: File) => boolean;
+  readonly #fn: (file: FileView) => boolean;
 
-  constructor(fn: (path: File) => boolean) {
+  constructor(fn: (file: FileView) => boolean) {
     super();
     this.#fn = fn;
   }
 
-  testSync(file: File): boolean {
+  testSync(file: FileView): boolean {
     return this.#fn(file);
   }
 }
@@ -236,11 +236,11 @@ export class Size extends AbstractFilePredicate {
     this.#size = sizeExpression;
   }
 
-  override async test(file: File): Promise<boolean> {
+  override async test(file: FileView): Promise<boolean> {
     return isNumber(await file.size()).assert(this.#size);
   }
 
-  testSync(file: File): boolean {
+  testSync(file: FileView): boolean {
     return isNumber(file.sizeSync()).assert(this.#size);
   }
 }
@@ -253,11 +253,11 @@ export class Modified extends AbstractFilePredicate {
     this.#days = days;
   }
 
-  override async test(file: File): Promise<boolean> {
+  override async test(file: FileView): Promise<boolean> {
     return isDate(await file.lastModified()).assert(this.#days);
   }
 
-  testSync(file: File): boolean {
+  testSync(file: FileView): boolean {
     return isDate(file.lastModifiedSync()).assert(this.#days);
   }
 }
@@ -270,11 +270,11 @@ export class Accessed extends AbstractFilePredicate {
     this.#days = days;
   }
 
-  override async test(file: File): Promise<boolean> {
+  override async test(file: FileView): Promise<boolean> {
     return isDate(await file.lastAccessed()).assert(this.#days);
   }
 
-  testSync(file: File): boolean {
+  testSync(file: FileView): boolean {
     return isDate(file.lastAccessedSync()).assert(this.#days);
   }
 }
@@ -287,11 +287,11 @@ export class Changed extends AbstractFilePredicate {
     this.#days = days;
   }
 
-  override async test(file: File): Promise<boolean> {
+  override async test(file: FileView): Promise<boolean> {
     return isDate(await file.lastChanged()).assert(this.#days);
   }
 
-  testSync(file: File): boolean {
+  testSync(file: FileView): boolean {
     return isDate(file.lastChangedSync()).assert(this.#days);
   }
 }
@@ -299,7 +299,7 @@ export class Changed extends AbstractFilePredicate {
 export class MatchAll extends AbstractFilePredicate {
   readonly [sync] = true;
 
-  testSync(_file: File): boolean {
+  testSync(_file: FileView): boolean {
     return true;
   }
 }
@@ -390,7 +390,7 @@ export function glob(globPattern: string): FilePredicate {
  * FileHound.create().match(applyFilter(async file => await file.size() > 0));
  * ```
  */
-export function applyFilter(fn: (path: File) => boolean | Promise<boolean>): FilePredicate {
+export function applyFilter(fn: (file: FileView) => boolean | Promise<boolean>): FilePredicate {
   return new CustomFilter(fn);
 }
 
@@ -405,7 +405,7 @@ export function applyFilter(fn: (path: File) => boolean | Promise<boolean>): Fil
  * FileHound.create().match(applyFilterSync(file => file.sizeSync() > 0));
  * ```
  */
-export function applyFilterSync(fn: (path: File) => boolean): FilePredicate {
+export function applyFilterSync(fn: (file: FileView) => boolean): FilePredicate {
   return new CustomFilterSync(fn);
 }
 

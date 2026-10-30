@@ -11,11 +11,104 @@ import * as fsp from 'node:fs/promises';
 
 export type FileKind = Pick<Stats, 'isDirectory' | 'isFile'>;
 
-function matchesName(file: File, globPattern: string): boolean {
-  return path.matchesGlob(path.basename(file.getName()), globPattern);
+/**
+ * A read-only view of a file found by a search, as passed to predicates such
+ * as {@link applyFilter}. It has no methods that change the file system.
+ *
+ * @remarks
+ * Predicates may be called ahead of the matches being returned, at the same
+ * time as each other, and on files that are never returned, for example when
+ * a loop over {@link FileHound.iterate} is left early. So a predicate should
+ * have no side effects.
+ *
+ * A file's stats are fetched once, then shared by every predicate and by
+ * {@link FileHound.includeFileStats}.
+ */
+export interface FileView {
+  /** The path, as found from the search path */
+  getName(): string;
+  /** The absolute path */
+  getAbsolutePath(): string;
+  /** The absolute path, normalised */
+  getCanonicalPath(): string;
+  /** The path relative to the search path */
+  getRelativePath(): string;
+  /** The extension, without the leading dot, or an empty string */
+  getPathExtension(): string;
+  /** Whether the path, relative to the search path, matches a glob pattern */
+  isMatch(globPattern: string): boolean;
+
+  /** Whether this is a directory, or a link to one */
+  isDirectory(): Promise<boolean>;
+  /** Whether this is a directory, or a link to one */
+  isDirectorySync(): boolean;
+  /** Whether this is a regular file, or a link to one */
+  isFile(): Promise<boolean>;
+  /** Whether this is a regular file, or a link to one */
+  isFileSync(): boolean;
+  /** Whether this is a symbolic link */
+  isSymbolicLink(): Promise<boolean>;
+  /** Whether this is a symbolic link */
+  isSymbolicLinkSync(): boolean;
+  /** Whether this is hidden: its name, or for a directory any in its path, begins with a dot */
+  isHidden(): Promise<boolean>;
+  /** Whether this is hidden: its name, or for a directory any in its path, begins with a dot */
+  isHiddenSync(): boolean;
+
+  /** The stats, as returned by `fs.stat` */
+  getStats(): Promise<Stats>;
+  /** The stats, as returned by `fs.statSync` */
+  getStatsSync(): Stats;
+  /** The size in bytes */
+  size(): Promise<number>;
+  /** The size in bytes */
+  sizeSync(): number;
+  /** When the contents were last modified */
+  lastModified(): Promise<Date>;
+  /** When the contents were last modified */
+  lastModifiedSync(): Date;
+  /** When the file was last accessed */
+  lastAccessed(): Promise<Date>;
+  /** When the file was last accessed */
+  lastAccessedSync(): Date;
+  /** When the file's status, such as its permissions, last changed */
+  lastChanged(): Promise<Date>;
+  /** When the file's status, such as its permissions, last changed */
+  lastChangedSync(): Date;
+
+  /** Whether the file exists and can be read */
+  exists(): Promise<boolean>;
+  /** Whether the file can be read */
+  isReadable(): Promise<boolean>;
+  /** Whether the file can be written to */
+  isWritable(): Promise<boolean>;
+  /** Whether the file can be executed */
+  isExecutable(): Promise<boolean>;
 }
 
-export class File {
+// What only the walker needs. These are functions rather than methods, so a
+// predicate can't reach them. Only code inside File can see its private
+// fields, so they're set from its static block.
+let knownKindOf: (file: File) => FileKind | undefined;
+let childrenOf: (dir: File) => Promise<File[]>;
+let childrenOfSync: (dir: File) => File[];
+
+// The kind readdir gave, so needs no I/O. Undefined for links, whose targets
+// are reported, and for files made without a dirent, such as a walk's root.
+export function getKnownKind(file: File): FileKind | undefined {
+  return knownKindOf(file);
+}
+
+// A directory's entries, with their kinds from readdir
+export function getChildren(dir: File): Promise<File[]> {
+  return childrenOf(dir);
+}
+
+export function getChildrenSync(dir: File): File[] {
+  return childrenOfSync(dir);
+}
+
+export class File implements FileView {
   readonly #dir: string;
   readonly #pathname: string;
   // Type info from readdir, saving a stat call
@@ -24,6 +117,12 @@ export class File {
   readonly #root?: string;
   // Fetched once, so predicates and results share a single stat call
   #stats?: Stats;
+
+  static {
+    knownKindOf = file => file.#dirent?.isSymbolicLink() ? undefined : file.#dirent;
+    childrenOf = async dir => dir.#children();
+    childrenOfSync = dir => dir.#childrenSync();
+  }
 
   constructor(pathname: string, dirent?: Dirent, root?: string) {
     this.#dir = process.cwd();
@@ -48,12 +147,6 @@ export class File {
     return (await this.#getKind()).isFile();
   }
 
-  // The kind readdir gave, so needs no I/O. Undefined for links, whose targets
-  // are reported, and for files made without a dirent, such as a walk's root.
-  public getKnownKind(): FileKind | undefined {
-    return this.#dirent?.isSymbolicLink() ? undefined : this.#dirent;
-  }
-
   public isSymbolicLinkSync(): boolean {
     return this.#dirent?.isSymbolicLink() ?? lstatSync(this.#pathname).isSymbolicLink();
   }
@@ -74,50 +167,6 @@ export class File {
       return this.#isHiddenFile();
     }
     return this.#isHiddenDirectory();
-  }
-
-  public getListSync(): string[] {
-    if (this.isDirectorySync()) {
-      return readdirSync(this.#pathname)
-        .map((file) => {
-          return path.join(this.#pathname, file);
-        });
-    }
-    return [];
-  }
-
-  public async getList(glob?: string): Promise<string[]> {
-    const files = await this.getFiles(glob);
-    if (files.length > 0) {
-      return files.map(pathname => pathname.getName());
-    }
-    return [];
-  }
-
-  public async getFiles(glob?: string): Promise<File[]> {
-    if (!await this.isDirectory()) { return []; }
-
-    const entries = await fsp.readdir(this.#pathname, {withFileTypes: true});
-    const prefix = this.#childPrefix();
-    const results = entries.map(entry => this.#child(prefix, entry));
-
-    if (results.length === 0) { return []; }
-    if (glob) { return results.filter(file => matchesName(file, glob)); }
-
-    return results;
-  }
-
-  public getFilesSync(glob?: string): File[] {
-    if (this.isDirectorySync()) {
-      const prefix = this.#childPrefix();
-      const files = readdirSync(this.#pathname, {withFileTypes: true})
-        .map(entry => this.#child(prefix, entry));
-
-      if (glob) { return files.filter(file => matchesName(file, glob)); }
-
-      return files;
-    }
-    return [];
   }
 
   public getName(): string {
@@ -195,16 +244,28 @@ export class File {
     return this.#access(constants.X_OK);
   }
 
-  public async delete(): Promise<void> {
-    return fsp.unlink(this.#pathname);
-  }
-
   public async exists(): Promise<boolean> {
     return this.#access(constants.R_OK);
   }
 
   public isMatch(globPattern: string): boolean {
     return path.matchesGlob(this.getRelativePath(), globPattern);
+  }
+
+  async #children(): Promise<File[]> {
+    if (!await this.isDirectory()) {
+      return [];
+    }
+    const prefix = this.#childPrefix();
+    return (await fsp.readdir(this.#pathname, {withFileTypes: true})).map(entry => this.#child(prefix, entry));
+  }
+
+  #childrenSync(): File[] {
+    if (!this.isDirectorySync()) {
+      return [];
+    }
+    const prefix = this.#childPrefix();
+    return readdirSync(this.#pathname, {withFileTypes: true}).map(entry => this.#child(prefix, entry));
   }
 
   // path.join is the costliest step of a walk, so it runs once per directory
@@ -219,11 +280,11 @@ export class File {
   }
 
   #getKindSync(): FileKind {
-    return this.getKnownKind() ?? this.getStatsSync();
+    return knownKindOf(this) ?? this.getStatsSync();
   }
 
   async #getKind(): Promise<FileKind> {
-    return this.getKnownKind() ?? this.getStats();
+    return knownKindOf(this) ?? this.getStats();
   }
 
   #isHiddenFile(): boolean {

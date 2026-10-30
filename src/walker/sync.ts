@@ -1,5 +1,5 @@
 import * as fs from 'node:fs';
-import {File} from '../file.js';
+import {File, getChildrenSync, getKnownKind} from '../file.js';
 import type {FilePredicate} from '../matchers.js';
 import {ancestorsOf, byName, createPathError, EntryType, typeOf, Walk, type WalkOptions} from './walk.js';
 
@@ -41,10 +41,10 @@ function visitTyped(file: File, type: EntryType, walk: Walk, depth: number, matc
   }
 
   if (type === EntryType.DIRECTORY && walk.canDescend(depth)) {
-    const children = file.getFilesSync().sort(byName);
+    const children = getChildrenSync(file).sort(byName);
     // Children always have a dirent, so only links lack a known kind
     for (const child of children) {
-      const kind = child.getKnownKind();
+      const kind = getKnownKind(child);
       if (kind) {
         visitTyped(child, typeOf(kind), walk, depth + 1, matches);
       } else {

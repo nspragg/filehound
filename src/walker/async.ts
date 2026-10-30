@@ -1,8 +1,38 @@
 import * as fsp from 'node:fs/promises';
-import {File} from '../file.js';
+import {File, getChildren, getKnownKind} from '../file.js';
 import type {FilePredicate} from '../matchers.js';
 import {Heap} from './heap.js';
 import {ancestorsOf, byName, createPathError, EntryType, typeOf, Walk, type WalkOptions} from './walk.js';
+
+// How the async walk works, and why
+//
+// The walk yields matches in batches, in the same order as the sync walk:
+// depth first, with siblings in name order. Whoever reads the batches sets the
+// pace, so the walk can't run ahead without limit, and stops when they stop.
+//
+// Walking in order on its own is slow, as each directory would wait on its
+// read. So work is started ahead of the walk, within two limits:
+//
+// - WINDOW: within a directory, the siblings after the one being walked are
+//   visited early, starting their stats, predicates and reads.
+// - READ_AHEAD: across the tree, directories further on are read early.
+//
+// Directories are read ahead in the order the walk will reach them, using
+// each one's Position and a heap. This order matters, and simpler orders were
+// measured and found slow. Node queues reads, so a read the walk needs now
+// waits behind every read started before it. Reading ahead among siblings only
+// lost the concurrency of reading the tree at once (about 30% slower than
+// reading it all, unbounded). Reading ahead in the order reads finished was
+// worse: the walk's reads waited behind reads for far-off directories, and it
+// was only fast once READ_AHEAD exceeded the number of directories in the tree.
+// In walk order, a READ_AHEAD of 32 is enough to match unbounded reading.
+//
+// So before changing the order of reads, measure it with `npm run bench`, on
+// trees both deep and wide.
+//
+// Work started ahead can fail, or be abandoned, before the walk reaches it.
+// prefetch() stops those failures being reported as unhandled, and an aborted
+// walk starts no new reads.
 
 // How many siblings are visited ahead of the one being walked. Visiting starts
 // the I/O an entry needs: a directory's read, a link's stat or a predicate's.
@@ -92,7 +122,7 @@ class AsyncWalk extends Walk {
   }
 
   #start({dir, depth, position}: Found): Promise<File[]> {
-    return prefetch(dir.getFiles().then((children) => {
+    return prefetch(getChildren(dir).then((children) => {
       children.sort(byName);
       this.#find(children, depth + 1, position);
       return children;
@@ -105,7 +135,7 @@ class AsyncWalk extends Walk {
       return;
     }
     children.forEach((child, i) => {
-      const kind = child.getKnownKind();
+      const kind = getKnownKind(child);
       if (kind && !kind.isDirectory()) {
         return;
       }
@@ -191,7 +221,7 @@ function visitTyped(file: File, type: EntryType, walk: AsyncWalk, depth: number)
 
 // Children always have a dirent, so only links lack a known kind
 function visitChild(child: File, walk: AsyncWalk, depth: number): Visited {
-  const kind = child.getKnownKind();
+  const kind = getKnownKind(child);
   const visited = kind ? visitTyped(child, typeOf(kind), walk, depth) : visitLink(child, walk, depth);
   return visited instanceof Promise ? prefetch(visited) : visited;
 }
