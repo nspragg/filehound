@@ -24,7 +24,8 @@ import {
     matchAll,
     modified,
     not,
-    size
+    size,
+    sizeEquals
 } from '../src/matchers.js';
 
 const justFiles = qualifyNames([
@@ -485,11 +486,30 @@ describe('FileHound', async () => {
                 const sizeFile10Bytes = await FileHound.create()
                     .paths(`${fixtureDir}/justFiles`)
                     .match(
-                        size(20)
+                        size('20')
                     )
                     .find();
 
                 assert.deepEqual(sizeFile10Bytes, qualifyNames(['/justFiles/b.json']));
+            });
+
+            it('returns files of an exact number of bytes with sizeEquals', async () => {
+                const files = await FileHound.create()
+                    .paths(`${fixtureDir}/justFiles`)
+                    .match(sizeEquals(20))
+                    .find();
+
+                assert.deepEqual(files, qualifyNames(['/justFiles/b.json']));
+            });
+
+            it('throws for a size that is not an expression', () => {
+                assert.throws(() => size(20 as unknown as string), TypeError, "size() takes an expression, such as '>1kb'");
+            });
+
+            it('throws for a negative or fractional sizeEquals', () => {
+                for (const bytes of [-1, 1.5, Number.NaN]) {
+                    assert.throws(() => sizeEquals(bytes), RangeError, 'Size must be a non-negative integer number of bytes');
+                }
             });
 
             it('returns files that equal a given number of bytes', async () => {
@@ -1340,10 +1360,16 @@ describe('FileHound', async () => {
         it('returns files modified exactly n days', async () => {
             const modifiedNDaysAgo = await FileHound.create()
                 .paths(`${fixtureDir}/dates`)
-                .match(modified(10))
+                .match(modified('=10 days'))
                 .find();
 
             assert.deepEqual(modifiedNDaysAgo, qualifyNames(['/dates/a.txt']));
+        });
+
+        it('throws for an age that is not an expression', () => {
+            for (const matcher of [modified, accessed, changed]) {
+                assert.throws(() => matcher(10 as unknown as string), TypeError, "takes an expression, such as '<2 days'");
+            }
         });
 
         it('returns files greater than n days', async () => {

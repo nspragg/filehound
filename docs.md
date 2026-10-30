@@ -10,11 +10,13 @@
 npm install --save filehound
 ```
 
-Requires Node.js 24 or later. Filehound is an ES module, with TypeScript types included. CommonJS can load it too, as Node 24 can `require()` ES modules:
+Requires Node.js 24 or later. Filehound is an ES module, with TypeScript types included:
 
 ```js
-const { FileHound, ext } = require('filehound');
+import { FileHound, ext } from 'filehound';
 ```
+
+CommonJS can load it too, as Node 24 can `require()` ES modules.
 
 Upgrading from V1? See the [migration guide](https://github.com/nspragg/filehound/blob/master/MIGRATING.md).
 
@@ -59,12 +61,21 @@ const files = await FileHound.create()
   .find();
 ```
 
-Sizes can also be given with units:
+Sizes can also be given with units: `b`, `k`, `m`, `g` and `t`, in multiples of 1024. The operators are `<`, `<=`, `>`, `>=` and `==`, which is the default:
 
 ```js
 const files = await FileHound.create()
   .paths('/some/dir')
   .match(size('<=1mb'))
+  .find();
+```
+
+For files of an exact number of bytes, use `sizeEquals`:
+
+```js
+const files = await FileHound.create()
+  .paths('/some/dir')
+  .match(sizeEquals(1024))
   .find();
 ```
 
@@ -79,7 +90,7 @@ const files = await FileHound.create()
   .find();
 ```
 
-`accessed` and `changed` work in the same way.
+The operators are `<`, `<=`, `>` and `=`, which is the default and compares to the second. The units are minutes (`m`, `min`), hours (`h`) and days (`d`), which is the default. `accessed` and `changed` work in the same way.
 
 #### Combining filters
 

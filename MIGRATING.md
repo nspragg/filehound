@@ -52,11 +52,13 @@ FileHound.create().match(ext('json')).find();
 |---|---|
 | `.ext('json', 'txt')` | `.match(ext('json', 'txt'))` |
 | `.size('<10kb')` | `.match(size('<10kb'))` |
+| `.size(1024)` | `.match(sizeEquals(1024))` |
 | `.isEmpty()` | `.match(isEmpty())` |
 | `.glob('*.json')`, `.match('*.json')` | `.match(glob('**/*.json'))`, see [glob patterns](#glob-patterns) |
 | `.glob(['*.json', '*.txt'])` | `.match(glob('**/*.json').or(glob('**/*.txt')))` |
 | `.discard('node_modules')` | `.match(discard('node_modules'))` |
 | `.modified('<2 days')` | `.match(modified('<2 days'))` |
+| `.modified(10)` | `.match(modified('=10 days'))` |
 | `.accessed(...)`, `.changed(...)` | `.match(accessed(...))`, `.match(changed(...))` |
 | `.addFilter(fn)` | `.match(applyFilterSync(fn))`, or `applyFilter(fn)` for an async `fn` |
 | `.not()` | `not(predicate)` or `predicate.not()` |
@@ -65,7 +67,7 @@ FileHound.create().match(ext('json')).find();
 | `.path('/tmp')` | `.paths('/tmp')` |
 | `.getSearchPaths()` | `.getPaths()` |
 
-Size and date expressions, such as `'<10kb'` and `'<2 days'`, are unchanged.
+Size and date expressions, such as `'<10kb'` and `'<2 days'`, are unchanged. But `size()`, `modified()`, `accessed()` and `changed()` now take only an expression, and throw a `TypeError` for a number. For an exact size, use `sizeEquals(bytes)`. For an exact age, use an expression such as `'=10 days'`.
 
 ### Combining filters
 

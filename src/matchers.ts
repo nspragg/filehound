@@ -246,53 +246,53 @@ export class Size extends AbstractFilePredicate {
 }
 
 export class Modified extends AbstractFilePredicate {
-  readonly #days: string | number;
+  readonly #expression: string;
 
-  constructor(days: string | number) {
+  constructor(expression: string) {
     super();
-    this.#days = days;
+    this.#expression = expression;
   }
 
   override async test(file: FileView): Promise<boolean> {
-    return isDate(await file.lastModified()).assert(this.#days);
+    return isDate(await file.lastModified()).assert(this.#expression);
   }
 
   testSync(file: FileView): boolean {
-    return isDate(file.lastModifiedSync()).assert(this.#days);
+    return isDate(file.lastModifiedSync()).assert(this.#expression);
   }
 }
 
 export class Accessed extends AbstractFilePredicate {
-  readonly #days: string | number;
+  readonly #expression: string;
 
-  constructor(days: string | number) {
+  constructor(expression: string) {
     super();
-    this.#days = days;
+    this.#expression = expression;
   }
 
   override async test(file: FileView): Promise<boolean> {
-    return isDate(await file.lastAccessed()).assert(this.#days);
+    return isDate(await file.lastAccessed()).assert(this.#expression);
   }
 
   testSync(file: FileView): boolean {
-    return isDate(file.lastAccessedSync()).assert(this.#days);
+    return isDate(file.lastAccessedSync()).assert(this.#expression);
   }
 }
 
 export class Changed extends AbstractFilePredicate {
-  readonly #days: string | number;
+  readonly #expression: string;
 
-  constructor(days: string | number) {
+  constructor(expression: string) {
     super();
-    this.#days = days;
+    this.#expression = expression;
   }
 
   override async test(file: FileView): Promise<boolean> {
-    return isDate(await file.lastChanged()).assert(this.#days);
+    return isDate(await file.lastChanged()).assert(this.#expression);
   }
 
   testSync(file: FileView): boolean {
-    return isDate(file.lastChangedSync()).assert(this.#days);
+    return isDate(file.lastChangedSync()).assert(this.#expression);
   }
 }
 
@@ -336,19 +336,51 @@ export function matchAll(): FilePredicate {
   return new MatchAll();
 }
 
+// The matchers are typed, but JavaScript callers could still pass a number
+// where V1 accepted one, so they're told what to use instead
+function expressionFor(matcher: string, expression: unknown, example: string): string {
+  if (typeof expression !== 'string') {
+    throw new TypeError(`${matcher}() takes an expression, such as '${example}'`);
+  }
+  return expression;
+}
+
 /**
- * Matches files by size. Accepts an exact number of bytes or a comparison
- * expression with optional units, e.g. '>10k' or '<=1mb'.
+ * Matches files by size, using a comparison with optional units, such as
+ * `'>10k'` or `'<=1mb'`. The operators are `<`, `<=`, `>`, `>=` and `==`,
+ * which is the default, and the units are `b`, `k`, `m`, `g` and `t`, in
+ * multiples of 1024. Use {@link sizeEquals} for an exact number of bytes.
  *
- * @param s - the size, or size expression, to match
+ * @param expression - the size expression
  * @returns the predicate
+ * @throws `TypeError`
+ * Thrown if the expression is not a string.
  * @example
  * ```ts
  * FileHound.create().match(size('>1mb'));
  * ```
  */
-export function size(s:  number | string): FilePredicate {
-  return new Size(s);
+export function size(expression: string): FilePredicate {
+  return new Size(expressionFor('size', expression, '>1kb'));
+}
+
+/**
+ * Matches files of an exact size
+ *
+ * @param bytes - the size in bytes
+ * @returns the predicate
+ * @throws `RangeError`
+ * Thrown if bytes is negative or not an integer.
+ * @example
+ * ```ts
+ * FileHound.create().match(sizeEquals(1024));
+ * ```
+ */
+export function sizeEquals(bytes: number): FilePredicate {
+  if (!Number.isSafeInteger(bytes) || bytes < 0) {
+    throw new RangeError('Size must be a non-negative integer number of bytes');
+  }
+  return new Size(bytes);
 }
 
 /**
@@ -448,40 +480,49 @@ function cleanExtension(fileExtension: string): string {
 }
 
 /**
- * Matches files by last modified time. Accepts a number of days or a
- * comparison expression with optional units, e.g. '<10 days'.
+ * Matches files by when they were last modified, using a comparison of their
+ * age with optional units, such as `'<2 days'` or `'>8h'`. The operators are
+ * `<`, `<=`, `>` and `=`, which is the default and compares to the second.
+ * The units are minutes (`m`, `min`), hours (`h`) and days (`d`), which is
+ * the default.
  *
- * @param days - the age, or age expression, to match
+ * @param expression - the age expression
  * @returns the predicate
+ * @throws `TypeError`
+ * Thrown if the expression is not a string.
  * @example
  * ```ts
  * FileHound.create().match(modified('<2 days'));
  * ```
  */
-export function modified(days: number | string): FilePredicate {
-  return new Modified(days);
+export function modified(expression: string): FilePredicate {
+  return new Modified(expressionFor('modified', expression, '<2 days'));
 }
 
 /**
- * Matches files by last accessed time. Accepts a number of days or a
- * comparison expression with optional units, e.g. '<10 days'.
+ * Matches files by when they were last accessed, using an age expression as
+ * for {@link modified}
  *
- * @param days - the age, or age expression, to match
+ * @param expression - the age expression
  * @returns the predicate
+ * @throws `TypeError`
+ * Thrown if the expression is not a string.
  */
-export function accessed(days: number | string): FilePredicate {
-  return new Accessed(days);
+export function accessed(expression: string): FilePredicate {
+  return new Accessed(expressionFor('accessed', expression, '<2 days'));
 }
 
 /**
- * Matches files by last changed (status change) time. Accepts a number of
- * days or a comparison expression with optional units, e.g. '<10 days'.
+ * Matches files by when their status, such as their permissions, last
+ * changed, using an age expression as for {@link modified}
  *
- * @param days - the age, or age expression, to match
+ * @param expression - the age expression
  * @returns the predicate
+ * @throws `TypeError`
+ * Thrown if the expression is not a string.
  */
-export function changed(days: number | string): FilePredicate {
-  return new Changed(days);
+export function changed(expression: string): FilePredicate {
+  return new Changed(expressionFor('changed', expression, '<2 days'));
 }
 
 /**

@@ -15,5 +15,6 @@ export {
   matchAll,
   modified,
   not,
-  size
+  size,
+  sizeEquals
 } from './matchers.js';
