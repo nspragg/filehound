@@ -1,6 +1,7 @@
-import {isDate, isNumber} from 'unit-compare';
+import {parseAge, parseSize} from 'unit-compare';
 import {from} from './arrays.js';
 import type {FileView} from './file.js';
+import type {AgeFilter, SizeFilter} from '../../unit-compare/src/index.js';
 /**
  * A composable test applied to each file found during a search
  */
@@ -229,70 +230,70 @@ export class CustomFilterSync extends AbstractFilePredicate {
 }
 
 export class Size extends AbstractFilePredicate {
-  readonly #size: string | number;
+  readonly #isMatch: SizeFilter;
 
   constructor(sizeExpression: string | number) {
     super();
-    this.#size = sizeExpression;
+    this.#isMatch = parseSize(sizeExpression);
   }
 
   override async test(file: FileView): Promise<boolean> {
-    return isNumber(await file.size()).assert(this.#size);
+    return this.#isMatch(await file.size());
   }
 
   testSync(file: FileView): boolean {
-    return isNumber(file.sizeSync()).assert(this.#size);
+    return this.#isMatch(file.sizeSync());
   }
 }
 
 export class Modified extends AbstractFilePredicate {
-  readonly #expression: string;
+  readonly #isMatch: AgeFilter;
 
   constructor(expression: string) {
     super();
-    this.#expression = expression;
+    this.#isMatch = parseAge(expression);
   }
 
   override async test(file: FileView): Promise<boolean> {
-    return isDate(await file.lastModified()).assert(this.#expression);
+    return this.#isMatch(await file.lastModified());
   }
 
   testSync(file: FileView): boolean {
-    return isDate(file.lastModifiedSync()).assert(this.#expression);
+    return this.#isMatch(file.lastModifiedSync());
   }
 }
 
 export class Accessed extends AbstractFilePredicate {
-  readonly #expression: string;
+  readonly #isMatch: AgeFilter;
 
   constructor(expression: string) {
     super();
-    this.#expression = expression;
+    this.#isMatch = parseAge(expression);
   }
 
   override async test(file: FileView): Promise<boolean> {
-    return isDate(await file.lastAccessed()).assert(this.#expression);
+    return this.#isMatch(await file.lastAccessed());
   }
 
   testSync(file: FileView): boolean {
-    return isDate(file.lastAccessedSync()).assert(this.#expression);
+    return this.#isMatch(file.lastAccessedSync());
   }
 }
 
 export class Changed extends AbstractFilePredicate {
-  readonly #expression: string;
+  readonly #isMatch: AgeFilter;
 
   constructor(expression: string) {
     super();
-    this.#expression = expression;
+    this.#isMatch = parseAge(expression);
   }
 
   override async test(file: FileView): Promise<boolean> {
-    return isDate(await file.lastChanged()).assert(this.#expression);
+    return this.#isMatch(await file.lastChanged());
   }
 
   testSync(file: FileView): boolean {
-    return isDate(file.lastChangedSync()).assert(this.#expression);
+    return this.#isMatch(file.lastChangedSync());
   }
 }
 

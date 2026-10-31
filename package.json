@@ -57,7 +57,7 @@
   },
   "homepage": "https://github.com/nspragg/filehound",
   "dependencies": {
-    "unit-compare": "^1.0.1"
+    "unit-compare": "^2.0.0-rc.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
