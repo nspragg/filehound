@@ -13,26 +13,28 @@
 <section class="tsd-panel">
 <ul class="tsd-signatures">
 <li class="">
-<div class="tsd-signature tsd-anchor-link" id="applyfilter"><span class="tsd-kind-call-signature">applyFilter</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">fn</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">File</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/FilePredicate.html" class="tsd-signature-type tsd-kind-interface">FilePredicate</a><a href="#applyfilter" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-signature tsd-anchor-link" id="applyfilter"><span class="tsd-kind-call-signature">applyFilter</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">fn</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">file</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/FileView.html" class="tsd-signature-type tsd-kind-interface">FileView</a><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">boolean</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/FilePredicate.html" class="tsd-signature-type tsd-kind-interface">FilePredicate</a><a href="#applyfilter" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
 <div class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Matches files using a custom function</p>
+<div class="tsd-comment tsd-typography"><p>Matches files using a custom function, which may be asynchronous. Can only
+be used with <a href="../classes/FileHound.html#find" class="tsd-kind-method">FileHound.find</a>; use <a href="applyFilterSync.html" class="tsd-kind-function">applyFilterSync</a> with
+<a href="../classes/FileHound.html#findsync" class="tsd-kind-method">FileHound.findSync</a>.</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
-<li><span><span class="tsd-kind-parameter">fn</span>: <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">File</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">boolean</span></span>
-<div class="tsd-comment tsd-typography"><p>returns true for files to include</p>
+<li><span><span class="tsd-kind-parameter">fn</span>: <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">file</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/FileView.html" class="tsd-signature-type tsd-kind-interface">FileView</a><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">boolean</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></span>
+<div class="tsd-comment tsd-typography"><p>returns, or fulfils with, true for files to include</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="../interfaces/FilePredicate.html" class="tsd-signature-type tsd-kind-interface">FilePredicate</a></h4><p>the predicate</p>
 
 <div class="tsd-comment tsd-typography">
 <div class="tsd-tag-example">
-<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-6">FileHound</span><span class="hl-1">.</span><span class="hl-3">create</span><span class="hl-1">().</span><span class="hl-3">match</span><span class="hl-1">(</span><span class="hl-3">applyFilter</span><span class="hl-1">(</span><span class="hl-6">file</span><span class="hl-1"> </span><span class="hl-0">=&gt;</span><span class="hl-1"> </span><span class="hl-6">file</span><span class="hl-1">.</span><span class="hl-3">sizeSync</span><span class="hl-1">() &gt; </span><span class="hl-7">0</span><span class="hl-1">));</span>
+<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">FileHound</span><span class="hl-1">.</span><span class="hl-6">create</span><span class="hl-1">().</span><span class="hl-6">match</span><span class="hl-1">(</span><span class="hl-6">applyFilter</span><span class="hl-1">(</span><span class="hl-4">async</span><span class="hl-1"> </span><span class="hl-0">file</span><span class="hl-1"> </span><span class="hl-4">=&gt;</span><span class="hl-1"> </span><span class="hl-2">await</span><span class="hl-1"> </span><span class="hl-0">file</span><span class="hl-1">.</span><span class="hl-6">size</span><span class="hl-1">() &gt; </span><span class="hl-7">0</span><span class="hl-1">));</span>
 </code><button type="button">Copy</button></pre>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/39777e99a0c37a79e3fe353f60367a820553bae8/src/matchers.ts#L311">matchers.ts:311</a></li></ul></aside></div></li></ul></section></div>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/matchers.ts#L425">matchers.ts:425</a></li></ul></aside></div></li></ul></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

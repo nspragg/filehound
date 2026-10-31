@@ -13,27 +13,33 @@
 <section class="tsd-panel">
 <ul class="tsd-signatures">
 <li class="">
-<div class="tsd-signature tsd-anchor-link" id="size"><span class="tsd-kind-call-signature">size</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">s</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/FilePredicate.html" class="tsd-signature-type tsd-kind-interface">FilePredicate</a><a href="#size" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-signature tsd-anchor-link" id="size"><span class="tsd-kind-call-signature">size</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">expression</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/FilePredicate.html" class="tsd-signature-type tsd-kind-interface">FilePredicate</a><a href="#size" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
 <div class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Matches files by size. Accepts an exact number of bytes or a comparison
-expression with optional units, e.g. '&gt;10k' or '&lt;=1mb'.</p>
+<div class="tsd-comment tsd-typography"><p>Matches files by size, using a comparison with optional units, such as
+<code>'&gt;10k'</code> or <code>'&lt;=1mb'</code>. The operators are <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code> and <code>==</code>,
+which is the default, and the units are <code>b</code>, <code>k</code>, <code>m</code>, <code>g</code> and <code>t</code>, in
+multiples of 1024. Use <a href="sizeEquals.html" class="tsd-kind-function">sizeEquals</a> for an exact number of bytes.</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
-<li><span><span class="tsd-kind-parameter">s</span>: <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">number</span></span>
-<div class="tsd-comment tsd-typography"><p>the size, or size expression, to match</p>
+<li><span><span class="tsd-kind-parameter">expression</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>the size expression</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="../interfaces/FilePredicate.html" class="tsd-signature-type tsd-kind-interface">FilePredicate</a></h4><p>the predicate</p>
 
 <div class="tsd-comment tsd-typography">
+<div class="tsd-tag-throws">
+<h4 class="tsd-anchor-link" id="throws">Throws<a href="#throws" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p><code>TypeError</code>
+Thrown if the expression is not a string.</p>
+</div>
 <div class="tsd-tag-example">
-<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-6">FileHound</span><span class="hl-1">.</span><span class="hl-3">create</span><span class="hl-1">().</span><span class="hl-3">match</span><span class="hl-1">(</span><span class="hl-3">size</span><span class="hl-1">(</span><span class="hl-4">&#39;&gt;1mb&#39;</span><span class="hl-1">));</span>
+<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">FileHound</span><span class="hl-1">.</span><span class="hl-6">create</span><span class="hl-1">().</span><span class="hl-6">match</span><span class="hl-1">(</span><span class="hl-6">size</span><span class="hl-1">(</span><span class="hl-3">&#39;&gt;1mb&#39;</span><span class="hl-1">));</span>
 </code><button type="button">Copy</button></pre>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/39777e99a0c37a79e3fe353f60367a820553bae8/src/matchers.ts#L265">matchers.ts:265</a></li></ul></aside></div></li></ul></section></div>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/matchers.ts#L363">matchers.ts:363</a></li></ul></aside></div></li></ul></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

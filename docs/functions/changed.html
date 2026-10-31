@@ -13,21 +13,26 @@
 <section class="tsd-panel">
 <ul class="tsd-signatures">
 <li class="">
-<div class="tsd-signature tsd-anchor-link" id="changed"><span class="tsd-kind-call-signature">changed</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">days</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/FilePredicate.html" class="tsd-signature-type tsd-kind-interface">FilePredicate</a><a href="#changed" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-signature tsd-anchor-link" id="changed"><span class="tsd-kind-call-signature">changed</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">expression</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/FilePredicate.html" class="tsd-signature-type tsd-kind-interface">FilePredicate</a><a href="#changed" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
 <div class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Matches files by last changed (status change) time. Accepts a number of
-days or a comparison expression with optional units, e.g. '&lt;10 days'.</p>
+<div class="tsd-comment tsd-typography"><p>Matches files by when their status, such as their permissions, last
+changed, using an age expression as for <a href="modified.html" class="tsd-kind-function">modified</a></p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
-<li><span><span class="tsd-kind-parameter">days</span>: <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">number</span></span>
-<div class="tsd-comment tsd-typography"><p>the age, or age expression, to match</p>
+<li><span><span class="tsd-kind-parameter">expression</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>the age expression</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="../interfaces/FilePredicate.html" class="tsd-signature-type tsd-kind-interface">FilePredicate</a></h4><p>the predicate</p>
-<aside class="tsd-sources">
+
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-throws">
+<h4 class="tsd-anchor-link" id="throws">Throws<a href="#throws" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p><code>TypeError</code>
+Thrown if the expression is not a string.</p>
+</div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/39777e99a0c37a79e3fe353f60367a820553bae8/src/matchers.ts#L386">matchers.ts:386</a></li></ul></aside></div></li></ul></section></div>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/matchers.ts#L524">matchers.ts:524</a></li></ul></aside></div></li></ul></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
