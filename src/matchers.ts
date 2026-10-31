@@ -1,7 +1,7 @@
 import {parseAge, parseSize} from 'unit-compare';
 import {from} from './arrays.js';
 import type {FileView} from './file.js';
-import type {AgeFilter, SizeFilter} from '../../unit-compare/src/index.js';
+import type {AgeFilter, SizeFilter} from 'unit-compare';
 /**
  * A composable test applied to each file found during a search
  */
