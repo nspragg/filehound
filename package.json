@@ -1,6 +1,6 @@
 {
   "name": "filehound",
-  "version": "2.0.0",
+  "version": "2.0.0-beta.3",
   "description": "Find files the easy way",
   "type": "module",
   "main": "dist/index.js",
@@ -57,7 +57,7 @@
   },
   "homepage": "https://github.com/nspragg/filehound",
   "dependencies": {
-    "unit-compare": "^2.0.0-rc.0"
+    "unit-compare": "^2.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
