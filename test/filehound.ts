@@ -1951,7 +1951,8 @@ describe('FileHound', async () => {
         }
 
         it('rejects, without an unhandled rejection, when a directory read ahead cannot be read', async function () {
-            if (process.getuid?.() === 0) {
+            // Root ignores permissions, and Windows has no unreadable mode
+            if (process.getuid?.() === 0 || process.platform === 'win32') {
                 this.skip();
             }
             const unhandled = sinon.spy();
