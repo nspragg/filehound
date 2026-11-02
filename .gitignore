@@ -1,6 +1,7 @@
 node_modules
 coverage
 *.log
-dist
+lib/
 .vscode
+package-lock.json
 .idea
