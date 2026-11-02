@@ -910,7 +910,7 @@ describe('FileHound', async () => {
                 await FileHound.create().paths(badPath).find();
                 assert.fail('Expected an error to be thrown');
             } catch (err) {
-                assert.equal((err as Error).message, `'${badPath}' is not a valid path`);
+                assert.equal((err as Error).message, `'${path.normalize(badPath)}' is not a valid path`);
                 assert.propertyVal((err as Error).cause, 'code', 'ENOENT');
             }
         });
@@ -921,7 +921,7 @@ describe('FileHound', async () => {
                 FileHound.create().paths(badPath).findSync();
                 assert.fail('Expected an error to be thrown');
             } catch (err) {
-                assert.equal((err as Error).message, `'${badPath}' is not a valid path`);
+                assert.equal((err as Error).message, `'${path.normalize(badPath)}' is not a valid path`);
                 assert.propertyVal((err as Error).cause, 'code', 'ENOENT');
             }
         });
@@ -932,7 +932,7 @@ describe('FileHound', async () => {
                 await FileHound.create().paths(filePath).find();
                 assert.fail('Expected an error to be thrown');
             } catch (err) {
-                assert.equal((err as Error).message, `'${filePath}' is not a directory`);
+                assert.equal((err as Error).message, `'${path.normalize(filePath)}' is not a directory`);
             }
         });
 
@@ -942,7 +942,7 @@ describe('FileHound', async () => {
                 FileHound.create().paths(filePath).findSync();
                 assert.fail('Expected an error to be thrown');
             } catch (err) {
-                assert.equal((err as Error).message, `'${filePath}' is not a directory`);
+                assert.equal((err as Error).message, `'${path.normalize(filePath)}' is not a directory`);
             }
         });
 
@@ -984,7 +984,7 @@ describe('FileHound', async () => {
             const fh = await FileHound.create();
             fh.paths(location1, location1);
 
-            assert.deepEqual(fh.getPaths(), [location1]);
+            assert.deepEqual(fh.getPaths(), [location1].map(path.normalize));
         });
 
         it('returns a defensive copy of the search directories', async () => {
@@ -1005,7 +1005,7 @@ describe('FileHound', async () => {
             const fh = FileHound.create()
                 .paths(location2, location1, location4, location3);
 
-            assert.deepEqual(fh.getPaths(), [location4, location1]);
+            assert.deepEqual(fh.getPaths(), [location4, location1].map(path.normalize));
         });
 
         it('accepts an array of paths', async () => {
@@ -1028,7 +1028,7 @@ describe('FileHound', async () => {
             fh.getPaths();
             fh.depth(1);
 
-            assert.deepEqual(fh.getPaths(), [location1, location2]);
+            assert.deepEqual(fh.getPaths(), [location1, location2].map(path.normalize));
         });
     });
 
@@ -1273,13 +1273,20 @@ describe('FileHound', async () => {
         let tmpDir: string;
         let server: net.Server;
 
-        before((done) => {
+        before(function (done) {
+            // Windows has no socket files: Node listens on named pipes instead
+            if (process.platform === 'win32') {
+                this.skip();
+            }
             tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fh-'));
             fs.writeFileSync(path.join(tmpDir, 'a.txt'), '');
             server = net.createServer().listen(path.join(tmpDir, 's.sock'), done);
         });
 
         after((done) => {
+            if (!server) {
+                return done();
+            }
             server.close(() => {
                 fs.rmSync(tmpDir, {recursive: true, force: true});
                 done();
@@ -1910,7 +1917,9 @@ describe('FileHound', async () => {
             return path.join(tmpDir, ...names);
         }
 
-        before(() => {
+        // Creating and removing 6,300 files is slow on Windows
+        before(function () {
+            this.timeout(60_000);
             tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'filehound-'));
             for (const top of ['a', 'b', 'c']) {
                 for (let i = 0; i < 30; i++) {
@@ -1926,7 +1935,8 @@ describe('FileHound', async () => {
             fs.writeFileSync(inTmp('a', '.hidden', 'x.json'), '');
         });
 
-        after(() => {
+        after(function () {
+            this.timeout(60_000);
             fs.rmSync(tmpDir, {recursive: true, force: true});
         });
 
