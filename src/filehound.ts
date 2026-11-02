@@ -108,13 +108,14 @@ export class FileHound<T = string> extends EventEmitter {
     return files.flat();
   }
   /**
-   * Defines the search paths. Duplicate paths are removed and each path
-   * is normalised. Defaults to the current working directory.
+   * Defines the search paths: the directories to search. Duplicate paths are
+   * removed and each path is normalised. Defaults to the current working directory.
    *
-   * @param paths - one or more paths
+   * @param paths - one or more directory paths
    * @returns the FileHound instance
    * @throws `Error`
-   * Thrown if the query is locked because a search has started.
+   * Thrown if the query is locked because a search has started. A path that
+   * doesn't exist, or isn't a directory, is rejected when the search runs.
    * @example
    * ```ts
    * import { FileHound } from 'filehound';
@@ -355,10 +356,9 @@ export class FileHound<T = string> extends EventEmitter {
   public async find(options: SearchOptions = {}): Promise<T[]> {
     this.#queryLocked = true;
 
-    // push, not concat per batch, which would copy the results each time
     const found: T[] = [];
     try {
-      for await (const results of this.#results(options.signal)) {
+      for await (const results of this.#getNextBatch(options.signal)) {
         for (const result of results) {
           found.push(result);
           this.emit('match', result);
@@ -486,11 +486,9 @@ export class FileHound<T = string> extends EventEmitter {
     return walkSync(dir, this.#getMatchExpression(), this.#getOptions());
   }
 
-  // A match is only emitted when it is returned, so a loop left early never
-  // sees a match event for a match it didn't get
   async *#iterate(signal?: AbortSignal): AsyncGenerator<T> {
     try {
-      for await (const results of this.#results(signal)) {
+      for await (const results of this.#getNextBatch(signal)) {
         for (const result of results) {
           this.emit('match', result);
           yield result;
@@ -505,26 +503,23 @@ export class FileHound<T = string> extends EventEmitter {
     }
   }
 
-  // Results come in batches, as a promise per batch costs far less than one
-  // per match. Search paths are walked in turn, so results stay in path order.
-  async *#results(signal?: AbortSignal): AsyncGenerator<T[]> {
+  async *#getNextBatch(signal?: AbortSignal): AsyncGenerator<T[]> {
     for (const dir of this.getPaths()) {
-      for await (const files of walkAsync(dir, this.#getMatchExpression(), this.#getOptions(), signal)) {
-        // Stats are only fetched when asked for, saving a promise per match
+      for await (const files of walkAsync(dir, this.#getMatchExpression(), this.#getOptions(signal))) {
         yield this.#includeFileStats
           ? await Promise.all(files.map(file => this.#toResult(file)))
           : files.map(file => file.getName() as T);
       }
     }
   }
-
-  #getOptions(): WalkOptions {
+  #getOptions(signal?: AbortSignal): WalkOptions {
     return {
       ignoreHiddenDirectories: this.#ignoreHiddenDirectories,
       ignoreHiddenFiles: this.#ignoreHiddenFiles,
       ignoreSymlinks: this.#ignoreSymlinks,
       maxDepth: this.#maxDepth,
-      fileTypes: this.#types
+      fileTypes: this.#types,
+      signal
     };
   }
 }

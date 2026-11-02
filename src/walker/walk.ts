@@ -9,6 +9,8 @@ export type WalkOptions = {
     ignoreHiddenDirectories: boolean;
     ignoreSymlinks: boolean;
     fileTypes: FileType[];
+    // Only the async walk can be stopped
+    signal?: AbortSignal;
 };
 
 // Every entry has one. FileType is the public subset; anything else, such as a
@@ -21,6 +23,13 @@ export function createPathError(name: string, cause: unknown): Error {
   return new Error(`'${name}' is not a valid path`, {cause});
 }
 
+// Search paths are where to search, so must be directories
+export function assertDirectory(name: string, stats: FileKind): void {
+  if (!stats.isDirectory()) {
+    throw new Error(`'${name}' is not a directory`);
+  }
+}
+
 // State shared by a walk. The async and sync walks (async.ts and sync.ts) share
 // everything except the calls that touch the file system, and both return
 // matches in name order.
@@ -28,11 +37,9 @@ export class Walk {
   readonly matcher: FilePredicate;
   // Checked once, as combined predicates work it out from their parts
   readonly isSyncMatcher: boolean;
-  readonly #root: File;
   readonly #opts: WalkOptions;
 
-  constructor(root: File, matcher: FilePredicate, opts: WalkOptions) {
-    this.#root = root;
+  constructor(matcher: FilePredicate, opts: WalkOptions) {
     this.matcher = matcher;
     this.isSyncMatcher = isSyncPredicate(matcher);
     this.#opts = opts;
@@ -45,7 +52,7 @@ export class Walk {
   isCandidate(file: File, type: EntryType): boolean {
     switch (type) {
       case EntryType.DIRECTORY:
-        return file !== this.#root && this.#typeEnabled(type);
+        return this.#typeEnabled(type);
       case EntryType.REGULAR:
         return this.#typeEnabled(type) && !(this.#opts.ignoreHiddenFiles && file.isHiddenSync());
       case EntryType.OTHER:
@@ -55,7 +62,7 @@ export class Walk {
 
   // Hidden directories are neither returned nor walked
   shouldSkipDirectory(dir: File): boolean {
-    return dir !== this.#root && this.#opts.ignoreHiddenDirectories && dir.isHiddenSync();
+    return this.#opts.ignoreHiddenDirectories && dir.isHiddenSync();
   }
 
   // depth counts levels below the root, which is 0. A directory beyond

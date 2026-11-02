@@ -5,11 +5,13 @@
 //                                       installed V1 (node_modules/filehound)
 //
 // Each case runs once to warm up, then the median of RUNS timed runs is shown.
+// Where the OS find command is available, it is timed on the same tree too.
 
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {createRequire} from 'node:module';
+import {execFileSync} from 'node:child_process';
 
 const RUNS = 7;
 const require = createRequire(import.meta.url);
@@ -42,6 +44,31 @@ function casesFor(lib, dir) {
     'find() ext json': () => json().find(),
     'find() depth 2': () => FileHound.create().paths(dir).depth(2).find()
   };
+}
+
+// The OS find command as a baseline for the async cases. Includes the cost of
+// spawning find, which is a few ms. depth(n) stops n levels below the root,
+// so it matches -maxdepth n + 1.
+function findCmdCases(dir) {
+  const find = (...args) => execFileSync('find', [dir, '-type', 'f', ...args], {maxBuffer: 1 << 30})
+    .toString()
+    .split('\n')
+    .filter(Boolean);
+
+  return {
+    'find()': () => find(),
+    'find() ext json': () => find('-name', '*.json'),
+    'find() depth 2': () => find('-maxdepth', '3')
+  };
+}
+
+function hasFindCmd() {
+  try {
+    execFileSync('find', ['.', '-maxdepth', '0'], {stdio: 'ignore'});
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // The version from the nearest package.json, e.g. filehound@1.17.6
@@ -81,6 +108,12 @@ try {
       const {median, count} = await time(fn);
       rows[name] ??= {};
       rows[name][mod === modules[0] ? `${labelFor(mod)} (local)` : labelFor(mod)] = `${median.toFixed(1)} ms (${count})`;
+    }
+  }
+  if (hasFindCmd()) {
+    for (const [name, fn] of Object.entries(findCmdCases(dir))) {
+      const {median, count} = await time(fn);
+      rows[name]['find(1)'] = `${median.toFixed(1)} ms (${count})`;
     }
   }
   console.log(`Node ${process.version}, median of ${RUNS} runs (result count)`);

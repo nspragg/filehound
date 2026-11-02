@@ -2,7 +2,7 @@ import * as fsp from 'node:fs/promises';
 import {File, getChildren, getKnownKind} from '../file.js';
 import type {FilePredicate} from '../matchers.js';
 import {Heap} from './heap.js';
-import {ancestorsOf, byName, createPathError, EntryType, typeOf, Walk, type WalkOptions} from './walk.js';
+import {ancestorsOf, assertDirectory, byName, createPathError, EntryType, typeOf, Walk, type WalkOptions} from './walk.js';
 
 // How the async walk works, and why
 //
@@ -81,9 +81,9 @@ class AsyncWalk extends Walk {
   readonly #positions = new WeakMap<File, Position>();
   readonly #taken = new WeakSet<File>();
 
-  constructor(root: File, matcher: FilePredicate, opts: WalkOptions, signal?: AbortSignal) {
-    super(root, matcher, opts);
-    this.#signal = signal;
+  constructor(matcher: FilePredicate, opts: WalkOptions) {
+    super(matcher, opts);
+    this.#signal = opts.signal;
   }
 
   // Rejects as soon as the walk is aborted, rather than when the work is done,
@@ -191,12 +191,12 @@ type Visit = {match?: File; children?: Promise<File[]>};
 const NOTHING: Visit = Object.freeze({});
 
 // A promise per entry is the main cost of an async walk, so one is only made
-// when needed: for a link or root to stat, or a matcher that needs I/O.
+// when needed: for a link to stat, or a matcher that needs I/O.
 // Anything else, such as a file typed by readdir and matched by extension, is
 // visited synchronously.
 type Visited = Visit | Promise<Visit>;
 
-// The root and links have no known kind, so need a stat
+// Links have no known kind, so need a stat
 async function visitUntyped(file: File, walk: AsyncWalk, depth: number): Promise<Visit> {
   return visitTyped(file, typeOf(await file.getStats()), walk, depth);
 }
@@ -229,16 +229,6 @@ function visitChild(child: File, walk: AsyncWalk, depth: number): Visited {
 // Matches are yielded in batches, in walk order: an entry, then everything
 // below it, then its next sibling, with siblings in name order. A batch is
 // yielded before walking down, so matches arrive as they are found.
-async function* walkVisit(visit: Visit, walk: AsyncWalk, depth: number): AsyncGenerator<File[]> {
-  if (visit.match) {
-    yield [visit.match];
-    walk.throwIfAborted();
-  }
-  if (visit.children) {
-    yield* walkChildren(await walk.abortable(visit.children), walk, depth + 1);
-  }
-}
-
 async function* walkChildren(children: File[], walk: AsyncWalk, depth: number): AsyncGenerator<File[]> {
   const visits: (Visited | undefined)[] = [];
   let started = 0;
@@ -273,17 +263,19 @@ async function* walkChildren(children: File[], walk: AsyncWalk, depth: number): 
 export async function* walkAsync(
   dir: string,
   matcher: FilePredicate,
-  opts: WalkOptions,
-  signal?: AbortSignal
+  opts: WalkOptions
 ): AsyncGenerator<File[]> {
-  signal?.throwIfAborted();
+  opts.signal?.throwIfAborted();
   const root = new File(dir);
+  let stats;
   try {
-    await root.getStats();
+    stats = await root.getStats();
   } catch (error) {
     throw createPathError(dir, error);
   }
+  assertDirectory(dir, stats);
 
-  const walk = new AsyncWalk(root, matcher, opts, signal);
-  yield* walkVisit(await walk.abortable(visitUntyped(root, walk, 0)), walk, 0);
+  // The root is never a match, only the place to search, so the walk starts at its children
+  const walk = new AsyncWalk(matcher, opts);
+  yield* walkChildren(await walk.abortable(walk.read(root, 0)), walk, 1);
 }

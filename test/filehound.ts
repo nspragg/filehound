@@ -926,6 +926,26 @@ describe('FileHound', async () => {
             }
         });
 
+        it('throws when a search path is a file', async () => {
+            const filePath = `${fixtureDir}/justFiles/a.json`;
+            try {
+                await FileHound.create().paths(filePath).find();
+                assert.fail('Expected an error to be thrown');
+            } catch (err) {
+                assert.equal((err as Error).message, `'${filePath}' is not a directory`);
+            }
+        });
+
+        it('throws when a search path is a file (sync)', () => {
+            const filePath = `${fixtureDir}/justFiles/a.json`;
+            try {
+                FileHound.create().paths(filePath).findSync();
+                assert.fail('Expected an error to be thrown');
+            } catch (err) {
+                assert.equal((err as Error).message, `'${filePath}' is not a directory`);
+            }
+        });
+
         it('returns files performing a recursive search', async () => {
             const files = await FileHound.create()
                 .paths(`${fixtureDir}/nested`)
