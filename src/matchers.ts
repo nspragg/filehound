@@ -455,6 +455,11 @@ export function like(pattern: string): FilePredicate {
 /**
  * Excludes files whose path satisfies any of the given regular expression patterns
  *
+ * @remarks
+ * Used with {@link FileHound.match}, a discarded directory is left out of the
+ * results but still searched. To keep the search out of it, pass its name
+ * to {@link FileHound.skipDirectories} instead.
+ *
  * @param patterns - one or more regular expression patterns
  * @returns the predicate
  * @example

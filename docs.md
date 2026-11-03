@@ -130,9 +130,11 @@ Exclude any paths matching a regular expression:
 
 ```js
 const files = await FileHound.create()
-  .match(discard('node_modules'))
+  .match(discard('\\.log$'))
   .find();
 ```
+
+`discard` only leaves matches out of the results: a discarded directory is still searched. To keep the search out of a directory, see [Skipping directories](#skipping-directories).
 
 Or include only those that match one, with `like`:
 
@@ -208,6 +210,20 @@ const files = await FileHound.create()
   .ignoreHiddenDirectories()
   .find();
 ```
+
+#### Skipping directories
+
+Skip directories by name. They are neither searched nor returned, which saves walking large trees such as `node_modules`:
+
+```js
+const files = await FileHound.create()
+  .paths('/some/dir')
+  .skipDirectories('node_modules', '.git', 'build-*')
+  .match(ext('js'))
+  .find();
+```
+
+Each name is matched against a directory's name, not its path, using Node's [`path.matchesGlob`](https://nodejs.org/api/path.html#pathmatchesglobpath-pattern): `'node_modules'` matches exactly, and `'build-*'` matches any name beginning `build-`. Every directory below the search paths is tested, including linked directories, but not the search paths themselves. Calling `skipDirectories` again replaces the names.
 
 #### Ignoring symbolic links
 
