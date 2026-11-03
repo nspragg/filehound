@@ -38,7 +38,7 @@ when <a href="#includefilestats" class="tsd-kind-method">FileHound.includeFileSt
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">FileHound</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L59">filehound.ts:59</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L59">filehound.ts:59</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -61,6 +61,7 @@ when <a href="#includefilestats" class="tsd-kind-method">FileHound.includeFileSt
 <a href="#iterate" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>iterate</span></a>
 <a href="#match" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>match</span></a>
 <a href="#paths" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>paths</span></a>
+<a href="#skipdirectories" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>skip<wbr/>Directories</span></a>
 <a href="#type" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>type</span></a>
 <a href="#any" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>any</span></a>
 <a href="#create" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>create</span></a>
@@ -84,7 +85,7 @@ when <a href="#includefilestats" class="tsd-kind-method">FileHound.includeFileSt
 <h4 class="tsd-returns-title">Returns <a href="" class="tsd-signature-type tsd-kind-class">FileHound</a><span class="tsd-signature-symbol">&lt;</span><a class="tsd-signature-type tsd-kind-type-parameter" href="#t">T</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Overrides EventEmitter.constructor</p>
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L70">filehound.ts:70</a></li></ul></aside></div></li></ul></section></section></details>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L71">filehound.ts:71</a></li></ul></aside></div></li></ul></section></section></details>
 <details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
 <h2 class="tsd-anchor-link" id="methods-1">Methods<a href="#methods-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2></summary>
 <section>
@@ -116,12 +117,12 @@ Thrown if the query is locked because a search has started.</p>
 Thrown if depth is negative or not an integer.</p>
 </div>
 <div class="tsd-tag-example">
-<h4 class="tsd-anchor-link" id="example-1">Example<a href="#example-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">FileHound</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&#39;filehound&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">files</span><span class="hl-1"> = </span><span class="hl-2">await</span><span class="hl-1"> </span><span class="hl-0">FileHound</span><span class="hl-1">.</span><span class="hl-6">create</span><span class="hl-1">()</span><br/><span class="hl-1">  .</span><span class="hl-6">depth</span><span class="hl-1">(</span><span class="hl-7">0</span><span class="hl-1">)</span><br/><span class="hl-1">  .</span><span class="hl-6">find</span><span class="hl-1">(); </span><span class="hl-8">// array of file names only in the current directory</span>
+<h4 class="tsd-anchor-link" id="example-1">Example<a href="#example-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">FileHound</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&#39;filehound&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">files</span><span class="hl-1"> = </span><span class="hl-2">await</span><span class="hl-1"> </span><span class="hl-0">FileHound</span><span class="hl-1">.</span><span class="hl-6">create</span><span class="hl-1">()</span><br/><span class="hl-1">  .</span><span class="hl-6">depth</span><span class="hl-1">(</span><span class="hl-7">0</span><span class="hl-1">)</span><br/><span class="hl-1">  .</span><span class="hl-6">find</span><span class="hl-1">(); </span><span class="hl-9">// array of file names only in the current directory</span>
 </code><button type="button">Copy</button></pre>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L191">filehound.ts:191</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L234">filehound.ts:234</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="find"><span>find</span><a href="#find" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -157,7 +158,7 @@ search fails or is aborted and an <code>end</code> event when the search complet
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L355">filehound.ts:355</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L398">filehound.ts:398</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="findsync"><span>find<wbr/>Sync</span><a href="#findsync" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -176,7 +177,7 @@ locked and can no longer be modified. No events are emitted.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L426">filehound.ts:426</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L468">filehound.ts:468</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="getpaths"><span>get<wbr/>Paths</span><a href="#getpaths" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -190,7 +191,7 @@ otherwise be searched twice.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h4><p>a copy of the search paths</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L441">filehound.ts:441</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L483">filehound.ts:483</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="ignorehiddendirectories"><span>ignore<wbr/>Hidden<wbr/>Directories</span><a href="#ignorehiddendirectories" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -213,7 +214,7 @@ Thrown if the query is locked because a search has started.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L269">filehound.ts:269</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L312">filehound.ts:312</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="ignorehiddenfiles"><span>ignore<wbr/>Hidden<wbr/>Files</span><a href="#ignorehiddenfiles" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -235,7 +236,7 @@ Thrown if the query is locked because a search has started.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L247">filehound.ts:247</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L290">filehound.ts:290</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="ignoresymlinks"><span>ignore<wbr/>Symlinks</span><a href="#ignoresymlinks" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -263,7 +264,7 @@ Thrown if the query is locked because a search has started.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L296">filehound.ts:296</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L339">filehound.ts:339</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="includefilestats"><span>include<wbr/>File<wbr/>Stats</span><a href="#includefilestats" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -286,7 +287,7 @@ Thrown if the query is locked because a search has started.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L320">filehound.ts:320</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L363">filehound.ts:363</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="iterate"><span>iterate</span><a href="#iterate" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -321,7 +322,7 @@ the loop is left early.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L407">filehound.ts:407</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L449">filehound.ts:449</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="match"><span>match</span><a href="#match" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -354,36 +355,37 @@ Thrown if the query is not a valid matcher.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L160">filehound.ts:160</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L162">filehound.ts:162</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="paths"><span>paths</span><a href="#paths" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
 <li class="">
 <div class="tsd-signature tsd-anchor-link" id="paths-1"><span class="tsd-kind-call-signature">paths</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">paths</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">this</span><a href="#paths-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
 <div class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Defines the search paths. Duplicate paths are removed and each path
-is normalised. Defaults to the current working directory.</p>
+<div class="tsd-comment tsd-typography"><p>Defines the search paths: the directories to search. Duplicate paths are
+removed and each path is normalised. Defaults to the current working directory.</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li><span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">paths</span>: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></span>
-<div class="tsd-comment tsd-typography"><p>one or more paths</p>
+<div class="tsd-comment tsd-typography"><p>one or more directory paths</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">this</span></h4><p>the FileHound instance</p>
 
 <div class="tsd-comment tsd-typography">
 <div class="tsd-tag-throws">
 <h4 class="tsd-anchor-link" id="throws-8">Throws<a href="#throws-8" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p><code>Error</code>
-Thrown if the query is locked because a search has started.</p>
+Thrown if the query is locked because a search has started. A path that
+doesn't exist, or isn't a directory, is rejected when the search runs.</p>
 </div>
 <div class="tsd-tag-example">
-<h4 class="tsd-anchor-link" id="example-11">Example<a href="#example-11" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">FileHound</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&#39;filehound&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">files</span><span class="hl-1"> = </span><span class="hl-2">await</span><span class="hl-1"> </span><span class="hl-0">FileHound</span><span class="hl-1">.</span><span class="hl-6">create</span><span class="hl-1">()</span><br/><span class="hl-1">  .</span><span class="hl-6">paths</span><span class="hl-1">(</span><span class="hl-3">&#39;/tmp&#39;</span><span class="hl-1">, </span><span class="hl-3">&#39;/etc&#39;</span><span class="hl-1">) </span><span class="hl-8">// or [&#39;/tmp&#39;, &#39;/etc&#39;]</span><br/><span class="hl-1">  .</span><span class="hl-6">find</span><span class="hl-1">();</span>
+<h4 class="tsd-anchor-link" id="example-11">Example<a href="#example-11" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">FileHound</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&#39;filehound&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">files</span><span class="hl-1"> = </span><span class="hl-2">await</span><span class="hl-1"> </span><span class="hl-0">FileHound</span><span class="hl-1">.</span><span class="hl-6">create</span><span class="hl-1">()</span><br/><span class="hl-1">  .</span><span class="hl-6">paths</span><span class="hl-1">(</span><span class="hl-3">&#39;/tmp&#39;</span><span class="hl-1">, </span><span class="hl-3">&#39;/etc&#39;</span><span class="hl-1">) </span><span class="hl-9">// or [&#39;/tmp&#39;, &#39;/etc&#39;]</span><br/><span class="hl-1">  .</span><span class="hl-6">find</span><span class="hl-1">();</span>
 </code><button type="button">Copy</button></pre>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L127">filehound.ts:127</a></li></ul></aside></div></li>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L129">filehound.ts:129</a></li></ul></aside></div></li>
 <li class="">
 <div class="tsd-signature tsd-anchor-link" id="paths-2"><span class="tsd-kind-call-signature">paths</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">paths</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">this</span><a href="#paths-2" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
 <div class="tsd-description">
@@ -398,7 +400,55 @@ Thrown if the query is locked because a search has started.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">this</span></h4><p>the FileHound instance</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L134">filehound.ts:134</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L136">filehound.ts:136</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="skipdirectories"><span>skip<wbr/>Directories</span><a href="#skipdirectories" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="skipdirectories-1"><span class="tsd-kind-call-signature">skipDirectories</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">names</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">this</span><a href="#skipdirectories-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Skips directories by name: a directory whose name matches any of the
+given names is neither searched nor returned. Use it to keep the search
+out of directories such as <code>node_modules</code>, which a <a href="#match" class="tsd-kind-method">FileHound.match</a>
+predicate can only exclude from the results after searching them.
+Calling it again replaces the names.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">names</span>: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></span>
+<div class="tsd-comment tsd-typography"><p>one or more directory names or globs</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">this</span></h4><p>the FileHound instance</p>
+
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-remarks">
+<h4 class="tsd-anchor-link" id="remarks-4">Remarks<a href="#remarks-4" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p>Each name is matched against a directory's name only, not its path,
+following Node's <a href="https://nodejs.org/api/path.html#pathmatchesglobpath-pattern"><code>path.matchesGlob</code></a>.
+A plain name, such as <code>'node_modules'</code>, matches exactly, and a glob, such
+as <code>'build-*'</code>, matches any name it describes. Every directory below the
+search paths is tested, including linked directories, but not the search
+paths themselves.</p>
+</div>
+<div class="tsd-tag-throws">
+<h4 class="tsd-anchor-link" id="throws-9">Throws<a href="#throws-9" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p><code>Error</code>
+Thrown if the query is locked because a search has started.</p>
+</div>
+<div class="tsd-tag-throws">
+<h4 class="tsd-anchor-link" id="throws-10">Throws<a href="#throws-10" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p><code>RangeError</code>
+Thrown if no names are given.</p>
+</div>
+<div class="tsd-tag-throws">
+<h4 class="tsd-anchor-link" id="throws-11">Throws<a href="#throws-11" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p><code>TypeError</code>
+Thrown if a name is not a non-empty string, or contains a path separator.</p>
+</div>
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example-12">Example<a href="#example-12" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">FileHound</span><span class="hl-1">, </span><span class="hl-0">ext</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&#39;filehound&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">files</span><span class="hl-1"> = </span><span class="hl-2">await</span><span class="hl-1"> </span><span class="hl-0">FileHound</span><span class="hl-1">.</span><span class="hl-6">create</span><span class="hl-1">()</span><br/><span class="hl-1">  .</span><span class="hl-6">skipDirectories</span><span class="hl-1">(</span><span class="hl-3">&#39;node_modules&#39;</span><span class="hl-1">, </span><span class="hl-3">&#39;.git&#39;</span><span class="hl-1">, </span><span class="hl-3">&#39;build-*&#39;</span><span class="hl-1">)</span><br/><span class="hl-1">  .</span><span class="hl-6">match</span><span class="hl-1">(</span><span class="hl-6">ext</span><span class="hl-1">(</span><span class="hl-3">&#39;js&#39;</span><span class="hl-1">))</span><br/><span class="hl-1">  .</span><span class="hl-6">find</span><span class="hl-1">();</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L206">filehound.ts:206</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="type"><span>type</span><a href="#type" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -418,24 +468,24 @@ regular files only.</p>
 
 <div class="tsd-comment tsd-typography">
 <div class="tsd-tag-throws">
-<h4 class="tsd-anchor-link" id="throws-9">Throws<a href="#throws-9" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p><code>Error</code>
+<h4 class="tsd-anchor-link" id="throws-12">Throws<a href="#throws-12" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p><code>Error</code>
 Thrown if the query is locked because a search has started.</p>
 </div>
 <div class="tsd-tag-throws">
-<h4 class="tsd-anchor-link" id="throws-10">Throws<a href="#throws-10" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p><code>RangeError</code>
+<h4 class="tsd-anchor-link" id="throws-13">Throws<a href="#throws-13" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p><code>RangeError</code>
 Thrown if no file types are given.</p>
 </div>
 <div class="tsd-tag-throws">
-<h4 class="tsd-anchor-link" id="throws-11">Throws<a href="#throws-11" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p><code>TypeError</code>
+<h4 class="tsd-anchor-link" id="throws-14">Throws<a href="#throws-14" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p><code>TypeError</code>
 Thrown if an invalid file type is given.</p>
 </div>
 <div class="tsd-tag-example">
-<h4 class="tsd-anchor-link" id="example-12">Example<a href="#example-12" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">FileHound</span><span class="hl-1">, </span><span class="hl-0">FileType</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&#39;filehound&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">directories</span><span class="hl-1"> = </span><span class="hl-2">await</span><span class="hl-1"> </span><span class="hl-0">FileHound</span><span class="hl-1">.</span><span class="hl-6">create</span><span class="hl-1">()</span><br/><span class="hl-1">  .</span><span class="hl-6">type</span><span class="hl-1">(</span><span class="hl-0">FileType</span><span class="hl-1">.</span><span class="hl-5">DIRECTORY</span><span class="hl-1">)</span><br/><span class="hl-1">  .</span><span class="hl-6">find</span><span class="hl-1">();</span>
+<h4 class="tsd-anchor-link" id="example-13">Example<a href="#example-13" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">FileHound</span><span class="hl-1">, </span><span class="hl-0">FileType</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&#39;filehound&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">directories</span><span class="hl-1"> = </span><span class="hl-2">await</span><span class="hl-1"> </span><span class="hl-0">FileHound</span><span class="hl-1">.</span><span class="hl-6">create</span><span class="hl-1">()</span><br/><span class="hl-1">  .</span><span class="hl-6">type</span><span class="hl-1">(</span><span class="hl-0">FileType</span><span class="hl-1">.</span><span class="hl-5">DIRECTORY</span><span class="hl-1">)</span><br/><span class="hl-1">  .</span><span class="hl-6">find</span><span class="hl-1">();</span>
 </code><button type="button">Copy</button></pre>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L224">filehound.ts:224</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L267">filehound.ts:267</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="any"><code class="tsd-tag">Static</code><span>any</span><a href="#any" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -459,12 +509,12 @@ the fulfilment value is an array of all files matched by any of the queries</p>
 
 <div class="tsd-comment tsd-typography">
 <div class="tsd-tag-example">
-<h4 class="tsd-anchor-link" id="example-13">Example<a href="#example-13" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">FileHound</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&#39;filehound&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">files</span><span class="hl-1"> = </span><span class="hl-2">await</span><span class="hl-1"> </span><span class="hl-0">FileHound</span><span class="hl-1">.</span><span class="hl-6">any</span><span class="hl-1">(</span><span class="hl-0">fh1</span><span class="hl-1">, </span><span class="hl-0">fh2</span><span class="hl-1">);</span>
+<h4 class="tsd-anchor-link" id="example-14">Example<a href="#example-14" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">FileHound</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&#39;filehound&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">files</span><span class="hl-1"> = </span><span class="hl-2">await</span><span class="hl-1"> </span><span class="hl-0">FileHound</span><span class="hl-1">.</span><span class="hl-6">any</span><span class="hl-1">(</span><span class="hl-0">fh1</span><span class="hl-1">, </span><span class="hl-0">fh2</span><span class="hl-1">);</span>
 </code><button type="button">Copy</button></pre>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L104">filehound.ts:104</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L105">filehound.ts:105</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="create"><code class="tsd-tag">Static</code><span>create</span><a href="#create" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -477,12 +527,12 @@ the fulfilment value is an array of all files matched by any of the queries</p>
 
 <div class="tsd-comment tsd-typography">
 <div class="tsd-tag-example">
-<h4 class="tsd-anchor-link" id="example-14">Example<a href="#example-14" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">FileHound</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&#39;filehound&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">filehound</span><span class="hl-1"> = </span><span class="hl-0">FileHound</span><span class="hl-1">.</span><span class="hl-6">create</span><span class="hl-1">();</span>
+<h4 class="tsd-anchor-link" id="example-15">Example<a href="#example-15" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">FileHound</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&#39;filehound&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">filehound</span><span class="hl-1"> = </span><span class="hl-0">FileHound</span><span class="hl-1">.</span><span class="hl-6">create</span><span class="hl-1">();</span>
 </code><button type="button">Copy</button></pre>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nspragg/filehound/blob/900c5eda21468a2c816fd9139c5a6eb35635212a/src/filehound.ts#L87">filehound.ts:87</a></li></ul></aside></div></li></ul></section></section></details></div>
+<li>Defined in <a href="https://github.com/nspragg/filehound/blob/2d5873b8d21c44d9f6e1252ac4ff3d34322446d5/src/filehound.ts#L88">filehound.ts:88</a></li></ul></aside></div></li></ul></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -500,7 +550,7 @@ the fulfilment value is an array of all files matched by any of the queries</p>
 <details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Constructors"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Constructors</summary>
 <div><a href="#constructor"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Constructor"><use href="../assets/icons.svg#icon-512"></use></svg><span>constructor</span></a></div></details>
 <details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Methods</summary>
-<div><a href="#depth"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>depth</span></a><a href="#find"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>find</span></a><a href="#findsync"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>find<wbr/>Sync</span></a><a href="#getpaths"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>Paths</span></a><a href="#ignorehiddendirectories"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>ignore<wbr/>Hidden<wbr/>Directories</span></a><a href="#ignorehiddenfiles"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>ignore<wbr/>Hidden<wbr/>Files</span></a><a href="#ignoresymlinks"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>ignore<wbr/>Symlinks</span></a><a href="#includefilestats"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>include<wbr/>File<wbr/>Stats</span></a><a href="#iterate"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>iterate</span></a><a href="#match"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>match</span></a><a href="#paths"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>paths</span></a><a href="#type"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>type</span></a><a href="#any"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>any</span></a><a href="#create"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>create</span></a></div></details></div></details></div>
+<div><a href="#depth"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>depth</span></a><a href="#find"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>find</span></a><a href="#findsync"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>find<wbr/>Sync</span></a><a href="#getpaths"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>Paths</span></a><a href="#ignorehiddendirectories"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>ignore<wbr/>Hidden<wbr/>Directories</span></a><a href="#ignorehiddenfiles"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>ignore<wbr/>Hidden<wbr/>Files</span></a><a href="#ignoresymlinks"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>ignore<wbr/>Symlinks</span></a><a href="#includefilestats"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>include<wbr/>File<wbr/>Stats</span></a><a href="#iterate"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>iterate</span></a><a href="#match"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>match</span></a><a href="#paths"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>paths</span></a><a href="#skipdirectories"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>skip<wbr/>Directories</span></a><a href="#type"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>type</span></a><a href="#any"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>any</span></a><a href="#create"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>create</span></a></div></details></div></details></div>
 <div class="site-menu">
 <nav class="tsd-navigation"><a href="../modules.html">FileHound</a>
 <ul class="tsd-small-nested-navigation" id="tsd-nav-container">

@@ -6,7 +6,7 @@ import { join } from 'node:path';
 
 const root = join(import.meta.dirname, '..');
 const dir = join(root, 'examples');
-const examples = readdirSync(dir).filter((name) => name.endsWith('.ts')).sort();
+const examples = readdirSync(dir).filter((name) => name.endsWith('.mts')).sort();
 
 let failed = 0;
 for (const name of examples) {
