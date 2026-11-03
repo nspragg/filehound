@@ -67,7 +67,14 @@ FileHound.create().match(ext('json')).find();
 | `.path('/tmp')` | `.paths('/tmp')` |
 | `.getSearchPaths()` | `.getPaths()` |
 
-Size and date expressions, such as `'<10kb'` and `'<2 days'`, are unchanged. But `size()`, `modified()`, `accessed()` and `changed()` now take only an expression, and throw a `TypeError` for a number. For an exact size, use `sizeEquals(bytes)`. For an exact age, use an expression such as `'=10 days'`.
+`size()`, `modified()`, `accessed()` and `changed()` now take only an expression, and throw a `TypeError` for a number. For an exact size, use `sizeEquals(bytes)`. For an exact age, use an expression such as `'=10 days'`.
+
+Size and date expressions, such as `'<10kb'` and `'<2 days'`, are written the same way, but are parsed more strictly and compare ages differently:
+
+- An invalid expression, or an unknown unit such as `'>3 years'`, throws an `ExpressionError` (exported by filehound) when the predicate is made. V1 accepted it, and then matched the wrong files.
+- Ages are compared in whole units, like `find -mtime`: a file modified two and a half days ago is 2 days old. So `'=2 days'` matches it, and `'>2 days'` doesn't. V1 compared ages to the second.
+- `>=` works for ages, and weeks (`w`, `week`, `weeks`) are a new unit. In V1, `'>=10 days'` wasn't parsed, and matched newer files too.
+- Whitespace between the parts, such as `'>= 10 kb'`, is allowed.
 
 ### Combining filters
 

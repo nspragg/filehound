@@ -61,7 +61,7 @@ const files = await FileHound.create()
   .find();
 ```
 
-Sizes can also be given with units: `b`, `k`, `m`, `g` and `t`, in multiples of 1024. The operators are `<`, `<=`, `>`, `>=` and `==`, which is the default:
+Sizes can also be given with units, in multiples of 1024: bytes (`b`, the default), kilobytes (`k`, `kb`), megabytes (`m`, `mb`), gigabytes (`g`, `gb`) and terabytes (`t`, `tb`), in any case. The operators are `<`, `<=`, `>`, `>=` and `==` (or `=`), which is the default:
 
 ```js
 const files = await FileHound.create()
@@ -90,7 +90,27 @@ const files = await FileHound.create()
   .find();
 ```
 
-The operators are `<`, `<=`, `>` and `=`, which is the default and compares to the second. The units are minutes (`m`, `min`), hours (`h`) and days (`d`), which is the default. `accessed` and `changed` work in the same way.
+The operators are `<`, `<=`, `>`, `>=` and `==` (or `=`), which is the default. The units are minutes (`m`, `min`, `mins`, `minute`, `minutes`), hours (`h`, `hour`, `hours`), days (`d`, `day`, `days`, the default) and weeks (`w`, `week`, `weeks`), in any case. `accessed` and `changed` work in the same way.
+
+Ages are compared in whole units, like `find -mtime`: a file modified two and a half days ago is 2 days old, so it matches `'=2 days'`, `'>=2 days'` and `'<3 days'`, but not `'>2 days'`. Ages are measured when each file is tested, so a predicate can be kept and reused.
+
+#### Invalid size and date expressions
+
+An expression that can't be parsed, or has an unknown unit, throws an `ExpressionError` as soon as the predicate is made, before any search runs. So expressions from users, such as command-line options, can be checked up front:
+
+```js
+import { ExpressionError, FileHound, modified } from 'filehound';
+
+try {
+  const files = await FileHound.create()
+    .match(modified(userInput))
+    .find();
+} catch (err) {
+  if (err instanceof ExpressionError) {
+    console.error(err.message); // e.g. Invalid expression '>3 years': unknown time unit 'years'
+  }
+}
+```
 
 #### Combining filters
 
