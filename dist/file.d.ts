@@ -1,5 +1,6 @@
-import { type Dirent, type Stats } from 'node:fs';
-export type FileKind = Pick<Stats, 'isDirectory' | 'isFile'>;
+/// <reference types="node" />
+import { Dirent, Stats } from 'node:fs';
+export declare type FileKind = Pick<Stats, 'isDirectory' | 'isFile'>;
 /**
  * A read-only view of a file found by a search, as passed to predicates such
  * as {@link applyFilter}. It has no methods that change the file system.

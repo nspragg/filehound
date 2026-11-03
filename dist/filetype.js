@@ -1,8 +1,11 @@
+"use strict";
+exports.__esModule = true;
+exports.FileType = void 0;
 /**
  * The types of file system entry that a search can return. The values are
  * plain strings, so `'directory'` can be passed in place of `FileType.DIRECTORY`.
  */
-export const FileType = {
+exports.FileType = {
     /** Regular files only: not sockets, FIFOs or devices */
     REGULAR: 'regular',
     DIRECTORY: 'directory'

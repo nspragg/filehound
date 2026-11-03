@@ -1,7 +1,7 @@
 import type { File, FileKind } from '../file.js';
 import { FileType } from '../filetype.js';
-import { type FilePredicate } from '../matchers.js';
-export type WalkOptions = {
+import { FilePredicate } from '../matchers.js';
+export declare type WalkOptions = {
     maxDepth?: number;
     ignoreHiddenFiles: boolean;
     ignoreHiddenDirectories: boolean;
@@ -14,7 +14,7 @@ export declare const EntryType: {
     readonly REGULAR: "regular";
     readonly DIRECTORY: "directory";
 };
-export type EntryType = typeof EntryType[keyof typeof EntryType];
+export declare type EntryType = typeof EntryType[keyof typeof EntryType];
 export declare function createPathError(name: string, cause: unknown): Error;
 export declare function assertDirectory(name: string, stats: FileKind): void;
 export declare class Walk {

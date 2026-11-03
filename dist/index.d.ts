@@ -1,4 +1,4 @@
-export { FileHound, type FileWithStats, type SearchOptions } from './filehound.js';
+export { FileHound, type, FileWithStats, type, SearchOptions } from './filehound.js';
 export { FileType } from './filetype.js';
 export type { FileView } from './file.js';
-export { type FilePredicate, accessed, applyFilter, applyFilterSync, changed, discard, ext, glob, isEmpty, like, matchAll, modified, not, size, sizeEquals } from './matchers.js';
+export { type, FilePredicate, accessed, applyFilter, applyFilterSync, changed, discard, ext, glob, isEmpty, like, matchAll, modified, not, size, sizeEquals } from './matchers.js';

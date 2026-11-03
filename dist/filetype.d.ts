@@ -7,4 +7,4 @@ export declare const FileType: {
     readonly REGULAR: "regular";
     readonly DIRECTORY: "directory";
 };
-export type FileType = typeof FileType[keyof typeof FileType];
+export declare type FileType = typeof FileType[keyof typeof FileType];

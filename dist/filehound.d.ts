@@ -1,11 +1,12 @@
+/// <reference types="node" />
 import { EventEmitter } from 'node:events';
 import type { Stats } from 'node:fs';
-import { type FilePredicate } from './matchers.js';
+import { FilePredicate } from './matchers.js';
 import { FileType } from './filetype.js';
 /**
  * Options for {@link FileHound.find} and {@link FileHound.iterate}.
  */
-export type SearchOptions = {
+export declare type SearchOptions = {
     /**
      * Stops the search when aborted. The search then rejects with the
      * signal's reason, which is an `AbortError` unless another is given.
@@ -15,7 +16,7 @@ export type SearchOptions = {
 /**
  * A match returned when {@link FileHound.includeFileStats} is set.
  */
-export type FileWithStats = {
+export declare type FileWithStats = {
     /** the path of the matching file */
     path: string;
     /** the file's stats, as returned by `fs.stat` */
