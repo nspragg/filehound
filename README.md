@@ -61,6 +61,8 @@ for await (const file of query.iterate()) {
 ## Documentation
 For more examples and API details, see [API documentation](https://nspragg.github.io/filehound/)
 
+Runnable examples are in the [examples](examples/) directory. Each one searches the current directory, for example `node by-extension.ts`.
+
 ## Test
 
 ```

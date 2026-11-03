@@ -31,9 +31,9 @@ export default tseslint.config(
     }
   },
   {
-    files: ['bench/**'],
+    files: ['bench/**', 'examples/**', 'scripts/**'],
     languageOptions: {
-      globals: { console: 'readonly', process: 'readonly' }
+      globals: { console: 'readonly', performance: 'readonly', process: 'readonly' }
     },
     rules: {
       '@typescript-eslint/explicit-function-return-type': 'off',
