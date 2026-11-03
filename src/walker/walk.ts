@@ -1,4 +1,4 @@
-import {dirname, resolve} from 'node:path';
+import {basename, dirname, matchesGlob, resolve} from 'node:path';
 import type {File, FileKind} from '../file.js';
 import {FileType} from '../filetype.js';
 import {type FilePredicate, isSyncPredicate} from '../matchers.js';
@@ -9,6 +9,8 @@ export type WalkOptions = {
     ignoreHiddenDirectories: boolean;
     ignoreSymlinks: boolean;
     fileTypes: FileType[];
+    // Globs matched against directory names. Those matched are neither returned nor walked.
+    skipDirectories: readonly string[];
     // Only the async walk can be stopped
     signal?: AbortSignal;
 };
@@ -60,15 +62,26 @@ export class Walk {
     }
   }
 
-  // Hidden directories are neither returned nor walked
+  // Hidden directories, when ignored, and those named by skipDirectories are
+  // neither returned nor walked. Only names are tested, so the async walk
+  // can skip a directory before reading it ahead.
   shouldSkipDirectory(dir: File): boolean {
-    return this.#opts.ignoreHiddenDirectories && dir.isHiddenSync();
+    return (this.#opts.ignoreHiddenDirectories && dir.isHiddenSync()) || this.#isSkippedName(dir);
   }
 
   // depth counts levels below the root, which is 0. A directory beyond
   // maxDepth is still returned, like any other entry at its level, but not walked.
   canDescend(depth: number): boolean {
     return this.#opts.maxDepth === undefined || depth <= this.#opts.maxDepth;
+  }
+
+  #isSkippedName(dir: File): boolean {
+    const skip = this.#opts.skipDirectories;
+    if (skip.length === 0) {
+      return false;
+    }
+    const name = basename(dir.getName());
+    return skip.some(pattern => matchesGlob(name, pattern));
   }
 
   #typeEnabled(type: FileType): boolean {

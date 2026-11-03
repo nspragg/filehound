@@ -74,6 +74,19 @@ function createFile(fname: string, opts: any): void {
     fs.closeSync(fd);
 }
 
+// Works with find and findSync, but isn't marked as needing no I/O, so find
+// tests it as an async predicate
+function needingIO(fn: (file: FileView) => boolean): FilePredicate {
+    const predicate = applyFilterSync(fn);
+    return {
+        not: () => predicate.not(),
+        or: other => predicate.or(other),
+        and: other => predicate.and(other),
+        test: async file => fn(file),
+        testSync: fn
+    };
+}
+
 async function collect<T>(matches: AsyncIterable<T>): Promise<T[]> {
     const found = [];
     for await (const match of matches) {
@@ -1154,6 +1167,151 @@ describe('FileHound', async () => {
         });
     });
 
+    describe('.skipDirectories', () => {
+        const nested = qualifyNames(['/nested/.hidden1/bad.txt', '/nested/c.json', '/nested/d.json']);
+
+        afterEach(() => {
+            sandbox.restore();
+        });
+
+        async function findAll(fh: () => FileHound): Promise<string[][]> {
+            return [await fh().find(), await collect(fh().iterate()), fh().findSync()];
+        }
+
+        it('excludes directories with a given name, and their contents', async () => {
+            const query = (): FileHound => FileHound.create()
+                .paths(`${fixtureDir}/nested`)
+                .skipDirectories('mydir');
+
+            for (const files of await findAll(query)) {
+                assert.deepEqual(files, nested);
+            }
+        });
+
+        it('matches names exactly', async () => {
+            const query = (): FileHound => FileHound.create()
+                .paths(`${fixtureDir}/nested`)
+                .skipDirectories('my', 'dir', 'mydi');
+
+            for (const files of await findAll(query)) {
+                assert.deepEqual(files, nestedFiles);
+            }
+        });
+
+        it('matches names against globs', async () => {
+            const query = (): FileHound => FileHound.create()
+                .paths(`${fixtureDir}/deeplyNested`)
+                .type(FileType.DIRECTORY)
+                .skipDirectories('*3');
+
+            for (const files of await findAll(query)) {
+                assert.deepEqual(files, qualifyNames(['/deeplyNested/mydir', '/deeplyNested/mydir/mydir2']));
+            }
+        });
+
+        it('skips directories matching any of the names', async () => {
+            const query = (): FileHound => FileHound.create()
+                .paths(`${fixtureDir}/nested`)
+                .skipDirectories('mydir', '.hidden1');
+
+            for (const files of await findAll(query)) {
+                assert.deepEqual(files, qualifyNames(['/nested/c.json', '/nested/d.json']));
+            }
+        });
+
+        it('does not read skipped directories, even ahead of the search', async () => {
+            const readdir = sandbox.spy(fs.promises, 'readdir');
+            const readdirSync = sandbox.spy(fs, 'readdirSync');
+            const query = (): FileHound => FileHound.create()
+                .paths(`${fixtureDir}/deeplyNested`)
+                .skipDirectories('mydir2');
+
+            await query().find();
+            query().findSync();
+
+            const read = [...readdir.getCalls(), ...readdirSync.getCalls()].map(call => String(call.args[0]));
+            assert.include(read, getAbsolutePath('deeplyNested/mydir'));
+            assert.isEmpty(read.filter(name => name.includes('mydir2')));
+        });
+
+        it('excludes skipped directories at the depth limit', async () => {
+            const query = (): FileHound => FileHound.create()
+                .paths(`${fixtureDir}/deeplyNested`)
+                .type(FileType.DIRECTORY)
+                .depth(0)
+                .skipDirectories('mydir');
+
+            for (const files of await findAll(query)) {
+                assert.isEmpty(files);
+            }
+        });
+
+        it('does not skip the search paths', async () => {
+            const query = (): FileHound => FileHound.create()
+                .paths(`${fixtureDir}/nested/mydir`)
+                .skipDirectories('mydir');
+
+            for (const files of await findAll(query)) {
+                assert.deepEqual(files, qualifyNames(['/nested/mydir/e.json']));
+            }
+        });
+
+        it('does not skip files', async () => {
+            const query = (): FileHound => FileHound.create()
+                .paths(`${fixtureDir}/justFiles`)
+                .skipDirectories('*');
+
+            for (const files of await findAll(query)) {
+                assert.deepEqual(files, justFiles);
+            }
+        });
+
+        it('replaces the names when called again', async () => {
+            const files = await FileHound.create()
+                .paths(`${fixtureDir}/nested`)
+                .skipDirectories('mydir')
+                .skipDirectories('.hidden1')
+                .find();
+
+            assert.deepEqual(files, qualifyNames(['/nested/c.json', '/nested/d.json', '/nested/mydir/e.json']));
+        });
+
+        it('combines with ignoreHiddenDirectories', async () => {
+            const query = (): FileHound => FileHound.create()
+                .paths(`${fixtureDir}/nested`)
+                .ignoreHiddenDirectories()
+                .skipDirectories('mydir');
+
+            for (const files of await findAll(query)) {
+                assert.deepEqual(files, qualifyNames(['/nested/c.json', '/nested/d.json']));
+            }
+        });
+
+        it('throws a RangeError when no names are given', () => {
+            assert.throws(() => FileHound.create().skipDirectories(), RangeError, 'At least one directory name must be specified');
+        });
+
+        it('throws a TypeError for a name that is not a non-empty string', () => {
+            for (const invalid of [undefined, null, '', 42, /mydir/]) {
+                assert.throws(() => FileHound.create().skipDirectories(invalid as unknown as string), TypeError, 'Invalid directory name');
+            }
+        });
+
+        it('throws a TypeError for a name containing a path separator', () => {
+            for (const invalid of ['src/vendor', `src${path.sep}vendor`, '**/node_modules']) {
+                assert.throws(() => FileHound.create().skipDirectories(invalid), TypeError, 'must not contain a path separator');
+            }
+        });
+
+        it('throws when calling .skipDirectories after query started', () => {
+            assert.throws(() => {
+                const fh = FileHound.create().paths(`${fixtureDir}/nested`);
+                fh.findSync();
+                fh.skipDirectories('mydir');
+            }, Error, 'Cannot modify query after search has started');
+        });
+    });
+
     describe('.applyFilter', () => {
         it('returns files based on a custom filter', async () => {
             const files = await FileHound.create()
@@ -1814,6 +1972,19 @@ describe('FileHound', async () => {
             assert.deepEqual(syncResults, [inTmp('real', 'a.txt')]);
         });
 
+        it('skips matching linked directories', async () => {
+            fs.symlinkSync(inTmp('real'), inTmp('linkdir'), 'dir');
+
+            const query = (): FileHound => FileHound.create()
+                .paths(tmpDir)
+                .type(FileType.REGULAR, FileType.DIRECTORY)
+                .skipDirectories('linkdir');
+            const [results, syncResults] = await findBoth(query);
+
+            assert.deepEqual(results, [inTmp('real'), inTmp('real', 'a.txt')]);
+            assert.deepEqual(syncResults, [inTmp('real'), inTmp('real', 'a.txt')]);
+        });
+
         it('throws when calling .ignoreSymlinks after query started', () => {
             assert.throws(() => {
                 const fh = FileHound.create().paths(tmpDir);
@@ -1943,10 +2114,10 @@ describe('FileHound', async () => {
         const queries: Record<string, () => FileHound> = {
             'all files': () => FileHound.create().paths(tmpDir),
             'a sync matcher': () => FileHound.create().paths(tmpDir).match(ext('json')),
-            // Custom filters aren't known to be sync, so are tested as needing I/O
-            'a matcher needing I/O': () => FileHound.create().paths(tmpDir).match(applyFilterSync(file => file.getName().endsWith('1.txt'))),
+            'a matcher needing I/O': () => FileHound.create().paths(tmpDir).match(needingIO(file => file.getName().endsWith('1.txt'))),
             'directories': () => FileHound.create().paths(tmpDir).type(FileType.DIRECTORY),
             'hidden directories ignored': () => FileHound.create().paths(tmpDir).ignoreHiddenDirectories(),
+            'directories skipped': () => FileHound.create().paths(tmpDir).skipDirectories('d1?', 'link'),
             'a depth limit': () => FileHound.create().paths(tmpDir).depth(1).type(FileType.DIRECTORY, FileType.REGULAR)
         };
 

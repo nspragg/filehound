@@ -56,7 +56,7 @@ FileHound.create().match(ext('json')).find();
 | `.isEmpty()` | `.match(isEmpty())` |
 | `.glob('*.json')`, `.match('*.json')` | `.match(glob('**/*.json'))`, see [glob patterns](#glob-patterns) |
 | `.glob(['*.json', '*.txt'])` | `.match(glob('**/*.json').or(glob('**/*.txt')))` |
-| `.discard('node_modules')` | `.match(discard('node_modules'))` |
+| `.discard('node_modules')` | `.skipDirectories('node_modules')` to skip a directory, or `.match(discard('node_modules'))` to leave paths out of the results |
 | `.modified('<2 days')` | `.match(modified('<2 days'))` |
 | `.modified(10)` | `.match(modified('=10 days'))` |
 | `.accessed(...)`, `.changed(...)` | `.match(accessed(...))`, `.match(changed(...))` |
@@ -89,6 +89,18 @@ FileHound.create().not().glob('*tmp*').find();
 
 // V2
 FileHound.create().match(not(glob('**/*tmp*'))).find();
+```
+
+### Skipping directories
+
+V1's `.discard()` left matching paths out of the results, but still searched matching directories. V2 adds `.skipDirectories(...names)`: a directory with a matching name is neither searched nor returned. Use it to keep the search out of directories such as `node_modules`:
+
+```js
+// V1: node_modules is searched, then its files discarded
+FileHound.create().discard('node_modules').find();
+
+// V2: node_modules is not searched
+FileHound.create().skipDirectories('node_modules').find();
 ```
 
 ### Glob patterns

@@ -61,6 +61,7 @@ export class FileHound<T = string> extends EventEmitter {
   #maxDepth?: number;
   #types: FileType[];
   #matchExpression?: FilePredicate;
+  #skipDirectories: string[] = [];
   #ignoreHiddenFiles = false;
   #ignoreHiddenDirectories = false;
   #ignoreSymlinks = false;
@@ -166,6 +167,47 @@ export class FileHound<T = string> extends EventEmitter {
     }
 
     this.#matchExpression = query;
+    return this;
+  }
+
+  /**
+   * Skips directories by name: a directory whose name matches any of the
+   * given names is neither searched nor returned. Use it to keep the search
+   * out of directories such as `node_modules`, which a {@link FileHound.match}
+   * predicate can only exclude from the results after searching them.
+   * Calling it again replaces the names.
+   *
+   * @remarks
+   * Each name is matched against a directory's name only, not its path,
+   * following Node's [`path.matchesGlob`](https://nodejs.org/api/path.html#pathmatchesglobpath-pattern).
+   * A plain name, such as `'node_modules'`, matches exactly, and a glob, such
+   * as `'build-*'`, matches any name it describes. Every directory below the
+   * search paths is tested, including linked directories, but not the search
+   * paths themselves.
+   *
+   * @param names - one or more directory names or globs
+   * @returns the FileHound instance
+   * @throws `Error`
+   * Thrown if the query is locked because a search has started.
+   * @throws `RangeError`
+   * Thrown if no names are given.
+   * @throws `TypeError`
+   * Thrown if a name is not a non-empty string, or contains a path separator.
+   * @example
+   * ```ts
+   * import { FileHound, ext } from 'filehound';
+   *
+   * const files = await FileHound.create()
+   *   .skipDirectories('node_modules', '.git', 'build-*')
+   *   .match(ext('js'))
+   *   .find();
+   * ```
+   */
+  public skipDirectories(...names: string[]): this {
+    this.#throwIfQueryLocked();
+    this.#validateDirectoryNames(names);
+
+    this.#skipDirectories = names;
     return this;
   }
 
@@ -452,6 +494,22 @@ export class FileHound<T = string> extends EventEmitter {
     }
   }
 
+  #validateDirectoryNames(names: string[]): void {
+    if (names.length === 0) {
+      throw new RangeError('At least one directory name must be specified');
+    }
+
+    names.forEach((name) => {
+      if (typeof name !== 'string' || name.length === 0) {
+        throw new TypeError(`Invalid directory name: ${String(name)}.`);
+      }
+      // Only a directory's name is matched, so a path could never match
+      if (name.includes('/') || name.includes(path.sep)) {
+        throw new TypeError(`Directory name must not contain a path separator: ${name}.`);
+      }
+    });
+  }
+
   #validateTypeArguments(types: FileType[]): void {
     if (types.length === 0) {
       throw new RangeError('At least one file type must be specified');
@@ -519,6 +577,7 @@ export class FileHound<T = string> extends EventEmitter {
       ignoreSymlinks: this.#ignoreSymlinks,
       maxDepth: this.#maxDepth,
       fileTypes: this.#types,
+      skipDirectories: this.#skipDirectories,
       signal
     };
   }
