@@ -1,7 +1,7 @@
 import {parseAge, parseSize} from 'unit-compare';
 import {from} from './arrays.js';
 import type {FileView} from './file.js';
-import type {AgeFilter, SizeFilter} from 'unit-compare';
+import type {AgeFilter, AgeOptions, SizeFilter} from 'unit-compare';
 /**
  * A composable test applied to each file found during a search
  */
@@ -246,12 +246,16 @@ export class Size extends AbstractFilePredicate {
   }
 }
 
+// Ages are measured when a file is tested, not when the predicate is made, so
+// a predicate kept and reused later still compares against the current time
+const MEASURED_WHEN_TESTED: AgeOptions = Object.freeze({now: () => Date.now()});
+
 export class Modified extends AbstractFilePredicate {
   readonly #isMatch: AgeFilter;
 
   constructor(expression: string) {
     super();
-    this.#isMatch = parseAge(expression);
+    this.#isMatch = parseAge(expression, MEASURED_WHEN_TESTED);
   }
 
   override async test(file: FileView): Promise<boolean> {
@@ -268,7 +272,7 @@ export class Accessed extends AbstractFilePredicate {
 
   constructor(expression: string) {
     super();
-    this.#isMatch = parseAge(expression);
+    this.#isMatch = parseAge(expression, MEASURED_WHEN_TESTED);
   }
 
   override async test(file: FileView): Promise<boolean> {
@@ -285,7 +289,7 @@ export class Changed extends AbstractFilePredicate {
 
   constructor(expression: string) {
     super();
-    this.#isMatch = parseAge(expression);
+    this.#isMatch = parseAge(expression, MEASURED_WHEN_TESTED);
   }
 
   override async test(file: FileView): Promise<boolean> {
@@ -347,15 +351,21 @@ function expressionFor(matcher: string, expression: unknown, example: string): s
 }
 
 /**
- * Matches files by size, using a comparison with optional units, such as
- * `'>10k'` or `'<=1mb'`. The operators are `<`, `<=`, `>`, `>=` and `==`,
- * which is the default, and the units are `b`, `k`, `m`, `g` and `t`, in
- * multiples of 1024. Use {@link sizeEquals} for an exact number of bytes.
+ * Matches files by size, using an expression of an optional operator, a
+ * whole number and an optional unit, such as `'>10kb'` or `'<= 1 mb'`.
+ *
+ * The operators are `<`, `<=`, `>`, `>=` and `==` (or `=`), which is the
+ * default. The units, in multiples of 1024, are bytes (`b`, the default),
+ * kilobytes (`k`, `kb`), megabytes (`m`, `mb`), gigabytes (`g`, `gb`) and
+ * terabytes (`t`, `tb`), in any case. Use {@link sizeEquals} for an exact
+ * number of bytes.
  *
  * @param expression - the size expression
  * @returns the predicate
  * @throws `TypeError`
  * Thrown if the expression is not a string.
+ * @throws `ExpressionError`
+ * Thrown if the expression can't be parsed or has an unknown unit.
  * @example
  * ```ts
  * FileHound.create().match(size('>1mb'));
@@ -486,16 +496,28 @@ function cleanExtension(fileExtension: string): string {
 }
 
 /**
- * Matches files by when they were last modified, using a comparison of their
- * age with optional units, such as `'<2 days'` or `'>8h'`. The operators are
- * `<`, `<=`, `>` and `=`, which is the default and compares to the second.
- * The units are minutes (`m`, `min`), hours (`h`) and days (`d`), which is
- * the default.
+ * Matches files by when they were last modified, using an expression of their
+ * age: an optional operator, a whole number and an optional unit, such as
+ * `'<2 days'`, `'>8h'` or `'>=1 week'`.
+ *
+ * The operators are `<`, `<=`, `>`, `>=` and `==` (or `=`), which is the
+ * default. The units are minutes (`m`, `min`, `mins`, `minute`, `minutes`),
+ * hours (`h`, `hour`, `hours`), days (`d`, `day`, `days`, the default) and
+ * weeks (`w`, `week`, `weeks`), in any case.
+ *
+ * @remarks
+ * Ages are compared in whole units, like `find -mtime`: a file modified two
+ * and a half days ago is 2 days old, so it matches `'=2 days'`, `'>=2 days'`
+ * and `'<3 days'`, but not `'>2 days'`. Days and weeks are calendar days, so
+ * stay correct across daylight saving changes. Ages are measured when each
+ * file is tested.
  *
  * @param expression - the age expression
  * @returns the predicate
  * @throws `TypeError`
  * Thrown if the expression is not a string.
+ * @throws `ExpressionError`
+ * Thrown if the expression can't be parsed or has an unknown unit.
  * @example
  * ```ts
  * FileHound.create().match(modified('<2 days'));
@@ -513,6 +535,8 @@ export function modified(expression: string): FilePredicate {
  * @returns the predicate
  * @throws `TypeError`
  * Thrown if the expression is not a string.
+ * @throws `ExpressionError`
+ * Thrown if the expression can't be parsed or has an unknown unit.
  */
 export function accessed(expression: string): FilePredicate {
   return new Accessed(expressionFor('accessed', expression, '<2 days'));
@@ -526,6 +550,8 @@ export function accessed(expression: string): FilePredicate {
  * @returns the predicate
  * @throws `TypeError`
  * Thrown if the expression is not a string.
+ * @throws `ExpressionError`
+ * Thrown if the expression can't be parsed or has an unknown unit.
  */
 export function changed(expression: string): FilePredicate {
   return new Changed(expressionFor('changed', expression, '<2 days'));

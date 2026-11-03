@@ -18,3 +18,6 @@ export {
   size,
   sizeEquals
 } from './matchers.js';
+// Thrown by size() and the date matchers for an invalid expression, so it can
+// be caught without depending on unit-compare
+export {ExpressionError} from 'unit-compare';

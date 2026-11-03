@@ -7,6 +7,7 @@ import * as path from 'node:path';
 import * as sinon from 'sinon';
 import {FileHound, type FileWithStats} from '../src/filehound.js';
 import {FileType} from '../src/filetype.js';
+import {ExpressionError} from '../src/index.js';
 import type {FileView} from '../src/file.js';
 
 import {
@@ -517,6 +518,24 @@ describe('FileHound', async () => {
 
             it('throws for a size that is not an expression', () => {
                 assert.throws(() => size(20 as unknown as string), TypeError, "size() takes an expression, such as '>1kb'");
+            });
+
+            it('returns files using multi-letter size units, in any case', async () => {
+                const query = (expression: string): Promise<string[]> => FileHound.create()
+                    .paths(`${fixtureDir}/sizes`)
+                    .match(size(expression))
+                    .find();
+
+                const expected = qualifyNames(['/sizes/1k.txt', '/sizes/2k.txt']);
+                assert.deepEqual(await query('>=1kb'), expected);
+                assert.deepEqual(await query('>= 1 KB'), expected);
+                assert.deepEqual(await query('<1mb'), qualifyNames(['/sizes/10b.txt', '/sizes/1b.txt', '/sizes/1k.txt', '/sizes/2k.txt']));
+            });
+
+            it('throws an ExpressionError for an invalid size expression, before searching', () => {
+                for (const expression of ['>10 lightyears', 'big', '>', '>-1kb', '1.5kb']) {
+                    assert.throws(() => size(expression), ExpressionError, expression);
+                }
             });
 
             it('throws for a negative or fractional sizeEquals', () => {
@@ -1581,6 +1600,52 @@ describe('FileHound', async () => {
                     '/dates/z.txt'
                 ])
             );
+        });
+
+        function modifiedFiles(predicate: FilePredicate): Promise<string[]> {
+            return FileHound.create()
+                .paths(`${fixtureDir}/dates`)
+                .match(predicate)
+                .find();
+        }
+
+        it('returns files at least n days old', async () => {
+            assert.deepEqual(await modifiedFiles(modified('>=2 days')), qualifyNames(['/dates/a.txt', '/dates/w.txt', '/dates/x.txt']));
+        });
+
+        it('returns files at most n days old', async () => {
+            assert.deepEqual(await modifiedFiles(modified('<=1 day')), qualifyNames(['/dates/y.txt', '/dates/z.txt']));
+        });
+
+        it('compares ages in whole units', async () => {
+            // Files are created a little over n days old, so are n days old
+            assert.deepEqual(await modifiedFiles(modified('=2')), qualifyNames(['/dates/x.txt']));
+            assert.deepEqual(await modifiedFiles(modified('>1 day')), qualifyNames(['/dates/a.txt', '/dates/w.txt', '/dates/x.txt']));
+        });
+
+        it('returns files using weeks', async () => {
+            assert.deepEqual(await modifiedFiles(modified('>=1 week')), qualifyNames(['/dates/a.txt', '/dates/w.txt']));
+            assert.deepEqual(await modifiedFiles(modified('<1w')), qualifyNames(['/dates/x.txt', '/dates/y.txt', '/dates/z.txt']));
+        });
+
+        it('measures ages when files are tested, not when the predicate is made', async () => {
+            const recent = modified('<1 day');
+            assert.deepEqual(await modifiedFiles(recent), qualifyNames(['/dates/z.txt']));
+
+            sandbox.useFakeTimers({now: Date.now() + 2 * 24 * MILLISECONDS_PER_HOUR, toFake: ['Date']});
+            try {
+                assert.isEmpty(await modifiedFiles(recent));
+            } finally {
+                sandbox.restore();
+            }
+        });
+
+        it('throws an ExpressionError for an invalid age expression, before searching', () => {
+            for (const matcher of [modified, accessed, changed]) {
+                for (const expression of ['>3 years', '<2 fortnights', 'recently', '>=']) {
+                    assert.throws(() => matcher(expression), ExpressionError, expression);
+                }
+            }
         });
     });
 
